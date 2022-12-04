@@ -14,7 +14,6 @@ end
 
 entity.onMobInitialize = function(mob)
     mob:setCarefulPathing(true)
-    mob:setMobMod(xi.mobMod.DRAW_IN, 15)
 end
 
 entity.onMobSpawn = function(mob)
@@ -24,7 +23,23 @@ entity.onMobSpawn = function(mob)
 end
 
 entity.onMobFight = function(mob, target)
-    -- Animation (Ground or flight mode) logic.
+    local drawInTableNorth =
+    {
+        condition1 = target:getXPos() < -105 and target:getXPos() > -215 and target:getZPos() > 195,
+        position   = { -201.86, -175.66, 189.32, target:getRotPos() },
+    }
+    local drawInTableSouth =
+    {
+        condition1 = target:getXPos() > -250 and target:getXPos() < -212 and target:getZPos() < 55,
+        position   = { -235.62, -175.17, 62.67, target:getRotPos() },
+    }
+    local drawInTableEast =
+    {
+        condition1 = target:getXPos() > -160 and target:getZPos() > 105 and target:getZPos() < 130,
+        position   = { -166.02, -175.89, 119.38, target:getRotPos() },
+    }
+
+-- Animation (Ground or flight mode) logic.
     if
         not mob:hasStatusEffect(xi.effect.BLOOD_WEAPON) and
         mob:actionQueueEmpty()
@@ -70,6 +85,10 @@ entity.onMobFight = function(mob, target)
             end
         end
     end
+    -- Jorm draws in from set boundaries leaving her spawn area
+    utils.arenaDrawIn(mob, target, drawInTableNorth)
+    utils.arenaDrawIn(mob, target, drawInTableSouth)
+    utils.arenaDrawIn(mob, target, drawInTableEast)
 end
 
 entity.onMobWeaponSkill = function(target, mob, skill)

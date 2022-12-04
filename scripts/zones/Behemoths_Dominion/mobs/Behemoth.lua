@@ -15,6 +15,22 @@ entity.onMobSpawn = function(mob)
     GetNPCByID(ID.npc.BEHEMOTH_QM):setStatus(xi.status.DISAPPEAR)
 end
 
+entity.onMobFight = function(mob, target)
+    local drawInTableNorth =
+    {
+        condition1 = target:getXPos() > -180 and target:getZPos() > 53,
+        position   = { -182.19, -19.83, 58.34, target:getRotPos() },
+    }
+    local drawInTableSouth =
+    {
+        condition1 = target:getXPos() > -230 and target:getZPos() < 5,
+        position   = { -235.35, -20.01, -4.47, target:getRotPos() },
+    }
+
+    utils.arenaDrawIn(mob, target, drawInTableNorth)
+    utils.arenaDrawIn(mob, target, drawInTableSouth)
+end
+
 entity.onMobDeath = function(mob, player, optParams)
     player:addTitle(xi.title.BEHEMOTHS_BANE)
 end

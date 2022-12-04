@@ -17,7 +17,6 @@ end
 
 entity.onMobInitialize = function(mob)
     mob:setMobMod(xi.mobMod.ADD_EFFECT, 1)
-    mob:setMobMod(xi.mobMod.DRAW_IN, 2)
 end
 
 entity.onMobDrawIn = function(mob, target)
@@ -56,7 +55,19 @@ entity.onMobDespawn = function(mob)
 end
 
 entity.onMobFight = function(mob, target)
+    local drawInTableNorth =
+    {
+        condition1 = target:getZPos() > -540,
+        position   = { target:getXPos(), target:getYPos(), -542, target:getRotPos() },
+    }
+    local drawInTableSouth =
+    {
+        condition1 = target:getXPos() < -350,
+        position   = { -348, target:getYPos(), target:getZPos(), target:getRotPos() },
+    }
     mobRegen(mob)
+    utils.arenaDrawIn(mob, target, drawInTableNorth)
+    utils.arenaDrawIn(mob, target, drawInTableSouth)
 end
 
 return entity

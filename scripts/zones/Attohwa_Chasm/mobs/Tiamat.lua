@@ -15,7 +15,6 @@ end
 
 entity.onMobInitialize = function(mob)
     mob:setCarefulPathing(true)
-    mob:setMobMod(xi.mobMod.DRAW_IN, 8)
 end
 
 entity.onMobSpawn = function(mob)
@@ -25,6 +24,17 @@ entity.onMobSpawn = function(mob)
 end
 
 entity.onMobFight = function(mob, target)
+    local drawInTableNorth =
+    {
+        condition1 = target:getXPos() < -515 and target:getZPos() > 8,
+        position   = { -530.642, -4.013, 6.262, target:getRotPos() },
+    }
+    local drawInTableEast =
+    {
+        condition1 = target:getXPos() > -480 and target:getZPos() > -50,
+        position   = { -481.179, -4, -41.92, target:getRotPos() },
+    }
+
     -- Gains a large attack boost when health is under 25% which cannot be Dispelled.
     if
         mob:getHPP() <= 25 and
@@ -83,6 +93,10 @@ entity.onMobFight = function(mob, target)
             end
         end
     end
+
+    -- Tiamat draws in from set boundaries leaving her spawn area
+    utils.arenaDrawIn(mob, target, drawInTableNorth)
+    utils.arenaDrawIn(mob, target, drawInTableEast)
 end
 
 entity.onMobDeath = function(mob, player, optParams)
