@@ -30,7 +30,7 @@ jobs:
             });
 
             var result = true;
-            data.forEach(function(entry)
+            for (const entry in data)
             {
                 if (entry.name === "hold" || entry.name === "squash")
                 {
