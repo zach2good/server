@@ -16,14 +16,14 @@ jobs:
         with:
           script: |
             console.log("Start")
-            const data = await github.rest.issues.listLabelsOnIssue({
+            const response = await github.rest.issues.listLabelsOnIssue({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   issue_number: context.issue.number,
             });
 
             var result = true;
-            for (const entry in data)
+            for (const entry in response.data)
             {
                 console.log(entry)
                 if (entry.name === "hold" || entry.name === "squash")
