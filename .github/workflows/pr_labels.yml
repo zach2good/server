@@ -26,6 +26,7 @@ jobs:
             var result = true;
             for (const entry in data)
             {
+                console.log(entry.name)
                 if (entry.name === "hold" || entry.name === "squash")
                 {
                     console.log("Found PR-blocking label: " + entry.name)
