@@ -21,6 +21,8 @@ jobs:
                   issue_number: context.issue.number,
             });
 
+            console.log("Test")
+
             var result = true;
             for (const entry in data)
             {
