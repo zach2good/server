@@ -21,6 +21,8 @@ jobs:
                   repo: context.repo.repo,
                   issue_number: context.issue.number,
             });
+            
+            console.log(response)
 
             var result = true;
             for (const entry in response.data)
