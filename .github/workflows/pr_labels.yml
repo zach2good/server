@@ -22,9 +22,9 @@ jobs:
             });
 
             var result = true;
-            for (const idx in data)
+            for (const idx in response.data)
             {
-                const entry = data[idx];
+                const entry = response.data[idx];
                 if (entry.name === "hold" || entry.name === "squash")
                 {
                     console.log("Found PR-blocking label: " + entry.name)
