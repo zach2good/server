@@ -15,19 +15,16 @@ jobs:
       - uses: actions/github-script@v6
         with:
           script: |
-            console.log("Start")
             const response = await github.rest.issues.listLabelsOnIssue({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   issue_number: context.issue.number,
             });
-            
-            console.log(response)
 
             var result = true;
-            for (const entry in response.data)
+            for (const idx in data)
             {
-                console.log(entry)
+                const entry = data[idx];
                 if (entry.name === "hold" || entry.name === "squash")
                 {
                     console.log("Found PR-blocking label: " + entry.name)
