@@ -1,11 +1,9 @@
-name: "pr_labels"
+name: "pr labels"
 
 on:
   pull_request_target:
-    types:
-      - opened
-      - edited
-
+    types: [opened, edited]
+    
 jobs:
   Check_Blocking_Labels:
     runs-on: ubuntu-latest

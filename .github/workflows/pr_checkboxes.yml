@@ -1,4 +1,4 @@
-name: "pr_checkboxes"
+name: "pr checkboxes"
 
 on:
   pull_request_target:
