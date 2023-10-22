@@ -37,6 +37,6 @@ jobs:
                     console.log("Found PR-blocking label: " + entry.name)
                     result = false;
                 }
-            });
+            }
 
             return result;
