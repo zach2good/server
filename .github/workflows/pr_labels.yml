@@ -15,6 +15,7 @@ jobs:
       - uses: actions/github-script@v6
         with:
           script: |
+            console.log("Start")
             const data = await github.rest.issues.listLabelsOnIssue({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
@@ -24,6 +25,7 @@ jobs:
             var result = true;
             for (const entry in data)
             {
+                console.log(entry.name)
                 if (entry.name === "hold" || entry.name === "squash")
                 {
                     console.log("Found PR-blocking label: " + entry.name)
