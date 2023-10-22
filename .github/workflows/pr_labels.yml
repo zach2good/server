@@ -18,4 +18,5 @@ jobs:
                   issue_number: context.issue.number,
             });
             print(result)
+            print(result)
             return false
