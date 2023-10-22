@@ -21,15 +21,13 @@ jobs:
                   issue_number: context.issue.number,
             });
 
-            var result = true;
             for (const idx in response.data)
             {
                 const entry = response.data[idx];
                 if (entry.name === "hold" || entry.name === "squash")
                 {
                     console.log("Found PR-blocking label: " + entry.name)
-                    result = false;
+                    core.setFailed("Found PR-blocking label: " + entry.name)
                 }
             }
 
-            return result;
