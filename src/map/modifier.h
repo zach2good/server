@@ -551,6 +551,7 @@ enum class Mod
     THIRD_EYE_COUNTER_RATE    = 508,  // Adds counter to 3rd eye anticipates & if using Seigan counter rate is increased by 15%
     THIRD_EYE_ANTICIPATE_RATE = 839,  // Adds anticipate rate in percents
     THIRD_EYE_BONUS           = 1055, // TODO: Bonus Third Eye Evasion (count)
+    SENGIKORI_DEBUFF          = 1088, // % Increase to closing skillchain damage and magic bursts. Applied to defender.
 
     // Ninja
     UTSUSEMI             = 307, // Everyone's favorite --tracks shadows.
@@ -1026,7 +1027,7 @@ enum class Mod
     // The spares take care of finding the next ID to use so long as we don't forget to list IDs that have been freed up by refactoring.
     // 570 through 825 used by WS DMG mods these are not spares.
     //
-    // SPARE IDs: 1088 and onward
+    // SPARE IDs: 1089 and onward
 };
 
 // temporary workaround for using enum class as unordered_map key until compilers support it

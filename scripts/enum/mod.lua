@@ -465,6 +465,9 @@ xi.mod =
     TANDEM_STRIKE_POWER             = 271,  -- Grants a bonus to your and your pet's accuracy and magic accuracy when you and your pet are attacking the same target.
     TANDEM_BLOW_POWER               = 272,  -- Reduces amount of TP gained by enemies when striking them if you and your pet are attacking the same target.
 
+    -- Samurai
+    SENGIKORI_DEBUFF                = 1088, -- % Increase to closing skillchain damage and magic bursts. Applied to defender.
+
     -- Dragoon
     WYVERN_LVL_BONUS                = 1043, -- Wyvern: Lv.+ (Increases wyvern's base level above 99)
 
