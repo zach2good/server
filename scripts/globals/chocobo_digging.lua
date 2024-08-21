@@ -73,30 +73,30 @@ set{
     -- xi.zone.KAMIHR_DRIFTS,
 }
 
--- local crystalMap =
--- {
---     -- Single weather by elemental order.
---     [xi.weather.HOT_SPELL    ] = xi.item.FIRE_CRYSTAL,
---     [xi.weather.SNOW         ] = xi.item.ICE_CRYSTAL,
---     [xi.weather.WIND         ] = xi.item.WIND_CRYSTAL,
---     [xi.weather.DUST_STORM   ] = xi.item.EARTH_CRYSTAL,
---     [xi.weather.THUNDER      ] = xi.item.LIGHTNING_CRYSTAL,
---     [xi.weather.RAIN         ] = xi.item.WATER_CRYSTAL,
---     [xi.weather.AURORAS      ] = xi.item.LIGHT_CRYSTAL,
---     [xi.weather.GLOOM        ] = xi.item.DARK_CRYSTAL,
+local crystalTable =
+{
+    -- Single weather by elemental order.
+    [xi.weather.HOT_SPELL    ] = { xi.item.FIRE_CRYSTAL      },
+    [xi.weather.SNOW         ] = { xi.item.ICE_CRYSTAL       },
+    [xi.weather.WIND         ] = { xi.item.WIND_CRYSTAL      },
+    [xi.weather.DUST_STORM   ] = { xi.item.EARTH_CRYSTAL     },
+    [xi.weather.THUNDER      ] = { xi.item.LIGHTNING_CRYSTAL },
+    [xi.weather.RAIN         ] = { xi.item.WATER_CRYSTAL     },
+    [xi.weather.AURORAS      ] = { xi.item.LIGHT_CRYSTAL     },
+    [xi.weather.GLOOM        ] = { xi.item.DARK_CRYSTAL      },
 
---     -- Double weather by elemental order.
---     [xi.weather.HEAT_WAVE    ] = xi.item.FIRE_CLUSTER,
---     [xi.weather.BLIZZARDS    ] = xi.item.ICE_CLUSTER,
---     [xi.weather.GALES        ] = xi.item.WIND_CLUSTER,
---     [xi.weather.SAND_STORM   ] = xi.item.EARTH_CLUSTER,
---     [xi.weather.THUNDERSTORMS] = xi.item.LIGHTNING_CLUSTER,
---     [xi.weather.SQUALL       ] = xi.item.WATER_CLUSTER,
---     [xi.weather.STELLAR_GLARE] = xi.item.LIGHT_CLUSTER,
---     [xi.weather.DARKNESS     ] = xi.item.DARK_CLUSTER,
--- }
+    -- Double weather by elemental order.
+    [xi.weather.HEAT_WAVE    ] = { xi.item.FIRE_CLUSTER      },
+    [xi.weather.BLIZZARDS    ] = { xi.item.ICE_CLUSTER       },
+    [xi.weather.GALES        ] = { xi.item.WIND_CLUSTER      },
+    [xi.weather.SAND_STORM   ] = { xi.item.EARTH_CLUSTER     },
+    [xi.weather.THUNDERSTORMS] = { xi.item.LIGHTNING_CLUSTER },
+    [xi.weather.SQUALL       ] = { xi.item.WATER_CLUSTER     },
+    [xi.weather.STELLAR_GLARE] = { xi.item.LIGHT_CLUSTER     },
+    [xi.weather.DARKNESS     ] = { xi.item.DARK_CLUSTER      },
+}
 
--- local oreMap =
+-- local elementalOreTable =
 -- {
 --     [xi.day.FIRESDAY    ] = xi.item.CHUNK_OF_FIRE_ORE,
 --     [xi.day.ICEDAY      ] = xi.item.CHUNK_OF_ICE_ORE,
@@ -106,6 +106,18 @@ set{
 --     [xi.day.WATERSDAY   ] = xi.item.CHUNK_OF_WATER_ORE,
 --     [xi.day.LIGHTSDAY   ] = xi.item.CHUNK_OF_LIGHT_ORE,
 --     [xi.day.DARKSDAY    ] = xi.item.CHUNK_OF_DARK_ORE,
+-- }
+
+-- local coloredRockTable =
+-- {
+--     [xi.day.FIRESDAY    ] = xi.item.RED_ROCK,
+--     [xi.day.ICEDAY      ] = xi.item.TRANSLUCENT_ROCK,
+--     [xi.day.WINDSDAY    ] = xi.item.GREEN_ROCK,
+--     [xi.day.EARTHSDAY   ] = xi.item.YELLOW_ROCK,
+--     [xi.day.LIGHTNINGDAY] = xi.item.PURPLE_ROCK,
+--     [xi.day.WATERSDAY   ] = xi.item.BLUE_ROCK,
+--     [xi.day.LIGHTSDAY   ] = xi.item.WHITE_ROCK,
+--     [xi.day.DARKSDAY    ] = xi.item.BLACK_ROCK,
 -- }
 
 -----------------------------------
@@ -126,21 +138,20 @@ local digInfo =
     {
         [diggingLayer.TREASURE] =
         {
-            -- No entries
+            [1] = { xi.item.KING_TRUFFLE, 5, xi.craftRank.ADEPT },
         },
         [diggingLayer.REGULAR] =
         {
-            [1] = { xi.item.LITTLE_WORM,        100, xi.craftRank.AMATEUR },
-            [2] = { xi.item.ACORN,               50, xi.craftRank.AMATEUR },
-            [3] = { xi.item.ARROWWOOD_LOG,      100, xi.craftRank.AMATEUR },
-            [4] = { xi.item.WILLOW_LOG,          50, xi.craftRank.AMATEUR },
-            [5] = { xi.item.MAPLE_LOG,           50, xi.craftRank.AMATEUR },
-            [6] = { xi.item.HOLLY_LOG,           50, xi.craftRank.AMATEUR },
-            [7] = { xi.item.SPRIG_OF_MISTLETOE,  10, xi.craftRank.AMATEUR },
-            [8] = { xi.item.SCREAM_FUNGUS,       10, xi.craftRank.AMATEUR },
-            [9] = { xi.item.KING_TRUFFLE,        10, xi.craftRank.AMATEUR },
+            [1] = { xi.item.LITTLE_WORM,        100, xi.craftRank.AMATEUR    },
+            [2] = { xi.item.ARROWWOOD_LOG,      100, xi.craftRank.AMATEUR    },
+            [3] = { xi.item.ACORN,               50, xi.craftRank.RECRUIT    },
+            [4] = { xi.item.WILLOW_LOG,          50, xi.craftRank.RECRUIT    },
+            [5] = { xi.item.MAPLE_LOG,           50, xi.craftRank.INITIATE   },
+            [6] = { xi.item.HOLLY_LOG,           50, xi.craftRank.INITIATE   },
+            [7] = { xi.item.SPRIG_OF_MISTLETOE,  10, xi.craftRank.JOURNEYMAN },
+            [8] = { xi.item.SCREAM_FUNGUS,       10, xi.craftRank.CRAFTSMAN  },
         },
-        [diggingLayer.BURROW] =
+        [diggingLayer.BURROW] = -- Set: Crystals
         {
             [1] = { xi.item.FIRE_CRYSTAL,      50, xi.craftRank.AMATEUR },
             [2] = { xi.item.ICE_CRYSTAL,       50, xi.craftRank.AMATEUR },
@@ -151,17 +162,17 @@ local digInfo =
             [7] = { xi.item.LIGHT_CRYSTAL,     50, xi.craftRank.AMATEUR },
             [8] = { xi.item.DARK_CRYSTAL,      50, xi.craftRank.AMATEUR },
         },
-        [diggingLayer.BORE] =
+        [diggingLayer.BORE] = -- Set: Logs 1
         {
-            [1] = { xi.item.ARROWWOOD_LOG,           100, xi.craftRank.AMATEUR    },
-            [2] = { xi.item.YEW_LOG,                  50, xi.craftRank.RECRUIT    },
-            [3] = { xi.item.OAK_LOG,                  50, xi.craftRank.INITIATE   },
-            [4] = { xi.item.ELM_LOG,                  10, xi.craftRank.NOVICE     },
-            [5] = { xi.item.MAHOGANY_LOG,             10, xi.craftRank.APPRENTICE },
-            [6] = { xi.item.ROSEWOOD_LOG,             10, xi.craftRank.JOURNEYMAN },
-            [7] = { xi.item.EBONY_LOG,                10, xi.craftRank.CRAFTSMAN  },
-            [8] = { xi.item.PIECE_OF_ANCIENT_LUMBER,  10, xi.craftRank.ARTISAN    },
-            [9] = { xi.item.LACQUER_TREE_LOG,         10, xi.craftRank.ADEPT      },
+            [1] = { xi.item.ARROWWOOD_LOG,           240, xi.craftRank.AMATEUR    },
+            [2] = { xi.item.YEW_LOG,                 150, xi.craftRank.AMATEUR    },
+            [3] = { xi.item.ELM_LOG,                 100, xi.craftRank.RECRUIT    },
+            [4] = { xi.item.OAK_LOG,                  50, xi.craftRank.INITIATE   },
+            [5] = { xi.item.ROSEWOOD_LOG,             10, xi.craftRank.NOVICE     },
+            [6] = { xi.item.MAHOGANY_LOG,              5, xi.craftRank.APPRENTICE },
+            [7] = { xi.item.EBONY_LOG,                 5, xi.craftRank.JOURNEYMAN },
+            [8] = { xi.item.PIECE_OF_ANCIENT_LUMBER,   1, xi.craftRank.CRAFTSMAN  },
+            [9] = { xi.item.LACQUER_TREE_LOG,          1, xi.craftRank.ARTISAN    },
         },
     },
 
@@ -169,87 +180,195 @@ local digInfo =
     {
         [diggingLayer.TREASURE] =
         {
-            -- No entries
+            [1] = { xi.item.PLATE_OF_HEAVY_METAL, 5, xi.craftRank.ADEPT },
+            [2] = { xi.item.COIN_OF_BIRTH,        5, xi.craftRank.ADEPT },
         },
         [diggingLayer.REGULAR] =
         {
-            { xi.item.BLACK_CHOCOBO_FEATHER,    100, xi.craftRank.AMATEUR },
-            { xi.item.SEASHELL,                 100, xi.craftRank.AMATEUR },
-            { xi.item.BIRD_FEATHER,              50, xi.craftRank.AMATEUR },
-            { xi.item.BONE_CHIP,                 50, xi.craftRank.AMATEUR },
-            { xi.item.HANDFUL_OF_FISH_SCALES,    50, xi.craftRank.AMATEUR },
-            { xi.item.GIANT_FEMUR,               50, xi.craftRank.AMATEUR },
-            { xi.item.LUGWORM,                   50, xi.craftRank.AMATEUR },
-            { xi.item.PHOENIX_FEATHER,           50, xi.craftRank.AMATEUR },
-            { xi.item.CLUMP_OF_RED_MOKO_GRASS,   50, xi.craftRank.AMATEUR },
-            { xi.item.SHALL_SHELL,               50, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_TIN_ORE,          50, xi.craftRank.AMATEUR },
-            { xi.item.TITANICTUS_SHELL,          50, xi.craftRank.AMATEUR },
-            { xi.item.TURTLE_SHELL,              50, xi.craftRank.AMATEUR },
-            { xi.item.DEMON_HORN,                10, xi.craftRank.AMATEUR },
-            { xi.item.DEMON_SKULL,               10, xi.craftRank.AMATEUR },
-            { xi.item.HANDFUL_OF_DRAGON_SCALES,  10, xi.craftRank.AMATEUR },
-            { xi.item.GIANT_BIRD_PLUME,          10, xi.craftRank.AMATEUR },
-            { xi.item.HIGH_QUALITY_PUGIL_SCALE,  10, xi.craftRank.AMATEUR },
-            { xi.item.SHELL_BUG,                 10, xi.craftRank.AMATEUR },
-            { xi.item.SPIDER_WEB,                10, xi.craftRank.AMATEUR },
-            { xi.item.HANDFUL_OF_WYVERN_SCALES,  10, xi.craftRank.AMATEUR },
-            { xi.item.COIN_OF_BIRTH,              5, xi.craftRank.AMATEUR },
-            { xi.item.CORAL_FRAGMENT,             5, xi.craftRank.AMATEUR },
-            { xi.item.PLATE_OF_HEAVY_METAL,       5, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_PLATINUM_ORE,      5, xi.craftRank.AMATEUR },
-            { xi.item.FIRE_CRYSTAL,             100, xi.craftRank.AMATEUR },
+            [1] = { xi.item.CHUNK_OF_TIN_ORE,       50, xi.craftRank.AMATEUR  },
+            [2] = { xi.item.LUGWORM,                50, xi.craftRank.AMATEUR  },
+            [3] = { xi.item.SHELL_BUG,              10, xi.craftRank.RECRUIT  },
+            [4] = { xi.item.SEASHELL,              100, xi.craftRank.RECRUIT  },
+            [5] = { xi.item.SHALL_SHELL,            50, xi.craftRank.INITIATE },
+            [6] = { xi.item.BIRD_FEATHER,           50, xi.craftRank.INITIATE },
+            [7] = { xi.item.GIANT_FEMUR,            50, xi.craftRank.INITIATE },
+            [8] = { xi.item.CHUNK_OF_PLATINUM_ORE,   5, xi.craftRank.ARTISAN  },
+            [9] = { xi.item.CORAL_FRAGMENT,          5, xi.craftRank.ARTISAN  },
+        },
+        [diggingLayer.BURROW] = -- Set: Feathers
+        {
+            [1] = { xi.item.CLUMP_OF_RED_MOKO_GRASS, 100, xi.craftRank.AMATEUR   },
+            [2] = { xi.item.BLACK_CHOCOBO_FEATHER,    50, xi.craftRank.RECRUIT   },
+            [4] = { xi.item.GIANT_BIRD_PLUME,         10, xi.craftRank.INITIATE  },
+            [3] = { xi.item.SPIDER_WEB,                5, xi.craftRank.NOVICE    },
+            [5] = { xi.item.PHOENIX_FEATHER,           1, xi.craftRank.CRAFTSMAN },
+        },
+        [diggingLayer.BORE] = -- Set: Bones
+        {
+            [ 1] = { xi.item.BONE_CHIP,                150, xi.craftRank.AMATEUR    },
+            [ 2] = { xi.item.HANDFUL_OF_FISH_SCALES,   150, xi.craftRank.AMATEUR    },
+            [ 3] = { xi.item.SEASHELL,                 150, xi.craftRank.RECRUIT    },
+            [ 4] = { xi.item.HIGH_QUALITY_PUGIL_SCALE,  50, xi.craftRank.INITIATE   },
+            [ 5] = { xi.item.TITANICTUS_SHELL,          50, xi.craftRank.APPRENTICE },
+            [ 6] = { xi.item.DEMON_HORN,                10, xi.craftRank.JOURNEYMAN },
+            [ 7] = { xi.item.HANDFUL_OF_WYVERN_SCALES,   5, xi.craftRank.CRAFTSMAN  },
+            [ 8] = { xi.item.TURTLE_SHELL,               5, xi.craftRank.CRAFTSMAN  },
+            [ 9] = { xi.item.DEMON_SKULL,                1, xi.craftRank.ARTISAN    },
+            [10] = { xi.item.HANDFUL_OF_DRAGON_SCALES,   1, xi.craftRank.ARTISAN    },
+        },
+    },
+
+    [xi.zone.ULEGUERAND_RANGE] = -- 5
+    {
+        [diggingLayer.TREASURE] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.REGULAR] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.BURROW] = -- Set: Ores 4
+        {
+            [1] = { xi.item.CHUNK_OF_SILVER_ORE,       100, xi.craftRank.AMATEUR },
+            [2] = { xi.item.CHUNK_OF_IRON_ORE,         100, xi.craftRank.RECRUIT },
+            [3] = { xi.item.CHUNK_OF_KOPPARNICKEL_ORE, 100, xi.craftRank.RECRUIT },
+            [4] = { xi.item.CHUNK_OF_MYTHRIL_ORE,      100, xi.craftRank.RECRUIT },
+            [5] = { xi.item.CHUNK_OF_DARKSTEEL_ORE,     10, xi.craftRank.NOVICE  },
+        },
+        [diggingLayer.BORE] = -- Set: Beastcoins
+        {
+            [1] = { xi.item.BEASTCOIN,          100, xi.craftRank.AMATEUR    },
+            [2] = { xi.item.SILVER_BEASTCOIN,    50, xi.craftRank.RECRUIT    },
+            [3] = { xi.item.GOLD_BEASTCOIN,      10, xi.craftRank.INITIATE   },
+            [4] = { xi.item.MYTHRIL_BEASTCOIN,    5, xi.craftRank.NOVICE     },
+            [5] = { xi.item.PLATINUM_BEASTCOIN,   1, xi.craftRank.APPRENTICE },
+        },
+    },
+
+    [xi.zone.ATTOHWA_CHASM] = -- 7
+    {
+        [diggingLayer.TREASURE] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.REGULAR] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.BURROW] = -- Set: Yellow Ginseng seeds
+        {
+            [1] = { xi.item.PIECE_OF_YELLOW_GINSENG, 150, xi.craftRank.AMATEUR  },
+            [2] = { xi.item.BAG_OF_WILDGRASS_SEEDS,   50, xi.craftRank.RECRUIT  },
+            [3] = { xi.item.BAG_OF_TREE_CUTTINGS,     10, xi.craftRank.INITIATE },
+            [4] = { xi.item.BAG_OF_CACTUS_STEMS,       5, xi.craftRank.NOVICE   },
+        },
+        [diggingLayer.BORE] = -- Set: Ores 4
+        {
+            [1] = { xi.item.CHUNK_OF_SILVER_ORE,       100, xi.craftRank.AMATEUR },
+            [2] = { xi.item.CHUNK_OF_IRON_ORE,         100, xi.craftRank.RECRUIT },
+            [3] = { xi.item.CHUNK_OF_KOPPARNICKEL_ORE, 100, xi.craftRank.RECRUIT },
+            [4] = { xi.item.CHUNK_OF_MYTHRIL_ORE,      100, xi.craftRank.RECRUIT },
+            [5] = { xi.item.CHUNK_OF_DARKSTEEL_ORE,     10, xi.craftRank.NOVICE  },
+        },
+    },
+
+    [xi.zone.LUFAISE_MEADOWS] = -- 24
+    {
+        [diggingLayer.TREASURE] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.REGULAR] =
+        {
+            -- No entries.
         },
         [diggingLayer.BURROW] =
         {
-            -- No entries
+            -- No entries.
+        },
+        [diggingLayer.BORE] = -- Set: Crystals
+        {
+            [1] = { xi.item.FIRE_CRYSTAL,      50, xi.craftRank.AMATEUR },
+            [2] = { xi.item.ICE_CRYSTAL,       50, xi.craftRank.AMATEUR },
+            [3] = { xi.item.WIND_CRYSTAL,      50, xi.craftRank.AMATEUR },
+            [4] = { xi.item.EARTH_CRYSTAL,     50, xi.craftRank.AMATEUR },
+            [5] = { xi.item.LIGHTNING_CRYSTAL, 50, xi.craftRank.AMATEUR },
+            [6] = { xi.item.WATER_CRYSTAL,     50, xi.craftRank.AMATEUR },
+            [7] = { xi.item.LIGHT_CRYSTAL,     50, xi.craftRank.AMATEUR },
+            [8] = { xi.item.DARK_CRYSTAL,      50, xi.craftRank.AMATEUR },
+        },
+    },
+
+    [xi.zone.MISAREAUX_COAST] = -- 25
+    {
+        [diggingLayer.TREASURE] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.REGULAR] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.BURROW] = -- Set: Logs 1
+        {
+            [1] = { xi.item.ARROWWOOD_LOG,           240, xi.craftRank.AMATEUR    },
+            [2] = { xi.item.YEW_LOG,                 150, xi.craftRank.AMATEUR    },
+            [3] = { xi.item.ELM_LOG,                 100, xi.craftRank.RECRUIT    },
+            [4] = { xi.item.OAK_LOG,                  50, xi.craftRank.INITIATE   },
+            [5] = { xi.item.ROSEWOOD_LOG,             10, xi.craftRank.NOVICE     },
+            [6] = { xi.item.MAHOGANY_LOG,              5, xi.craftRank.APPRENTICE },
+            [7] = { xi.item.EBONY_LOG,                 5, xi.craftRank.JOURNEYMAN },
+            [8] = { xi.item.PIECE_OF_ANCIENT_LUMBER,   1, xi.craftRank.CRAFTSMAN  },
+            [9] = { xi.item.LACQUER_TREE_LOG,          1, xi.craftRank.ARTISAN    },
         },
         [diggingLayer.BORE] =
         {
-            -- No entries
+            -- No entries.
         },
     },
+
     [xi.zone.WAJAOM_WOODLANDS] = -- 51
     {
         [diggingLayer.TREASURE] =
         {
-            -- No entries
+            [1] = { xi.item.ALEXANDRITE, 5, xi.craftRank.ADEPT },
         },
         [diggingLayer.REGULAR] =
         {
-            { xi.item.FLINT_STONE,             240, xi.craftRank.AMATEUR },
-            { xi.item.ARROWWOOD_LOG,           150, xi.craftRank.AMATEUR },
-            { xi.item.CLUMP_OF_MOKO_GRASS,     100, xi.craftRank.AMATEUR },
-            { xi.item.BLACK_CHOCOBO_FEATHER,    50, xi.craftRank.AMATEUR },
-            { xi.item.EBONY_LOG,                50, xi.craftRank.AMATEUR },
-            { xi.item.ELM_LOG,                  50, xi.craftRank.AMATEUR },
-            { xi.item.OAK_LOG,                  50, xi.craftRank.AMATEUR },
-            { xi.item.PEBBLE,                   50, xi.craftRank.AMATEUR },
-            { xi.item.HANDFUL_OF_PINE_NUTS,     50, xi.craftRank.AMATEUR },
-            { xi.item.YEW_LOG,                  50, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_ADAMAN_ORE,      10, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_ALUMINUM_ORE,    10, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_DARKSTEEL_ORE,   10, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_GOLD_ORE,        10, xi.craftRank.AMATEUR },
-            { xi.item.MAHOGANY_LOG,             10, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_ORICHALCUM_ORE,  10, xi.craftRank.AMATEUR },
-            { xi.item.PEPHEDRO_HIVE_CHIP,       10, xi.craftRank.AMATEUR },
-            { xi.item.SPIDER_WEB,               10, xi.craftRank.AMATEUR },
-            { xi.item.ALEXANDRITE,               5, xi.craftRank.AMATEUR },
-            { xi.item.PIECE_OF_ANCIENT_LUMBER,   5, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_KAOLIN,           5, xi.craftRank.AMATEUR },
-            { xi.item.LACQUER_TREE_LOG,          5, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_PLATINUM_ORE,     5, xi.craftRank.AMATEUR },
-            { xi.item.ROSEWOOD_LOG,              5, xi.craftRank.AMATEUR },
-            { xi.item.FIRE_CRYSTAL,            100, xi.craftRank.AMATEUR },
+            [1] = { xi.item.PEBBLE,                100, xi.craftRank.AMATEUR    },
+            [2] = { xi.item.CLUMP_OF_MOKO_GRASS,   100, xi.craftRank.AMATEUR    },
+            [3] = { xi.item.HANDFUL_OF_PINE_NUTS,   50, xi.craftRank.RECRUIT    },
+            [4] = { xi.item.BLACK_CHOCOBO_FEATHER,  50, xi.craftRank.RECRUIT    },
+            [5] = { xi.item.EBONY_LOG,              50, xi.craftRank.INITIATE   },
+            [6] = { xi.item.SPIDER_WEB,             10, xi.craftRank.NOVICE     },
+            [7] = { xi.item.PEPHREDO_HIVE_CHIP,     10, xi.craftRank.APPRENTICE },
+            [8] = { xi.item.CHUNK_OF_ADAMAN_ORE,    10, xi.craftRank.CRAFTSMAN  },
         },
-        [diggingLayer.BURROW] =
+        [diggingLayer.BURROW] = -- Set: Logs 2
         {
-            -- No entries
+            [ 1] = { xi.item.CLUMP_OF_MOKO_GRASS,     240, xi.craftRank.AMATEUR    },
+            [ 2] = { xi.item.ARROWWOOD_LOG,           240, xi.craftRank.AMATEUR    },
+            [ 3] = { xi.item.PEPHREDO_HIVE_CHIP,      150, xi.craftRank.AMATEUR    },
+            [ 4] = { xi.item.YEW_LOG,                 150, xi.craftRank.AMATEUR    },
+            [ 5] = { xi.item.BLACK_CHOCOBO_FEATHER,   100, xi.craftRank.RECRUIT    },
+            [ 6] = { xi.item.ELM_LOG,                 100, xi.craftRank.RECRUIT    },
+            [ 7] = { xi.item.OAK_LOG,                  50, xi.craftRank.INITIATE   },
+            [ 8] = { xi.item.ROSEWOOD_LOG,             10, xi.craftRank.NOVICE     },
+            [ 9] = { xi.item.MAHOGANY_LOG,              5, xi.craftRank.APPRENTICE },
+            [10] = { xi.item.EBONY_LOG,                 5, xi.craftRank.JOURNEYMAN },
+            [11] = { xi.item.PIECE_OF_ANCIENT_LUMBER,   1, xi.craftRank.CRAFTSMAN  },
+            [12] = { xi.item.LACQUER_TREE_LOG,          1, xi.craftRank.ARTISAN    },
         },
-        [diggingLayer.BORE] =
+        [diggingLayer.BORE] = -- Set: Ores 2
         {
-            -- No entries
+            [1] = { xi.item.FLINT_STONE,             240, xi.craftRank.AMATEUR    },
+            [2] = { xi.item.CHUNK_OF_ALUMINUM_ORE,   100, xi.craftRank.RECRUIT    },
+            [3] = { xi.item.CHUNK_OF_GOLD_ORE,        50, xi.craftRank.INITIATE   },
+            [4] = { xi.item.CHUNK_OF_DARKSTEEL_ORE,   10, xi.craftRank.NOVICE     },
+            [5] = { xi.item.CHUNK_OF_KAOLIN,          10, xi.craftRank.NOVICE     },
+            [6] = { xi.item.CHUNK_OF_PLATINUM_ORE,     5, xi.craftRank.JOURNEYMAN },
+            [7] = { xi.item.CHUNK_OF_ORICHALCUM_ORE,   1, xi.craftRank.CRAFTSMAN  },
         },
     },
 
@@ -257,45 +376,441 @@ local digInfo =
     {
         [diggingLayer.TREASURE] =
         {
-            -- No entries
+            [1] = { xi.item.ALEXANDRITE, 5, xi.craftRank.ADEPT },
         },
         [diggingLayer.REGULAR] =
         {
-            { xi.item.FLINT_STONE,             240, xi.craftRank.AMATEUR },
-            { xi.item.ARROWWOOD_LOG,           150, xi.craftRank.AMATEUR },
-            { xi.item.COLIBRI_FEATHER,          50, xi.craftRank.AMATEUR },
-            { xi.item.PINCH_OF_DRIED_MARJORAM,  50, xi.craftRank.AMATEUR },
-            { xi.item.CLUMP_OF_MOKO_GRASS,      50, xi.craftRank.AMATEUR },
-            { xi.item.OAK_LOG,                  50, xi.craftRank.AMATEUR },
-            { xi.item.PEBBLE,                   50, xi.craftRank.AMATEUR },
-            { xi.item.PETRIFIED_LOG,            50, xi.craftRank.AMATEUR },
-            { xi.item.HANDFUL_OF_PINE_NUTS,     50, xi.craftRank.AMATEUR },
-            { xi.item.YEW_LOG,                  50, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_ALUMINUM_ORE,    10, xi.craftRank.AMATEUR },
-            { xi.item.BLACK_CHOCOBO_FEATHER,    10, xi.craftRank.AMATEUR },
-            { xi.item.EBONY_LOG,                10, xi.craftRank.AMATEUR },
-            { xi.item.ELM_LOG,                  10, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_GOLD_ORE,        10, xi.craftRank.AMATEUR },
-            { xi.item.MAHOGANY_LOG,             10, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_ORICHALCUM_ORE,  10, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_PLATINUM_ORE,    10, xi.craftRank.AMATEUR },
-            { xi.item.ROSEWOOD_LOG,             10, xi.craftRank.AMATEUR },
-            { xi.item.ALEXANDRITE,               5, xi.craftRank.AMATEUR },
-            { xi.item.PIECE_OF_ANCIENT_LUMBER,   5, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_DARKSTEEL_ORE,    5, xi.craftRank.AMATEUR },
-            { xi.item.LACQUER_TREE_LOG,          5, xi.craftRank.AMATEUR },
-            { xi.item.LESSER_CHIGOE,             5, xi.craftRank.AMATEUR },
-            { xi.item.PEPHEDRO_HIVE_CHIP,        5, xi.craftRank.AMATEUR },
-            { xi.item.SPIDER_WEB,                5, xi.craftRank.AMATEUR },
-            { xi.item.FIRE_CRYSTAL,            100, xi.craftRank.AMATEUR },
+            [1] = { xi.item.PEBBLE,                  100, xi.craftRank.AMATEUR    },
+            [2] = { xi.item.FLINT_STONE,             100, xi.craftRank.AMATEUR    },
+            [3] = { xi.item.HANDFUL_OF_PINE_NUTS,     50, xi.craftRank.AMATEUR    },
+            [4] = { xi.item.PINCH_OF_DRIED_MARJORAM,  50, xi.craftRank.AMATEUR    },
+            [6] = { xi.item.COLIBRI_FEATHER,          50, xi.craftRank.RECRUIT    },
+            [5] = { xi.item.LESSER_CHIGOE,            10, xi.craftRank.INITIATE   },
+            [8] = { xi.item.PETRIFIED_LOG,            50, xi.craftRank.NOVICE     },
+            [7] = { xi.item.SPIDER_WEB,               10, xi.craftRank.APPRENTICE },
+            [9] = { xi.item.CHUNK_OF_ORICHALCUM_ORE,   5, xi.craftRank.ARTISAN    },
+        },
+        [diggingLayer.BURROW] = -- Set: Logs 2
+        {
+            [ 1] = { xi.item.CLUMP_OF_MOKO_GRASS,     240, xi.craftRank.AMATEUR    },
+            [ 2] = { xi.item.ARROWWOOD_LOG,           240, xi.craftRank.AMATEUR    },
+            [ 3] = { xi.item.PEPHREDO_HIVE_CHIP,      150, xi.craftRank.AMATEUR    },
+            [ 4] = { xi.item.YEW_LOG,                 150, xi.craftRank.AMATEUR    },
+            [ 5] = { xi.item.BLACK_CHOCOBO_FEATHER,   100, xi.craftRank.RECRUIT    },
+            [ 6] = { xi.item.ELM_LOG,                 100, xi.craftRank.RECRUIT    },
+            [ 7] = { xi.item.OAK_LOG,                  50, xi.craftRank.INITIATE   },
+            [ 8] = { xi.item.ROSEWOOD_LOG,             10, xi.craftRank.NOVICE     },
+            [ 9] = { xi.item.MAHOGANY_LOG,              5, xi.craftRank.APPRENTICE },
+            [10] = { xi.item.EBONY_LOG,                 5, xi.craftRank.JOURNEYMAN },
+            [11] = { xi.item.PIECE_OF_ANCIENT_LUMBER,   1, xi.craftRank.CRAFTSMAN  },
+            [12] = { xi.item.LACQUER_TREE_LOG,          1, xi.craftRank.ARTISAN    },
+        },
+        [diggingLayer.BORE] = -- Set: Ores 2
+        {
+            [1] = { xi.item.FLINT_STONE,             240, xi.craftRank.AMATEUR    },
+            [2] = { xi.item.CHUNK_OF_ALUMINUM_ORE,   100, xi.craftRank.RECRUIT    },
+            [3] = { xi.item.CHUNK_OF_GOLD_ORE,        50, xi.craftRank.INITIATE   },
+            [4] = { xi.item.CHUNK_OF_DARKSTEEL_ORE,   10, xi.craftRank.NOVICE     },
+            [5] = { xi.item.CHUNK_OF_KAOLIN,          10, xi.craftRank.NOVICE     },
+            [6] = { xi.item.CHUNK_OF_PLATINUM_ORE,     5, xi.craftRank.JOURNEYMAN },
+            [7] = { xi.item.CHUNK_OF_ORICHALCUM_ORE,   1, xi.craftRank.CRAFTSMAN  },
+        },
+    },
+
+    [xi.zone.CAEDARVA_MIRE] = -- 79
+    {
+        [diggingLayer.TREASURE] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.REGULAR] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.BURROW] = -- Set: Logs 3
+        {
+            [1] = { xi.item.ARROWWOOD_LOG,           240, xi.craftRank.AMATEUR    },
+            [2] = { xi.item.DOGWOOD_LOG,             240, xi.craftRank.AMATEUR    },
+            [3] = { xi.item.YEW_LOG,                 150, xi.craftRank.AMATEUR    },
+            [4] = { xi.item.LANCEWOOD_LOG,           100, xi.craftRank.RECRUIT    },
+            [5] = { xi.item.SPRIG_OF_MISTLETOE,       50, xi.craftRank.INITIATE   },
+            [6] = { xi.item.ROSEWOOD_LOG,             10, xi.craftRank.NOVICE     },
+            [7] = { xi.item.EBONY_LOG,                 5, xi.craftRank.JOURNEYMAN },
+            [8] = { xi.item.PIECE_OF_ANCIENT_LUMBER,   1, xi.craftRank.CRAFTSMAN  },
+        },
+        [diggingLayer.BORE] = -- Set: Ores 2
+        {
+            [1] = { xi.item.FLINT_STONE,             240, xi.craftRank.AMATEUR    },
+            [2] = { xi.item.CHUNK_OF_ALUMINUM_ORE,   100, xi.craftRank.RECRUIT    },
+            [3] = { xi.item.CHUNK_OF_GOLD_ORE,        50, xi.craftRank.INITIATE   },
+            [4] = { xi.item.CHUNK_OF_DARKSTEEL_ORE,   10, xi.craftRank.NOVICE     },
+            [5] = { xi.item.CHUNK_OF_KAOLIN,          10, xi.craftRank.NOVICE     },
+            [6] = { xi.item.CHUNK_OF_PLATINUM_ORE,     5, xi.craftRank.JOURNEYMAN },
+            [7] = { xi.item.CHUNK_OF_ORICHALCUM_ORE,   1, xi.craftRank.CRAFTSMAN  },
+        },
+    },
+
+    [xi.zone.EAST_RONFAURE_S] = -- 81
+    {
+        [diggingLayer.TREASURE] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.REGULAR] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.BURROW] = -- Set: Gysahl Greens
+        {
+            [1] = { xi.item.BUNCH_OF_GYSAHL_GREENS, 150, xi.craftRank.AMATEUR  },
+            [2] = { xi.item.CHAMOMILE,               50, xi.craftRank.AMATEUR  },
+            [3] = { xi.item.GINGER_ROOT,             50, xi.craftRank.RECRUIT  },
+            [4] = { xi.item.HEAD_OF_NAPA,            50, xi.craftRank.INITIATE },
+        },
+        [diggingLayer.BORE] = -- Set: Logs 4
+        {
+            [1] = { xi.item.ARROWWOOD_LOG,           240, xi.craftRank.AMATEUR   },
+            [2] = { xi.item.YEW_LOG,                 150, xi.craftRank.AMATEUR   },
+            [3] = { xi.item.ELM_LOG,                 100, xi.craftRank.RECRUIT   },
+            [4] = { xi.item.FEYWEALD_LOG,             50, xi.craftRank.INITIATE  },
+            [5] = { xi.item.OAK_LOG,                  50, xi.craftRank.INITIATE  },
+            [6] = { xi.item.TEAK_LOG,                  1, xi.craftRank.CRAFTSMAN },
+            [7] = { xi.item.PIECE_OF_ANCIENT_LUMBER,   1, xi.craftRank.CRAFTSMAN },
+            [8] = { xi.item.JACARANDA_LOG,             1, xi.craftRank.ARTISAN   },
+            [9] = { xi.item.LACQUER_TREE_LOG,          1, xi.craftRank.ARTISAN   },
+        },
+    },
+
+    [xi.zone.JUGNER_FOREST_S] = -- 82
+    {
+        [diggingLayer.TREASURE] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.REGULAR] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.BURROW] = -- Set: Shrooms
+        {
+            [1] = { xi.item.DEATHBALL,       100, xi.craftRank.AMATEUR    },
+            [2] = { xi.item.SLEEPSHROOM,     100, xi.craftRank.AMATEUR    },
+            [3] = { xi.item.CORAL_FUNGUS,     50, xi.craftRank.RECRUIT    },
+            [4] = { xi.item.WOOZYSHROOM,      10, xi.craftRank.INITIATE   },
+            [5] = { xi.item.PUFFBALL,         10, xi.craftRank.NOVICE     },
+            [6] = { xi.item.DANCESHROOM,       5, xi.craftRank.APPRENTICE },
+            [7] = { xi.item.REISHI_MUSHROOM,   1, xi.craftRank.JOURNEYMAN },
+            [8] = { xi.item.KING_TRUFFLE,      1, xi.craftRank.CRAFTSMAN  },
+        },
+        [diggingLayer.BORE] = -- Set: Logs 4
+        {
+            [1] = { xi.item.ARROWWOOD_LOG,           240, xi.craftRank.AMATEUR   },
+            [2] = { xi.item.YEW_LOG,                 150, xi.craftRank.AMATEUR   },
+            [3] = { xi.item.ELM_LOG,                 100, xi.craftRank.RECRUIT   },
+            [4] = { xi.item.FEYWEALD_LOG,             50, xi.craftRank.INITIATE  },
+            [5] = { xi.item.OAK_LOG,                  50, xi.craftRank.INITIATE  },
+            [6] = { xi.item.TEAK_LOG,                  1, xi.craftRank.CRAFTSMAN },
+            [7] = { xi.item.PIECE_OF_ANCIENT_LUMBER,   1, xi.craftRank.CRAFTSMAN },
+            [8] = { xi.item.JACARANDA_LOG,             1, xi.craftRank.ARTISAN   },
+            [9] = { xi.item.LACQUER_TREE_LOG,          1, xi.craftRank.ARTISAN   },
+        },
+    },
+
+    [xi.zone.VUNKERL_INLET_S] = -- 83
+    {
+        [diggingLayer.TREASURE] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.REGULAR] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.BURROW] = -- Set: Feathers
+        {
+            [1] = { xi.item.CLUMP_OF_RED_MOKO_GRASS, 100, xi.craftRank.AMATEUR   },
+            [2] = { xi.item.BLACK_CHOCOBO_FEATHER,    50, xi.craftRank.RECRUIT   },
+            [4] = { xi.item.GIANT_BIRD_PLUME,         10, xi.craftRank.INITIATE  },
+            [3] = { xi.item.SPIDER_WEB,                5, xi.craftRank.NOVICE    },
+            [5] = { xi.item.PHOENIX_FEATHER,           1, xi.craftRank.CRAFTSMAN },
+        },
+        [diggingLayer.BORE] = -- Set: Yellow Ginseng seeds
+        {
+            [1] = { xi.item.PIECE_OF_YELLOW_GINSENG, 150, xi.craftRank.AMATEUR  },
+            [2] = { xi.item.BAG_OF_WILDGRASS_SEEDS,   50, xi.craftRank.RECRUIT  },
+            [3] = { xi.item.BAG_OF_TREE_CUTTINGS,     10, xi.craftRank.INITIATE },
+            [4] = { xi.item.BAG_OF_CACTUS_STEMS,       5, xi.craftRank.NOVICE   },
+        },
+    },
+
+    [xi.zone.BATALLIA_DOWNS_S] = -- 84
+    {
+        [diggingLayer.TREASURE] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.REGULAR] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.BURROW] = -- Set: Ores 3
+        {
+            [1] = { xi.item.FLINT_STONE,               240, xi.craftRank.AMATEUR },
+            [2] = { xi.item.CHUNK_OF_SILVER_ORE,       100, xi.craftRank.AMATEUR },
+            [3] = { xi.item.CHUNK_OF_IRON_ORE,         100, xi.craftRank.RECRUIT },
+            [4] = { xi.item.SHARD_OF_OBSIDIAN,         100, xi.craftRank.RECRUIT },
+            [5] = { xi.item.CHUNK_OF_KOPPARNICKEL_ORE, 100, xi.craftRank.RECRUIT },
+            [6] = { xi.item.CHUNK_OF_MYTHRIL_ORE,      100, xi.craftRank.RECRUIT },
+            [7] = { xi.item.CHUNK_OF_DARKSTEEL_ORE,     10, xi.craftRank.NOVICE  },
+            [8] = { xi.item.CHUNK_OF_SWAMP_ORE,         10, xi.craftRank.NOVICE  },
+        },
+        [diggingLayer.BORE] = -- Set: Feathers
+        {
+            [1] = { xi.item.CLUMP_OF_RED_MOKO_GRASS, 100, xi.craftRank.AMATEUR   },
+            [2] = { xi.item.BLACK_CHOCOBO_FEATHER,    50, xi.craftRank.RECRUIT   },
+            [4] = { xi.item.GIANT_BIRD_PLUME,         10, xi.craftRank.INITIATE  },
+            [3] = { xi.item.SPIDER_WEB,                5, xi.craftRank.NOVICE    },
+            [5] = { xi.item.PHOENIX_FEATHER,           1, xi.craftRank.CRAFTSMAN },
+        },
+    },
+
+    [xi.zone.NORTH_GUSTABERG_S] = -- 88
+    {
+        [diggingLayer.TREASURE] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.REGULAR] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.BURROW] = -- Set: Ores 3
+        {
+            [1] = { xi.item.FLINT_STONE,               240, xi.craftRank.AMATEUR },
+            [2] = { xi.item.CHUNK_OF_SILVER_ORE,       100, xi.craftRank.AMATEUR },
+            [3] = { xi.item.CHUNK_OF_IRON_ORE,         100, xi.craftRank.RECRUIT },
+            [4] = { xi.item.SHARD_OF_OBSIDIAN,         100, xi.craftRank.RECRUIT },
+            [5] = { xi.item.CHUNK_OF_KOPPARNICKEL_ORE, 100, xi.craftRank.RECRUIT },
+            [6] = { xi.item.CHUNK_OF_MYTHRIL_ORE,      100, xi.craftRank.RECRUIT },
+            [7] = { xi.item.CHUNK_OF_DARKSTEEL_ORE,     10, xi.craftRank.NOVICE  },
+            [8] = { xi.item.CHUNK_OF_SWAMP_ORE,         10, xi.craftRank.NOVICE  },
+        },
+        [diggingLayer.BORE] = -- Set: Feathers
+        {
+            [1] = { xi.item.CLUMP_OF_RED_MOKO_GRASS, 100, xi.craftRank.AMATEUR   },
+            [2] = { xi.item.BLACK_CHOCOBO_FEATHER,    50, xi.craftRank.RECRUIT   },
+            [4] = { xi.item.GIANT_BIRD_PLUME,         10, xi.craftRank.INITIATE  },
+            [3] = { xi.item.SPIDER_WEB,                5, xi.craftRank.NOVICE    },
+            [5] = { xi.item.PHOENIX_FEATHER,           1, xi.craftRank.CRAFTSMAN },
+        },
+    },
+
+    [xi.zone.GRAUBERG_S] = -- 89
+    {
+        [diggingLayer.TREASURE] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.REGULAR] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.BURROW] = -- Set: Yellow Ginseng seeds
+        {
+            [1] = { xi.item.PIECE_OF_YELLOW_GINSENG, 150, xi.craftRank.AMATEUR  },
+            [2] = { xi.item.BAG_OF_WILDGRASS_SEEDS,   50, xi.craftRank.RECRUIT  },
+            [3] = { xi.item.BAG_OF_TREE_CUTTINGS,     10, xi.craftRank.INITIATE },
+            [4] = { xi.item.BAG_OF_CACTUS_STEMS,       5, xi.craftRank.NOVICE   },
+        },
+        [diggingLayer.BORE] = -- Set: Logs 4
+        {
+            [1] = { xi.item.ARROWWOOD_LOG,           240, xi.craftRank.AMATEUR   },
+            [2] = { xi.item.YEW_LOG,                 150, xi.craftRank.AMATEUR   },
+            [3] = { xi.item.ELM_LOG,                 100, xi.craftRank.RECRUIT   },
+            [4] = { xi.item.FEYWEALD_LOG,             50, xi.craftRank.INITIATE  },
+            [5] = { xi.item.OAK_LOG,                  50, xi.craftRank.INITIATE  },
+            [6] = { xi.item.TEAK_LOG,                  1, xi.craftRank.CRAFTSMAN },
+            [7] = { xi.item.PIECE_OF_ANCIENT_LUMBER,   1, xi.craftRank.CRAFTSMAN },
+            [8] = { xi.item.JACARANDA_LOG,             1, xi.craftRank.ARTISAN   },
+            [9] = { xi.item.LACQUER_TREE_LOG,          1, xi.craftRank.ARTISAN   },
+        },
+    },
+
+    [xi.zone.PASHHOW_MARSHLANDS_S] = -- 90
+    {
+        [diggingLayer.TREASURE] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.REGULAR] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.BURROW] = -- Set: Yellow Ginseng seeds
+        {
+            [1] = { xi.item.PIECE_OF_YELLOW_GINSENG, 150, xi.craftRank.AMATEUR  },
+            [2] = { xi.item.BAG_OF_WILDGRASS_SEEDS,   50, xi.craftRank.RECRUIT  },
+            [3] = { xi.item.BAG_OF_TREE_CUTTINGS,     10, xi.craftRank.INITIATE },
+            [4] = { xi.item.BAG_OF_CACTUS_STEMS,       5, xi.craftRank.NOVICE   },
+        },
+        [diggingLayer.BORE] = -- Set: Crystals
+        {
+            [1] = { xi.item.FIRE_CRYSTAL,      50, xi.craftRank.AMATEUR },
+            [2] = { xi.item.ICE_CRYSTAL,       50, xi.craftRank.AMATEUR },
+            [3] = { xi.item.WIND_CRYSTAL,      50, xi.craftRank.AMATEUR },
+            [4] = { xi.item.EARTH_CRYSTAL,     50, xi.craftRank.AMATEUR },
+            [5] = { xi.item.LIGHTNING_CRYSTAL, 50, xi.craftRank.AMATEUR },
+            [6] = { xi.item.WATER_CRYSTAL,     50, xi.craftRank.AMATEUR },
+            [7] = { xi.item.LIGHT_CRYSTAL,     50, xi.craftRank.AMATEUR },
+            [8] = { xi.item.DARK_CRYSTAL,      50, xi.craftRank.AMATEUR },
+        },
+    },
+
+    [xi.zone.ROLANBERRY_FIELDS_S] = -- 91
+    {
+        [diggingLayer.TREASURE] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.REGULAR] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.BURROW] = -- Set:Beastcoins
+        {
+            [1] = { xi.item.BEASTCOIN,          100, xi.craftRank.AMATEUR    },
+            [2] = { xi.item.SILVER_BEASTCOIN,    50, xi.craftRank.RECRUIT    },
+            [3] = { xi.item.GOLD_BEASTCOIN,      10, xi.craftRank.INITIATE   },
+            [4] = { xi.item.MYTHRIL_BEASTCOIN,    5, xi.craftRank.NOVICE     },
+            [5] = { xi.item.PLATINUM_BEASTCOIN,   1, xi.craftRank.APPRENTICE },
+        },
+        [diggingLayer.BORE] = -- Set: Shrooms
+        {
+            [1] = { xi.item.DEATHBALL,       100, xi.craftRank.AMATEUR    },
+            [2] = { xi.item.SLEEPSHROOM,     100, xi.craftRank.AMATEUR    },
+            [3] = { xi.item.CORAL_FUNGUS,     50, xi.craftRank.RECRUIT    },
+            [4] = { xi.item.WOOZYSHROOM,      10, xi.craftRank.INITIATE   },
+            [5] = { xi.item.PUFFBALL,         10, xi.craftRank.NOVICE     },
+            [6] = { xi.item.DANCESHROOM,       5, xi.craftRank.APPRENTICE },
+            [7] = { xi.item.REISHI_MUSHROOM,   1, xi.craftRank.JOURNEYMAN },
+            [8] = { xi.item.KING_TRUFFLE,      1, xi.craftRank.CRAFTSMAN  },
+        },
+    },
+
+    [xi.zone.WEST_SARUTABARUTA_S] = -- 95
+    {
+        [diggingLayer.TREASURE] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.REGULAR] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.BURROW] = -- Set: Gysahl Greens
+        {
+            [1] = { xi.item.BUNCH_OF_GYSAHL_GREENS, 150, xi.craftRank.AMATEUR  },
+            [2] = { xi.item.CHAMOMILE,               50, xi.craftRank.AMATEUR  },
+            [3] = { xi.item.GINGER_ROOT,             50, xi.craftRank.RECRUIT  },
+            [4] = { xi.item.HEAD_OF_NAPA,            50, xi.craftRank.INITIATE },
+        },
+        [diggingLayer.BORE] = -- Set: Crystals
+        {
+            [1] = { xi.item.FIRE_CRYSTAL,      50, xi.craftRank.AMATEUR },
+            [2] = { xi.item.ICE_CRYSTAL,       50, xi.craftRank.AMATEUR },
+            [3] = { xi.item.WIND_CRYSTAL,      50, xi.craftRank.AMATEUR },
+            [4] = { xi.item.EARTH_CRYSTAL,     50, xi.craftRank.AMATEUR },
+            [5] = { xi.item.LIGHTNING_CRYSTAL, 50, xi.craftRank.AMATEUR },
+            [6] = { xi.item.WATER_CRYSTAL,     50, xi.craftRank.AMATEUR },
+            [7] = { xi.item.LIGHT_CRYSTAL,     50, xi.craftRank.AMATEUR },
+            [8] = { xi.item.DARK_CRYSTAL,      50, xi.craftRank.AMATEUR },
+        },
+    },
+
+    [xi.zone.FORT_KARUGO_NARUGO_S] = -- 96
+    {
+        [diggingLayer.TREASURE] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.REGULAR] =
+        {
+            -- No entries.
         },
         [diggingLayer.BURROW] =
         {
-            -- No entries
+            -- No entries.
         },
-        [diggingLayer.BORE] =
+        [diggingLayer.BORE] = -- Set: Ores 1
         {
-            -- No entries
+            [1] = { xi.item.FLINT_STONE,            240, xi.craftRank.AMATEUR    },
+            [2] = { xi.item.CHUNK_OF_ALUMINUM_ORE,  100, xi.craftRank.RECRUIT    },
+            [3] = { xi.item.CHUNK_OF_GOLD_ORE,       50, xi.craftRank.INITIATE   },
+            [4] = { xi.item.CHUNK_OF_DARKSTEEL_ORE,  10, xi.craftRank.NOVICE     },
+            [5] = { xi.item.CHUNK_OF_ADAMAN_ORE,      5, xi.craftRank.JOURNEYMAN },
+            [6] = { xi.item.CHUNK_OF_PLATINUM_ORE,    5, xi.craftRank.JOURNEYMAN },
+            [7] = { xi.item.CHUNK_OF_ORICHALCUM_ORE,  1, xi.craftRank.CRAFTSMAN  },
+        },
+    },
+
+    [xi.zone.MERIPHATAUD_MOUNTAINS_S] = -- 97
+    {
+        [diggingLayer.TREASURE] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.REGULAR] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.BURROW] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.BORE] = -- Set: Bones
+        {
+            [ 1] = { xi.item.BONE_CHIP,                150, xi.craftRank.AMATEUR    },
+            [ 2] = { xi.item.HANDFUL_OF_FISH_SCALES,   150, xi.craftRank.AMATEUR    },
+            [ 3] = { xi.item.SEASHELL,                 150, xi.craftRank.RECRUIT    },
+            [ 4] = { xi.item.HIGH_QUALITY_PUGIL_SCALE,  50, xi.craftRank.INITIATE   },
+            [ 5] = { xi.item.TITANICTUS_SHELL,          50, xi.craftRank.APPRENTICE },
+            [ 6] = { xi.item.DEMON_HORN,                10, xi.craftRank.JOURNEYMAN },
+            [ 7] = { xi.item.HANDFUL_OF_WYVERN_SCALES,   5, xi.craftRank.CRAFTSMAN  },
+            [ 8] = { xi.item.TURTLE_SHELL,               5, xi.craftRank.CRAFTSMAN  },
+            [ 9] = { xi.item.DEMON_SKULL,                1, xi.craftRank.ARTISAN    },
+            [10] = { xi.item.HANDFUL_OF_DRAGON_SCALES,   1, xi.craftRank.ARTISAN    },
+        },
+    },
+
+    [xi.zone.SAUROMUGUE_CHAMPAIGN_S] = -- 98
+    {
+        [diggingLayer.TREASURE] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.REGULAR] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.BURROW] = -- Set: Beastcoins
+        {
+            [1] = { xi.item.BEASTCOIN,          100, xi.craftRank.AMATEUR    },
+            [2] = { xi.item.SILVER_BEASTCOIN,    50, xi.craftRank.RECRUIT    },
+            [3] = { xi.item.GOLD_BEASTCOIN,      10, xi.craftRank.INITIATE   },
+            [4] = { xi.item.MYTHRIL_BEASTCOIN,    5, xi.craftRank.NOVICE     },
+            [5] = { xi.item.PLATINUM_BEASTCOIN,   1, xi.craftRank.APPRENTICE },
+        },
+        [diggingLayer.BORE] = -- Set: Logs 4
+        {
+            [1] = { xi.item.ARROWWOOD_LOG,           240, xi.craftRank.AMATEUR   },
+            [2] = { xi.item.YEW_LOG,                 150, xi.craftRank.AMATEUR   },
+            [3] = { xi.item.ELM_LOG,                 100, xi.craftRank.RECRUIT   },
+            [4] = { xi.item.FEYWEALD_LOG,             50, xi.craftRank.INITIATE  },
+            [5] = { xi.item.OAK_LOG,                  50, xi.craftRank.INITIATE  },
+            [6] = { xi.item.TEAK_LOG,                  1, xi.craftRank.CRAFTSMAN },
+            [7] = { xi.item.PIECE_OF_ANCIENT_LUMBER,   1, xi.craftRank.CRAFTSMAN },
+            [8] = { xi.item.JACARANDA_LOG,             1, xi.craftRank.ARTISAN   },
+            [9] = { xi.item.LACQUER_TREE_LOG,          1, xi.craftRank.ARTISAN   },
         },
     },
 
@@ -303,36 +818,39 @@ local digInfo =
     {
         [diggingLayer.TREASURE] =
         {
-            -- No entries
+            [1] = { xi.item.PLATE_OF_HEAVY_METAL, 5, xi.craftRank.ADEPT },
         },
         [diggingLayer.REGULAR] =
         {
-            { xi.item.BUNCH_OF_GYSAHL_GREENS, 150, xi.craftRank.AMATEUR },
-            { xi.item.CHAMOMILE,               50, xi.craftRank.AMATEUR },
-            { xi.item.GINGER_ROOT,             50, xi.craftRank.AMATEUR },
-            { xi.item.ARROWWOOD_LOG,           50, xi.craftRank.AMATEUR },
-            { xi.item.LITTLE_WORM,             50, xi.craftRank.AMATEUR },
-            { xi.item.ASH_LOG,                 50, xi.craftRank.AMATEUR },
-            { xi.item.ACORN,                   50, xi.craftRank.AMATEUR },
-            { xi.item.CHOCOBO_FEATHER,         50, xi.craftRank.AMATEUR },
-            { xi.item.CLUMP_OF_MOKO_GRASS,     50, xi.craftRank.AMATEUR },
-            { xi.item.MAPLE_LOG,               50, xi.craftRank.AMATEUR },
-            { xi.item.HEAD_OF_NAPA,            50, xi.craftRank.AMATEUR },
-            { xi.item.RONFAURE_CHESTNUT,       10, xi.craftRank.AMATEUR },
-            { xi.item.BAG_OF_VEGETABLE_SEEDS,  10, xi.craftRank.AMATEUR },
-            { xi.item.CHESTNUT_LOG,            10, xi.craftRank.AMATEUR },
-            { xi.item.SPRIG_OF_MISTLETOE,      10, xi.craftRank.AMATEUR },
-            { xi.item.KING_TRUFFLE,            10, xi.craftRank.AMATEUR },
-            { xi.item.PLATE_OF_HEAVY_METAL,     5, xi.craftRank.AMATEUR },
-            { xi.item.FIRE_CRYSTAL,           100, xi.craftRank.AMATEUR },
+            [ 1] = { xi.item.LITTLE_WORM,            50, xi.craftRank.AMATEUR  },
+            [ 2] = { xi.item.ACORN,                  50, xi.craftRank.AMATEUR  },
+            [ 3] = { xi.item.CLUMP_OF_MOKO_GRASS,    50, xi.craftRank.RECRUIT  },
+            [ 4] = { xi.item.ARROWWOOD_LOG,          50, xi.craftRank.AMATEUR  },
+            [ 5] = { xi.item.MAPLE_LOG,              50, xi.craftRank.RECRUIT  },
+            [ 6] = { xi.item.ASH_LOG,                50, xi.craftRank.RECRUIT  },
+            [ 7] = { xi.item.CHESTNUT_LOG,           10, xi.craftRank.INITIATE },
+            [ 8] = { xi.item.CHOCOBO_FEATHER,        50, xi.craftRank.INITIATE },
+            [ 9] = { xi.item.BAG_OF_VEGETABLE_SEEDS, 10, xi.craftRank.NOVICE   },
+            [10] = { xi.item.RONFAURE_CHESTNUT,      10, xi.craftRank.NOVICE   },
+            [11] = { xi.item.SPRIG_OF_MISTLETOE,     10, xi.craftRank.NOVICE   },
         },
-        [diggingLayer.BURROW] =
+        [diggingLayer.BURROW] = -- Set: Gysahl Greens
         {
-            -- No entries
+            [1] = { xi.item.BUNCH_OF_GYSAHL_GREENS, 150, xi.craftRank.AMATEUR  },
+            [2] = { xi.item.CHAMOMILE,               50, xi.craftRank.AMATEUR  },
+            [3] = { xi.item.GINGER_ROOT,             50, xi.craftRank.RECRUIT  },
+            [4] = { xi.item.HEAD_OF_NAPA,            50, xi.craftRank.INITIATE },
         },
-        [diggingLayer.BORE] =
+        [diggingLayer.BORE] = -- Set: Crystals
         {
-            -- No entries
+            [1] = { xi.item.FIRE_CRYSTAL,      50, xi.craftRank.AMATEUR },
+            [2] = { xi.item.ICE_CRYSTAL,       50, xi.craftRank.AMATEUR },
+            [3] = { xi.item.WIND_CRYSTAL,      50, xi.craftRank.AMATEUR },
+            [4] = { xi.item.EARTH_CRYSTAL,     50, xi.craftRank.AMATEUR },
+            [5] = { xi.item.LIGHTNING_CRYSTAL, 50, xi.craftRank.AMATEUR },
+            [6] = { xi.item.WATER_CRYSTAL,     50, xi.craftRank.AMATEUR },
+            [7] = { xi.item.LIGHT_CRYSTAL,     50, xi.craftRank.AMATEUR },
+            [8] = { xi.item.DARK_CRYSTAL,      50, xi.craftRank.AMATEUR },
         },
     },
 
@@ -340,36 +858,39 @@ local digInfo =
     {
         [diggingLayer.TREASURE] =
         {
-            -- No entries
+            [1] = { xi.item.PLATE_OF_HEAVY_METAL, 5, xi.craftRank.ADEPT },
         },
         [diggingLayer.REGULAR] =
         {
-            { xi.item.BUNCH_OF_GYSAHL_GREENS, 150, xi.craftRank.AMATEUR },
-            { xi.item.CHAMOMILE,               50, xi.craftRank.AMATEUR },
-            { xi.item.GINGER_ROOT,             50, xi.craftRank.AMATEUR },
-            { xi.item.ARROWWOOD_LOG,           50, xi.craftRank.AMATEUR },
-            { xi.item.LITTLE_WORM,             50, xi.craftRank.AMATEUR },
-            { xi.item.ASH_LOG,                 50, xi.craftRank.AMATEUR },
-            { xi.item.ACORN,                   50, xi.craftRank.AMATEUR },
-            { xi.item.CHOCOBO_FEATHER,         50, xi.craftRank.AMATEUR },
-            { xi.item.CLUMP_OF_MOKO_GRASS,     50, xi.craftRank.AMATEUR },
-            { xi.item.MAPLE_LOG,               50, xi.craftRank.AMATEUR },
-            { xi.item.HEAD_OF_NAPA,            50, xi.craftRank.AMATEUR },
-            { xi.item.RONFAURE_CHESTNUT,       10, xi.craftRank.AMATEUR },
-            { xi.item.BAG_OF_VEGETABLE_SEEDS,  10, xi.craftRank.AMATEUR },
-            { xi.item.CHESTNUT_LOG,            10, xi.craftRank.AMATEUR },
-            { xi.item.SPRIG_OF_MISTLETOE,      10, xi.craftRank.AMATEUR },
-            { xi.item.KING_TRUFFLE,            10, xi.craftRank.AMATEUR },
-            { xi.item.PLATE_OF_HEAVY_METAL,     5, xi.craftRank.AMATEUR },
-            { xi.item.FIRE_CRYSTAL,           100, xi.craftRank.AMATEUR },
+            [ 1] = { xi.item.LITTLE_WORM,        50, xi.craftRank.AMATEUR    },
+            [ 2] = { xi.item.ACORN,              50, xi.craftRank.AMATEUR    },
+            [ 3] = { xi.item.ARROWWOOD_LOG,      50, xi.craftRank.AMATEUR    },
+            [ 4] = { xi.item.MAPLE_LOG,          50, xi.craftRank.RECRUIT    },
+            [ 5] = { xi.item.ASH_LOG,            50, xi.craftRank.RECRUIT    },
+            [ 6] = { xi.item.CHESTNUT_LOG,       10, xi.craftRank.INITIATE   },
+            [ 7] = { xi.item.BAG_OF_FRUIT_SEEDS, 10, xi.craftRank.INITIATE   },
+            [ 8] = { xi.item.RONFAURE_CHESTNUT,  10, xi.craftRank.NOVICE     },
+            [ 9] = { xi.item.CHOCOBO_FEATHER,    50, xi.craftRank.NOVICE     },
+            [10] = { xi.item.SPRIG_OF_MISTLETOE, 10, xi.craftRank.APPRENTICE },
+            [11] = { xi.item.KING_TRUFFLE,       10, xi.craftRank.ARTISAN    },
         },
-        [diggingLayer.BURROW] =
+        [diggingLayer.BURROW] = -- Set: Gysahl Greens
         {
-            -- No entries
+            [1] = { xi.item.BUNCH_OF_GYSAHL_GREENS, 150, xi.craftRank.AMATEUR  },
+            [2] = { xi.item.CHAMOMILE,               50, xi.craftRank.AMATEUR  },
+            [3] = { xi.item.GINGER_ROOT,             50, xi.craftRank.RECRUIT  },
+            [4] = { xi.item.HEAD_OF_NAPA,            50, xi.craftRank.INITIATE },
         },
-        [diggingLayer.BORE] =
+        [diggingLayer.BORE] = -- Set: Crystals
         {
-            -- No entries
+            [1] = { xi.item.FIRE_CRYSTAL,      50, xi.craftRank.AMATEUR },
+            [2] = { xi.item.ICE_CRYSTAL,       50, xi.craftRank.AMATEUR },
+            [3] = { xi.item.WIND_CRYSTAL,      50, xi.craftRank.AMATEUR },
+            [4] = { xi.item.EARTH_CRYSTAL,     50, xi.craftRank.AMATEUR },
+            [5] = { xi.item.LIGHTNING_CRYSTAL, 50, xi.craftRank.AMATEUR },
+            [6] = { xi.item.WATER_CRYSTAL,     50, xi.craftRank.AMATEUR },
+            [7] = { xi.item.LIGHT_CRYSTAL,     50, xi.craftRank.AMATEUR },
+            [8] = { xi.item.DARK_CRYSTAL,      50, xi.craftRank.AMATEUR },
         },
     },
 
@@ -377,39 +898,35 @@ local digInfo =
     {
         [diggingLayer.TREASURE] =
         {
-            -- No entries
+            [1] = { xi.item.PLATE_OF_HEAVY_METAL, 5, xi.craftRank.ADEPT },
+            [2] = { xi.item.COIN_OF_GLORY,        5, xi.craftRank.ADEPT },
         },
         [diggingLayer.REGULAR] =
         {
-            { xi.item.BUNCH_OF_GYSAHL_GREENS,  150, xi.craftRank.AMATEUR },
-            { xi.item.PIECE_OF_YELLOW_YINSENG, 150, xi.craftRank.AMATEUR },
-            { xi.item.CHAMOMILE,                50, xi.craftRank.AMATEUR },
-            { xi.item.ARROWWOOD_LOG,            50, xi.craftRank.AMATEUR },
-            { xi.item.CHOCOBO_FEATHER,          50, xi.craftRank.AMATEUR },
-            { xi.item.GINGER_ROOT,              50, xi.craftRank.AMATEUR },
-            { xi.item.LITTLE_WORM,              50, xi.craftRank.AMATEUR },
-            { xi.item.HEAD_OF_NAPA,             50, xi.craftRank.AMATEUR },
-            { xi.item.PEBBLE,                   50, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_TIN_ORE,         50, xi.craftRank.AMATEUR },
-            { xi.item.BAG_OF_TREE_CUTTINGS,     50, xi.craftRank.AMATEUR },
-            { xi.item.BAG_OF_WILDGRASS_SEEDS,   50, xi.craftRank.AMATEUR },
-            { xi.item.YEW_LOG,                  50, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_ZINC_ORE,        50, xi.craftRank.AMATEUR },
-            { xi.item.CHESTNUT_LOG,             10, xi.craftRank.AMATEUR },
-            { xi.item.PINCH_OF_DRIED_MARJORAM,  10, xi.craftRank.AMATEUR },
-            { xi.item.BAG_OF_CACTUS_STEMS,      10, xi.craftRank.AMATEUR },
-            { xi.item.COIN_OF_GLORY,             5, xi.craftRank.AMATEUR },
-            { xi.item.PLATE_OF_HEAVY_METAL,      5, xi.craftRank.AMATEUR },
-            { xi.item.FIRE_CRYSTAL,            100, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_FIRE_ORE,        10, xi.craftRank.AMATEUR },
+            [ 1] = { xi.item.PEBBLE,                  50, xi.craftRank.AMATEUR    },
+            [ 2] = { xi.item.LITTLE_WORM,             50, xi.craftRank.AMATEUR    },
+            [ 3] = { xi.item.CHOCOBO_FEATHER,         50, xi.craftRank.RECRUIT    },
+            [ 4] = { xi.item.CHUNK_OF_TIN_ORE,        50, xi.craftRank.AMATEUR    },
+            [ 5] = { xi.item.CHUNK_OF_ZINC_ORE,       50, xi.craftRank.RECRUIT    },
+            [ 6] = { xi.item.ARROWWOOD_LOG,           50, xi.craftRank.AMATEUR    },
+            [ 7] = { xi.item.YEW_LOG,                 50, xi.craftRank.RECRUIT    },
+            [ 8] = { xi.item.CHESTNUT_LOG,            10, xi.craftRank.INITIATE   },
+            [ 9] = { xi.item.MAHOGANY_LOG,            10, xi.craftRank.NOVICE     },
+            [10] = { xi.item.PINCH_OF_DRIED_MARJORAM, 10, xi.craftRank.APPRENTICE },
         },
-        [diggingLayer.BURROW] =
+        [diggingLayer.BURROW] = -- Set: Gysahl Greens
         {
-            -- No entries
+            [1] = { xi.item.BUNCH_OF_GYSAHL_GREENS, 150, xi.craftRank.AMATEUR  },
+            [2] = { xi.item.CHAMOMILE,               50, xi.craftRank.AMATEUR  },
+            [3] = { xi.item.GINGER_ROOT,             50, xi.craftRank.RECRUIT  },
+            [4] = { xi.item.HEAD_OF_NAPA,            50, xi.craftRank.INITIATE },
         },
-        [diggingLayer.BORE] =
+        [diggingLayer.BORE] = -- Set: Yellow Ginseng seeds
         {
-            -- No entries
+            [1] = { xi.item.PIECE_OF_YELLOW_GINSENG, 150, xi.craftRank.AMATEUR  },
+            [2] = { xi.item.BAG_OF_WILDGRASS_SEEDS,   50, xi.craftRank.RECRUIT  },
+            [3] = { xi.item.BAG_OF_TREE_CUTTINGS,     10, xi.craftRank.INITIATE },
+            [4] = { xi.item.BAG_OF_CACTUS_STEMS,       5, xi.craftRank.NOVICE   },
         },
     },
 
@@ -417,42 +934,43 @@ local digInfo =
     {
         [diggingLayer.TREASURE] =
         {
-            -- No entries
+            [1] = { xi.item.COIN_OF_DECAY,       5, xi.craftRank.ADEPT },
+            [2] = { xi.item.ORDELLE_BRONZEPIECE, 5, xi.craftRank.ADEPT },
+            [3] = { xi.item.ONE_BYNE_BILL,       5, xi.craftRank.ADEPT },
+            [4] = { xi.item.TUKUKU_WHITESHELL,   5, xi.craftRank.ADEPT },
         },
         [diggingLayer.REGULAR] =
         {
-            { xi.item.SEASHELL,                 150, xi.craftRank.AMATEUR },
-            { xi.item.BLACK_CHOCOBO_FEATHER,    100, xi.craftRank.AMATEUR },
-            { xi.item.BONE_CHIP,                100, xi.craftRank.AMATEUR },
-            { xi.item.PHOENIX_FEATHER,          100, xi.craftRank.AMATEUR },
-            { xi.item.HANDFUL_OF_FISH_SCALES,    50, xi.craftRank.AMATEUR },
-            { xi.item.GIANT_FEMUR,               50, xi.craftRank.AMATEUR },
-            { xi.item.HIGH_QUALITY_PUGIL_SCALE,  50, xi.craftRank.AMATEUR },
-            { xi.item.LIZARD_MOLT,               50, xi.craftRank.AMATEUR },
-            { xi.item.LUGWORM,                   50, xi.craftRank.AMATEUR },
-            { xi.item.CLUMP_OF_RED_MOKO_GRASS,   50, xi.craftRank.AMATEUR },
-            { xi.item.SHALL_SHELL,               50, xi.craftRank.AMATEUR },
-            { xi.item.SHELL_BUG,                 50, xi.craftRank.AMATEUR },
-            { xi.item.SPIDER_WEB,                50, xi.craftRank.AMATEUR },
-            { xi.item.TITANICTUS_SHELL,          50, xi.craftRank.AMATEUR },
-            { xi.item.TURTLE_SHELL,              50, xi.craftRank.AMATEUR },
-            { xi.item.DEMON_HORN,                10, xi.craftRank.AMATEUR },
-            { xi.item.DEMON_SKULL,               10, xi.craftRank.AMATEUR },
-            { xi.item.HANDFUL_OF_DRAGON_SCALES,  10, xi.craftRank.AMATEUR },
-            { xi.item.GIANT_BIRD_PLUME,          10, xi.craftRank.AMATEUR },
-            { xi.item.HANDFUL_OF_WYVERN_SCALES,  10, xi.craftRank.AMATEUR },
-            { xi.item.COIN_OF_DECAY,              5, xi.craftRank.AMATEUR },
-            { xi.item.ORDELLE_BRONZEPIECE,        5, xi.craftRank.AMATEUR },
-            { xi.item.TUKUKU_WHITESHELL,          5, xi.craftRank.AMATEUR },
-            { xi.item.FIRE_CRYSTAL,             100, xi.craftRank.AMATEUR },
+            [1] = { xi.item.LUGWORM,                 50, xi.craftRank.AMATEUR   },
+            [2] = { xi.item.BONE_CHIP,              100, xi.craftRank.AMATEUR   },
+            [3] = { xi.item.HANDFUL_OF_FISH_SCALES,  50, xi.craftRank.RECRUIT   },
+            [4] = { xi.item.SEASHELL,               150, xi.craftRank.RECRUIT   },
+            [5] = { xi.item.GIANT_FEMUR,             50, xi.craftRank.NOVICE    },
+            [6] = { xi.item.SHELL_BUG,               50, xi.craftRank.INITIATE  },
+            [7] = { xi.item.LIZARD_MOLT,             50, xi.craftRank.NOVICE    },
+            [8] = { xi.item.SHALL_SHELL,             50, xi.craftRank.CRAFTSMAN },
+            [9] = { xi.item.TURTLE_SHELL,            50, xi.craftRank.ARTISAN   },
         },
-        [diggingLayer.BURROW] =
+        [diggingLayer.BURROW] = -- Set: Feathers
         {
-            -- No entries
+            [1] = { xi.item.CLUMP_OF_RED_MOKO_GRASS, 100, xi.craftRank.AMATEUR   },
+            [2] = { xi.item.BLACK_CHOCOBO_FEATHER,    50, xi.craftRank.RECRUIT   },
+            [4] = { xi.item.GIANT_BIRD_PLUME,         10, xi.craftRank.INITIATE  },
+            [3] = { xi.item.SPIDER_WEB,                5, xi.craftRank.NOVICE    },
+            [5] = { xi.item.PHOENIX_FEATHER,           1, xi.craftRank.CRAFTSMAN },
         },
-        [diggingLayer.BORE] =
+        [diggingLayer.BORE] = -- Set: Bones
         {
-            -- No entries
+            [ 1] = { xi.item.BONE_CHIP,                150, xi.craftRank.AMATEUR    },
+            [ 2] = { xi.item.HANDFUL_OF_FISH_SCALES,   150, xi.craftRank.AMATEUR    },
+            [ 3] = { xi.item.SEASHELL,                 150, xi.craftRank.RECRUIT    },
+            [ 4] = { xi.item.HIGH_QUALITY_PUGIL_SCALE,  50, xi.craftRank.INITIATE   },
+            [ 5] = { xi.item.TITANICTUS_SHELL,          50, xi.craftRank.APPRENTICE },
+            [ 6] = { xi.item.DEMON_HORN,                10, xi.craftRank.JOURNEYMAN },
+            [ 7] = { xi.item.HANDFUL_OF_WYVERN_SCALES,   5, xi.craftRank.CRAFTSMAN  },
+            [ 8] = { xi.item.TURTLE_SHELL,               5, xi.craftRank.CRAFTSMAN  },
+            [ 9] = { xi.item.DEMON_SKULL,                1, xi.craftRank.ARTISAN    },
+            [10] = { xi.item.HANDFUL_OF_DRAGON_SCALES,   1, xi.craftRank.ARTISAN    },
         },
     },
 
@@ -460,37 +978,43 @@ local digInfo =
     {
         [diggingLayer.TREASURE] =
         {
-            -- No entries
+            [1] = { xi.item.PLATE_OF_HEAVY_METAL, 5, xi.craftRank.ADEPT },
+            [2] = { xi.item.COIN_OF_BIRTH,        5, xi.craftRank.ADEPT },
+            [3] = { xi.item.KING_TRUFFLE,         5, xi.craftRank.ADEPT },
         },
         [diggingLayer.REGULAR] =
         {
-            { xi.item.ARROWWOOD_LOG,           150, xi.craftRank.AMATEUR },
-            { xi.item.ACORN,                    50, xi.craftRank.AMATEUR },
-            { xi.item.HOLLY_LOG,                50, xi.craftRank.AMATEUR },
-            { xi.item.LITTLE_WORM,              50, xi.craftRank.AMATEUR },
-            { xi.item.MAPLE_LOG,                50, xi.craftRank.AMATEUR },
-            { xi.item.OAK_LOG,                  50, xi.craftRank.AMATEUR },
-            { xi.item.WILLOW_LOG,               50, xi.craftRank.AMATEUR },
-            { xi.item.YEW_LOG,                  50, xi.craftRank.AMATEUR },
-            { xi.item.ELM_LOG,                  10, xi.craftRank.AMATEUR },
-            { xi.item.LACQUER_TREE_LOG,         10, xi.craftRank.AMATEUR },
-            { xi.item.MAHOGANY_LOG,             10, xi.craftRank.AMATEUR },
-            { xi.item.SPRIG_OF_MISTLETOE,       10, xi.craftRank.AMATEUR },
-            { xi.item.ROSEWOOD_LOG,              5, xi.craftRank.AMATEUR },
-            { xi.item.PIECE_OF_ANCIENT_LUMBER,   5, xi.craftRank.AMATEUR },
-            { xi.item.SCREAM_FUNGUS,             5, xi.craftRank.AMATEUR },
-            { xi.item.COIN_OF_BIRTH,             5, xi.craftRank.AMATEUR },
-            { xi.item.PLATE_OF_HEAVY_METAL,      5, xi.craftRank.AMATEUR },
-            { xi.item.FIRE_CRYSTAL,            100, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_FIRE_ORE,        10, xi.craftRank.AMATEUR },
+            [1] = { xi.item.LITTLE_WORM,        50, xi.craftRank.AMATEUR   },
+            [2] = { xi.item.ACORN,              50, xi.craftRank.AMATEUR   },
+            [3] = { xi.item.MAPLE_LOG,          50, xi.craftRank.RECRUIT   },
+            [4] = { xi.item.WILLOW_LOG,         50, xi.craftRank.RECRUIT   },
+            [5] = { xi.item.HOLLY_LOG,          50, xi.craftRank.NOVICE    },
+            [6] = { xi.item.OAK_LOG,            50, xi.craftRank.INITIATE  },
+            [7] = { xi.item.SPRIG_OF_MISTLETOE, 10, xi.craftRank.NOVICE    },
+            [8] = { xi.item.SCREAM_FUNGUS,       5, xi.craftRank.CRAFTSMAN },
         },
-        [diggingLayer.BURROW] =
+        [diggingLayer.BURROW] = -- Set: Crystals
         {
-            -- No entries
+            [1] = { xi.item.FIRE_CRYSTAL,      50, xi.craftRank.AMATEUR },
+            [2] = { xi.item.ICE_CRYSTAL,       50, xi.craftRank.AMATEUR },
+            [3] = { xi.item.WIND_CRYSTAL,      50, xi.craftRank.AMATEUR },
+            [4] = { xi.item.EARTH_CRYSTAL,     50, xi.craftRank.AMATEUR },
+            [5] = { xi.item.LIGHTNING_CRYSTAL, 50, xi.craftRank.AMATEUR },
+            [6] = { xi.item.WATER_CRYSTAL,     50, xi.craftRank.AMATEUR },
+            [7] = { xi.item.LIGHT_CRYSTAL,     50, xi.craftRank.AMATEUR },
+            [8] = { xi.item.DARK_CRYSTAL,      50, xi.craftRank.AMATEUR },
         },
-        [diggingLayer.BORE] =
+        [diggingLayer.BORE] = -- Set: Logs 1
         {
-            -- No entries
+            [1] = { xi.item.ARROWWOOD_LOG,           240, xi.craftRank.AMATEUR    },
+            [2] = { xi.item.YEW_LOG,                 150, xi.craftRank.AMATEUR    },
+            [3] = { xi.item.ELM_LOG,                 100, xi.craftRank.RECRUIT    },
+            [4] = { xi.item.OAK_LOG,                  50, xi.craftRank.INITIATE   },
+            [5] = { xi.item.ROSEWOOD_LOG,             10, xi.craftRank.NOVICE     },
+            [6] = { xi.item.MAHOGANY_LOG,              5, xi.craftRank.APPRENTICE },
+            [7] = { xi.item.EBONY_LOG,                 5, xi.craftRank.JOURNEYMAN },
+            [8] = { xi.item.PIECE_OF_ANCIENT_LUMBER,   1, xi.craftRank.CRAFTSMAN  },
+            [9] = { xi.item.LACQUER_TREE_LOG,          1, xi.craftRank.ARTISAN    },
         },
     },
 
@@ -498,40 +1022,35 @@ local digInfo =
     {
         [diggingLayer.TREASURE] =
         {
-            -- No entries
+            [1] = { xi.item.PLATE_OF_HEAVY_METAL, 5, xi.craftRank.ADEPT },
+            [2] = { xi.item.COIN_OF_ADVANCEMENT,  5, xi.craftRank.ADEPT },
         },
         [diggingLayer.REGULAR] =
         {
-            { xi.item.PIECE_OF_YELLOW_YINSENG, 150, xi.craftRank.AMATEUR },
-            { xi.item.BEASTCOIN,               100, xi.craftRank.AMATEUR },
-            { xi.item.SILVER_BEASTCOIN,        100, xi.craftRank.AMATEUR },
-            { xi.item.BIRD_FEATHER,             50, xi.craftRank.AMATEUR },
-            { xi.item.BONE_CHIP,                50, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_COPPER_ORE,      50, xi.craftRank.AMATEUR },
-            { xi.item.FLINT_STONE,              50, xi.craftRank.AMATEUR },
-            { xi.item.GOLD_BEASTCOIN,           50, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_IRON_ORE,        50, xi.craftRank.AMATEUR },
-            { xi.item.MYTHRIL_BEASTCOIN,        50, xi.craftRank.AMATEUR },
-            { xi.item.PEBBLE,                   50, xi.craftRank.AMATEUR },
-            { xi.item.RED_JAR,                  50, xi.craftRank.AMATEUR },
-            { xi.item.BAG_OF_WILDGRASS_SEEDS,   50, xi.craftRank.AMATEUR },
-            { xi.item.PLATINUM_BEASTCOIN,       10, xi.craftRank.AMATEUR },
-            { xi.item.BAG_OF_TREE_CUTTINGS,     10, xi.craftRank.AMATEUR },
-            { xi.item.BLACK_CHOCOBO_FEATHER,     5, xi.craftRank.AMATEUR },
-            { xi.item.BAG_OF_CACTUS_STEMS,       5, xi.craftRank.AMATEUR },
-            { xi.item.COIN_OF_ADVANCEMENT,       5, xi.craftRank.AMATEUR },
-            { xi.item.PLATE_OF_HEAVY_METAL,      5, xi.craftRank.AMATEUR },
-            { xi.item.REISHI_MUSHROOM,           5, xi.craftRank.AMATEUR },
-            { xi.item.FIRE_CRYSTAL,            100, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_FIRE_ORE,        10, xi.craftRank.AMATEUR },
+            [1] = { xi.item.PEBBLE,                50, xi.craftRank.AMATEUR    },
+            [2] = { xi.item.FLINT_STONE,           50, xi.craftRank.AMATEUR    },
+            [3] = { xi.item.BONE_CHIP,             50, xi.craftRank.AMATEUR    },
+            [4] = { xi.item.CHUNK_OF_COPPER_ORE,   50, xi.craftRank.RECRUIT    },
+            [5] = { xi.item.BIRD_FEATHER,          50, xi.craftRank.RECRUIT    },
+            [6] = { xi.item.CHUNK_OF_IRON_ORE,     50, xi.craftRank.INITIATE   },
+            [7] = { xi.item.RED_JAR,               50, xi.craftRank.NOVICE     },
+            [8] = { xi.item.BLACK_CHOCOBO_FEATHER,  5, xi.craftRank.APPRENTICE },
+            [9] = { xi.item.REISHI_MUSHROOM,        5, xi.craftRank.JOURNEYMAN },
         },
-        [diggingLayer.BURROW] =
+        [diggingLayer.BURROW] = -- Set: Beastcoins
         {
-            -- No entries
+            [1] = { xi.item.BEASTCOIN,          100, xi.craftRank.AMATEUR    },
+            [2] = { xi.item.SILVER_BEASTCOIN,    50, xi.craftRank.RECRUIT    },
+            [3] = { xi.item.GOLD_BEASTCOIN,      10, xi.craftRank.INITIATE   },
+            [4] = { xi.item.MYTHRIL_BEASTCOIN,    5, xi.craftRank.NOVICE     },
+            [5] = { xi.item.PLATINUM_BEASTCOIN,   1, xi.craftRank.APPRENTICE },
         },
-        [diggingLayer.BORE] =
+        [diggingLayer.BORE] = -- Set: Yellow Ginseng seeds
         {
-            -- No entries
+            [1] = { xi.item.PIECE_OF_YELLOW_GINSENG, 150, xi.craftRank.AMATEUR  },
+            [2] = { xi.item.BAG_OF_WILDGRASS_SEEDS,   50, xi.craftRank.RECRUIT  },
+            [3] = { xi.item.BAG_OF_TREE_CUTTINGS,     10, xi.craftRank.INITIATE },
+            [4] = { xi.item.BAG_OF_CACTUS_STEMS,       5, xi.craftRank.NOVICE   },
         },
     },
 
@@ -539,35 +1058,40 @@ local digInfo =
     {
         [diggingLayer.TREASURE] =
         {
-            -- No entries
+            [1] = { xi.item.PLATE_OF_HEAVY_METAL, 5, xi.craftRank.ADEPT },
+            [2] = { xi.item.COIN_OF_GLORY,        5, xi.craftRank.ADEPT },
         },
         [diggingLayer.REGULAR] =
         {
-            { xi.item.BUNCH_OF_GYSAHL_GREENS, 150, xi.craftRank.AMATEUR },
-            { xi.item.BIRD_FEATHER,            50, xi.craftRank.AMATEUR },
-            { xi.item.BONE_CHIP,               50, xi.craftRank.AMATEUR },
-            { xi.item.CHAMOMILE,               50, xi.craftRank.AMATEUR },
-            { xi.item.HANDFUL_OF_FISH_SCALES,  50, xi.craftRank.AMATEUR },
-            { xi.item.GINGER_ROOT,             50, xi.craftRank.AMATEUR },
-            { xi.item.INSECT_WING,             50, xi.craftRank.AMATEUR },
-            { xi.item.LITTLE_WORM,             50, xi.craftRank.AMATEUR },
-            { xi.item.LIZARD_MOLT,             50, xi.craftRank.AMATEUR },
-            { xi.item.HEAD_OF_NAPA,            50, xi.craftRank.AMATEUR },
-            { xi.item.PEBBLE,                  50, xi.craftRank.AMATEUR },
-            { xi.item.BAG_OF_CACTUS_STEMS,     10, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_DARKSTEEL_ORE,  10, xi.craftRank.AMATEUR },
-            { xi.item.MYTHRIL_BEASTCOIN,       10, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_MYTHRIL_ORE,    10, xi.craftRank.AMATEUR },
-            { xi.item.PLATE_OF_HEAVY_METAL,     5, xi.craftRank.AMATEUR },
-            { xi.item.FIRE_CRYSTAL,           100, xi.craftRank.AMATEUR },
+            [ 1] = { xi.item.PEBBLE,                 50, xi.craftRank.AMATEUR    },
+            [ 2] = { xi.item.LITTLE_WORM,            50, xi.craftRank.AMATEUR    },
+            [ 3] = { xi.item.BONE_CHIP,              50, xi.craftRank.AMATEUR    },
+            [ 4] = { xi.item.BIRD_FEATHER,           50, xi.craftRank.AMATEUR    },
+            [ 5] = { xi.item.HANDFUL_OF_FISH_SCALES, 50, xi.craftRank.AMATEUR    },
+            [ 6] = { xi.item.INSECT_WING,            50, xi.craftRank.AMATEUR    },
+            [ 7] = { xi.item.BAG_OF_CACTUS_STEMS,    10, xi.craftRank.RECRUIT    },
+            [ 8] = { xi.item.LIZARD_MOLT,            50, xi.craftRank.RECRUIT    },
+            [ 9] = { xi.item.MYTHRIL_BEASTCOIN,      10, xi.craftRank.APPRENTICE },
+            [10] = { xi.item.CHUNK_OF_MYTHRIL_ORE,   10, xi.craftRank.APPRENTICE },
+            [11] = { xi.item.CHUNK_OF_DARKSTEEL_ORE, 10, xi.craftRank.ARTISAN    },
         },
-        [diggingLayer.BURROW] =
+        [diggingLayer.BURROW] = -- Set: Gysahl Greens
         {
-            -- No entries
+            [1] = { xi.item.BUNCH_OF_GYSAHL_GREENS, 150, xi.craftRank.AMATEUR  },
+            [2] = { xi.item.CHAMOMILE,               50, xi.craftRank.AMATEUR  },
+            [3] = { xi.item.GINGER_ROOT,             50, xi.craftRank.RECRUIT  },
+            [4] = { xi.item.HEAD_OF_NAPA,            50, xi.craftRank.INITIATE },
         },
-        [diggingLayer.BORE] =
+        [diggingLayer.BORE] = -- Set: Crystals
         {
-            -- No entries
+            [1] = { xi.item.FIRE_CRYSTAL,      50, xi.craftRank.AMATEUR },
+            [2] = { xi.item.ICE_CRYSTAL,       50, xi.craftRank.AMATEUR },
+            [3] = { xi.item.WIND_CRYSTAL,      50, xi.craftRank.AMATEUR },
+            [4] = { xi.item.EARTH_CRYSTAL,     50, xi.craftRank.AMATEUR },
+            [5] = { xi.item.LIGHTNING_CRYSTAL, 50, xi.craftRank.AMATEUR },
+            [6] = { xi.item.WATER_CRYSTAL,     50, xi.craftRank.AMATEUR },
+            [7] = { xi.item.LIGHT_CRYSTAL,     50, xi.craftRank.AMATEUR },
+            [8] = { xi.item.DARK_CRYSTAL,      50, xi.craftRank.AMATEUR },
         },
     },
 
@@ -575,34 +1099,39 @@ local digInfo =
     {
         [diggingLayer.TREASURE] =
         {
-            -- No entries
+            [1] = { xi.item.PLATE_OF_HEAVY_METAL, 5, xi.craftRank.ADEPT },
+            [2] = { xi.item.COIN_OF_DECAY,        5, xi.craftRank.ADEPT },
         },
         [diggingLayer.REGULAR] =
         {
-            { xi.item.BUNCH_OF_GYSAHL_GREENS, 150, xi.craftRank.AMATEUR },
-            { xi.item.BIRD_FEATHER,            50, xi.craftRank.AMATEUR },
-            { xi.item.BONE_CHIP,               50, xi.craftRank.AMATEUR },
-            { xi.item.CHAMOMILE,               50, xi.craftRank.AMATEUR },
-            { xi.item.GINGER_ROOT,             50, xi.craftRank.AMATEUR },
-            { xi.item.BAG_OF_GRAIN_SEEDS,      50, xi.craftRank.AMATEUR },
-            { xi.item.INSECT_WING,             50, xi.craftRank.AMATEUR },
-            { xi.item.LITTLE_WORM,             50, xi.craftRank.AMATEUR },
-            { xi.item.LIZARD_MOLT,             50, xi.craftRank.AMATEUR },
-            { xi.item.MYTHRIL_BEASTCOIN,       50, xi.craftRank.AMATEUR },
-            { xi.item.HEAD_OF_NAPA,            50, xi.craftRank.AMATEUR },
-            { xi.item.PEBBLE,                  50, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_ROCK_SALT,      50, xi.craftRank.AMATEUR },
-            { xi.item.COIN_OF_DECAY,            5, xi.craftRank.AMATEUR },
-            { xi.item.PLATE_OF_HEAVY_METAL,     5, xi.craftRank.AMATEUR },
-            { xi.item.FIRE_CRYSTAL,           100, xi.craftRank.AMATEUR },
+            [ 1] = { xi.item.PEBBLE,               50, xi.craftRank.AMATEUR    },
+            [ 2] = { xi.item.LITTLE_WORM,          50, xi.craftRank.AMATEUR    },
+            [ 3] = { xi.item.BONE_CHIP,            50, xi.craftRank.AMATEUR    },
+            [ 4] = { xi.item.BIRD_FEATHER,         50, xi.craftRank.AMATEUR    },
+            [ 5] = { xi.item.CHUNK_OF_ROCK_SALT,   50, xi.craftRank.AMATEUR    },
+            [ 6] = { xi.item.INSECT_WING,          50, xi.craftRank.AMATEUR    },
+            [ 7] = { xi.item.BAG_OF_GRAIN_SEEDS,   50, xi.craftRank.RECRUIT    },
+            [ 8] = { xi.item.LIZARD_MOLT,          50, xi.craftRank.RECRUIT    },
+            [ 9] = { xi.item.MYTHRIL_BEASTCOIN,    50, xi.craftRank.APPRENTICE },
+            [10] = { xi.item.CHUNK_OF_MYTHRIL_ORE, 10, xi.craftRank.APPRENTICE },
         },
-        [diggingLayer.BURROW] =
+        [diggingLayer.BURROW] = -- Set: Gysahl Greens
         {
-            -- No entries
+            [1] = { xi.item.BUNCH_OF_GYSAHL_GREENS, 150, xi.craftRank.AMATEUR  },
+            [2] = { xi.item.CHAMOMILE,               50, xi.craftRank.AMATEUR  },
+            [3] = { xi.item.GINGER_ROOT,             50, xi.craftRank.RECRUIT  },
+            [4] = { xi.item.HEAD_OF_NAPA,            50, xi.craftRank.INITIATE },
         },
-        [diggingLayer.BORE] =
+        [diggingLayer.BORE] = -- Set: Crystals
         {
-            -- No entries
+            [1] = { xi.item.FIRE_CRYSTAL,      50, xi.craftRank.AMATEUR },
+            [2] = { xi.item.ICE_CRYSTAL,       50, xi.craftRank.AMATEUR },
+            [3] = { xi.item.WIND_CRYSTAL,      50, xi.craftRank.AMATEUR },
+            [4] = { xi.item.EARTH_CRYSTAL,     50, xi.craftRank.AMATEUR },
+            [5] = { xi.item.LIGHTNING_CRYSTAL, 50, xi.craftRank.AMATEUR },
+            [6] = { xi.item.WATER_CRYSTAL,     50, xi.craftRank.AMATEUR },
+            [7] = { xi.item.LIGHT_CRYSTAL,     50, xi.craftRank.AMATEUR },
+            [8] = { xi.item.DARK_CRYSTAL,      50, xi.craftRank.AMATEUR },
         },
     },
 
@@ -610,36 +1139,39 @@ local digInfo =
     {
         [diggingLayer.TREASURE] =
         {
-            -- No entries
+            [1] = { xi.item.PLATE_OF_HEAVY_METAL, 5, xi.craftRank.ADEPT },
+            [2] = { xi.item.COIN_OF_BIRTH,        5, xi.craftRank.ADEPT },
         },
         [diggingLayer.REGULAR] =
         {
-            { xi.item.BLACK_CHOCOBO_FEATHER,   100, xi.craftRank.AMATEUR },
-            { xi.item.PHOENIX_FEATHER,         100, xi.craftRank.AMATEUR },
-            { xi.item.BONE_CHIP,                50, xi.craftRank.AMATEUR },
-            { xi.item.ELM_LOG,                  50, xi.craftRank.AMATEUR },
-            { xi.item.HANDFUL_OF_FISH_SCALES,   50, xi.craftRank.AMATEUR },
-            { xi.item.FLINT_STONE,              50, xi.craftRank.AMATEUR },
-            { xi.item.LIZARD_MOLT,              50, xi.craftRank.AMATEUR },
-            { xi.item.PEBBLE,                   50, xi.craftRank.AMATEUR },
-            { xi.item.CLUMP_OF_RED_MOKO_GRASS,  50, xi.craftRank.AMATEUR },
-            { xi.item.SPIDER_WEB,               50, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_ZINC_ORE,        50, xi.craftRank.AMATEUR },
-            { xi.item.BIRD_FEATHER,             10, xi.craftRank.AMATEUR },
-            { xi.item.GIANT_BIRD_PLUME,         10, xi.craftRank.AMATEUR },
-            { xi.item.COIN_OF_BIRTH,             5, xi.craftRank.AMATEUR },
-            { xi.item.PLATE_OF_HEAVY_METAL,      5, xi.craftRank.AMATEUR },
-            { xi.item.MYTHRIL_BEASTCOIN,         5, xi.craftRank.AMATEUR },
-            { xi.item.FIRE_CRYSTAL,            100, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_FIRE_ORE,        10, xi.craftRank.AMATEUR },
+            [1] = { xi.item.PEBBLE,                 50, xi.craftRank.AMATEUR    },
+            [2] = { xi.item.FLINT_STONE,            50, xi.craftRank.AMATEUR    },
+            [3] = { xi.item.BONE_CHIP,              50, xi.craftRank.AMATEUR    },
+            [4] = { xi.item.HANDFUL_OF_FISH_SCALES, 50, xi.craftRank.AMATEUR    },
+            [5] = { xi.item.CHUNK_OF_ZINC_ORE,      50, xi.craftRank.AMATEUR    },
+            [6] = { xi.item.BIRD_FEATHER,           10, xi.craftRank.RECRUIT    },
+            [7] = { xi.item.LIZARD_MOLT,            50, xi.craftRank.RECRUIT    },
+            [8] = { xi.item.MYTHRIL_BEASTCOIN,       5, xi.craftRank.APPRENTICE },
+            [9] = { xi.item.ELM_LOG,                 5, xi.craftRank.APPRENTICE },
         },
-        [diggingLayer.BURROW] =
+        [diggingLayer.BURROW] = -- Set: Crystals
         {
-            -- No entries
+            [1] = { xi.item.FIRE_CRYSTAL,      50, xi.craftRank.AMATEUR },
+            [2] = { xi.item.ICE_CRYSTAL,       50, xi.craftRank.AMATEUR },
+            [3] = { xi.item.WIND_CRYSTAL,      50, xi.craftRank.AMATEUR },
+            [4] = { xi.item.EARTH_CRYSTAL,     50, xi.craftRank.AMATEUR },
+            [5] = { xi.item.LIGHTNING_CRYSTAL, 50, xi.craftRank.AMATEUR },
+            [6] = { xi.item.WATER_CRYSTAL,     50, xi.craftRank.AMATEUR },
+            [7] = { xi.item.LIGHT_CRYSTAL,     50, xi.craftRank.AMATEUR },
+            [8] = { xi.item.DARK_CRYSTAL,      50, xi.craftRank.AMATEUR },
         },
-        [diggingLayer.BORE] =
+        [diggingLayer.BORE] = -- Set: Feathers
         {
-            -- No entries
+            [1] = { xi.item.CLUMP_OF_RED_MOKO_GRASS, 100, xi.craftRank.AMATEUR   },
+            [2] = { xi.item.BLACK_CHOCOBO_FEATHER,    50, xi.craftRank.RECRUIT   },
+            [4] = { xi.item.GIANT_BIRD_PLUME,         10, xi.craftRank.INITIATE  },
+            [3] = { xi.item.SPIDER_WEB,                5, xi.craftRank.NOVICE    },
+            [5] = { xi.item.PHOENIX_FEATHER,           1, xi.craftRank.CRAFTSMAN },
         },
     },
 
@@ -647,35 +1179,38 @@ local digInfo =
     {
         [diggingLayer.TREASURE] =
         {
-            -- No entries
+            [1] = { xi.item.PLATE_OF_HEAVY_METAL, 5, xi.craftRank.ADEPT },
+            [2] = { xi.item.COIN_OF_ADVANCEMENT,  5, xi.craftRank.ADEPT },
         },
         [diggingLayer.REGULAR] =
         {
-            { xi.item.PIECE_OF_YELLOW_YINSENG, 150, xi.craftRank.AMATEUR },
-            { xi.item.INSECT_WING,              50, xi.craftRank.AMATEUR },
-            { xi.item.LIZARD_MOLT,              50, xi.craftRank.AMATEUR },
-            { xi.item.PEBBLE,                   50, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_SILVER_ORE,      50, xi.craftRank.AMATEUR },
-            { xi.item.BAG_OF_WILDGRASS_SEEDS,   50, xi.craftRank.AMATEUR },
-            { xi.item.MYTHRIL_BEASTCOIN,        10, xi.craftRank.AMATEUR },
-            { xi.item.BAG_OF_TREE_CUTTINGS,     10, xi.craftRank.AMATEUR },
-            { xi.item.TURTLE_SHELL,             10, xi.craftRank.AMATEUR },
-            { xi.item.WILLOW_LOG,               10, xi.craftRank.AMATEUR },
-            { xi.item.BAG_OF_CACTUS_STEMS,       5, xi.craftRank.AMATEUR },
-            { xi.item.COIN_OF_ADVANCEMENT,       5, xi.craftRank.AMATEUR },
-            { xi.item.PLATE_OF_HEAVY_METAL,      5, xi.craftRank.AMATEUR },
-            { xi.item.PETRIFIED_LOG,             5, xi.craftRank.AMATEUR },
-            { xi.item.PUFFBALL,                  5, xi.craftRank.AMATEUR },
-            { xi.item.FIRE_CRYSTAL,            100, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_FIRE_ORE,        10, xi.craftRank.AMATEUR },
+            [1] = { xi.item.PEBBLE,              50, xi.craftRank.AMATEUR    },
+            [2] = { xi.item.INSECT_WING,         50, xi.craftRank.AMATEUR    },
+            [3] = { xi.item.LIZARD_MOLT,         50, xi.craftRank.RECRUIT    },
+            [4] = { xi.item.CHUNK_OF_SILVER_ORE, 50, xi.craftRank.RECRUIT    },
+            [5] = { xi.item.MYTHRIL_BEASTCOIN,   10, xi.craftRank.INITIATE   },
+            [6] = { xi.item.TURTLE_SHELL,        10, xi.craftRank.INITIATE   },
+            [7] = { xi.item.WILLOW_LOG,          10, xi.craftRank.INITIATE   },
+            [8] = { xi.item.PETRIFIED_LOG,        5, xi.craftRank.NOVICE     },
+            [9] = { xi.item.PUFFBALL,             5, xi.craftRank.APPRENTICE },
         },
-        [diggingLayer.BURROW] =
+        [diggingLayer.BURROW] = -- Set: Yellow Ginseng seeds
         {
-            -- No entries
+            [1] = { xi.item.PIECE_OF_YELLOW_GINSENG, 150, xi.craftRank.AMATEUR  },
+            [2] = { xi.item.BAG_OF_WILDGRASS_SEEDS,   50, xi.craftRank.RECRUIT  },
+            [3] = { xi.item.BAG_OF_TREE_CUTTINGS,     10, xi.craftRank.INITIATE },
+            [4] = { xi.item.BAG_OF_CACTUS_STEMS,       5, xi.craftRank.NOVICE   },
         },
-        [diggingLayer.BORE] =
+        [diggingLayer.BORE] = -- Set: Crystals
         {
-            -- No entries
+            [1] = { xi.item.FIRE_CRYSTAL,      50, xi.craftRank.AMATEUR },
+            [2] = { xi.item.ICE_CRYSTAL,       50, xi.craftRank.AMATEUR },
+            [3] = { xi.item.WIND_CRYSTAL,      50, xi.craftRank.AMATEUR },
+            [4] = { xi.item.EARTH_CRYSTAL,     50, xi.craftRank.AMATEUR },
+            [5] = { xi.item.LIGHTNING_CRYSTAL, 50, xi.craftRank.AMATEUR },
+            [6] = { xi.item.WATER_CRYSTAL,     50, xi.craftRank.AMATEUR },
+            [7] = { xi.item.LIGHT_CRYSTAL,     50, xi.craftRank.AMATEUR },
+            [8] = { xi.item.DARK_CRYSTAL,      50, xi.craftRank.AMATEUR },
         },
     },
 
@@ -683,41 +1218,111 @@ local digInfo =
     {
         [diggingLayer.TREASURE] =
         {
-            -- No entries
+            [1] = { xi.item.PLATE_OF_HEAVY_METAL, 5, xi.craftRank.ADEPT },
+            [2] = { xi.item.COIN_OF_GLORY,        5, xi.craftRank.ADEPT },
         },
         [diggingLayer.REGULAR] =
         {
-            { xi.item.BEASTCOIN,               100, xi.craftRank.AMATEUR },
-            { xi.item.SILVER_BEASTCOIN,        100, xi.craftRank.AMATEUR },
-            { xi.item.FLINT_STONE,             100, xi.craftRank.AMATEUR },
-            { xi.item.SLEEPSHROOM,             100, xi.craftRank.AMATEUR },
-            { xi.item.WOOZYSHROOM,             100, xi.craftRank.AMATEUR },
-            { xi.item.DANCESHROOM,              50, xi.craftRank.AMATEUR },
-            { xi.item.GOLD_BEASTCOIN,           50, xi.craftRank.AMATEUR },
-            { xi.item.INSECT_WING,              50, xi.craftRank.AMATEUR },
-            { xi.item.LITTLE_WORM,              50, xi.craftRank.AMATEUR },
-            { xi.item.MYTHRIL_BEASTCOIN,        50, xi.craftRank.AMATEUR },
-            { xi.item.PEBBLE,                   50, xi.craftRank.AMATEUR },
-            { xi.item.RED_JAR,                  50, xi.craftRank.AMATEUR },
-            { xi.item.SPRIG_OF_SAGE,            50, xi.craftRank.AMATEUR },
-            { xi.item.CORAL_FUNGUS,             10, xi.craftRank.AMATEUR },
-            { xi.item.PUFFBALL,                 10, xi.craftRank.AMATEUR },
-            { xi.item.REISHI_MUSHROOM,          10, xi.craftRank.AMATEUR },
-            { xi.item.COIN_OF_GLORY,             5, xi.craftRank.AMATEUR },
-            { xi.item.DEATHBALL,                 5, xi.craftRank.AMATEUR },
-            { xi.item.PLATE_OF_HEAVY_METAL,      5, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_ORICHALCUM_ORE,   5, xi.craftRank.AMATEUR },
-            { xi.item.PLATINUM_BEASTCOIN,        5, xi.craftRank.AMATEUR },
-            { xi.item.FIRE_CRYSTAL,            100, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_FIRE_ORE,        10, xi.craftRank.AMATEUR },
+            [1] = { xi.item.PEBBLE,                  100, xi.craftRank.AMATEUR   },
+            [2] = { xi.item.LITTLE_WORM,             100, xi.craftRank.AMATEUR   },
+            [3] = { xi.item.FLINT_STONE,             100, xi.craftRank.AMATEUR   },
+            [4] = { xi.item.INSECT_WING,              50, xi.craftRank.RECRUIT   },
+            [5] = { xi.item.MYTHRIL_BEASTCOIN,        10, xi.craftRank.INITIATE  },
+            [6] = { xi.item.SPRIG_OF_SAGE,            10, xi.craftRank.INITIATE  },
+            [7] = { xi.item.RED_JAR,                  10, xi.craftRank.NOVICE    },
+            [8] = { xi.item.GOLD_BEASTCOIN,            5, xi.craftRank.CRAFTSMAN },
+            [9] = { xi.item.CHUNK_OF_ORICHALCUM_ORE,   5, xi.craftRank.CRAFTSMAN },
+        },
+        [diggingLayer.BURROW] = -- Set: Feathers
+        {
+            [1] = { xi.item.CLUMP_OF_RED_MOKO_GRASS, 100, xi.craftRank.AMATEUR   },
+            [2] = { xi.item.BLACK_CHOCOBO_FEATHER,    50, xi.craftRank.RECRUIT   },
+            [4] = { xi.item.GIANT_BIRD_PLUME,         10, xi.craftRank.INITIATE  },
+            [3] = { xi.item.SPIDER_WEB,                5, xi.craftRank.NOVICE    },
+            [5] = { xi.item.PHOENIX_FEATHER,           1, xi.craftRank.CRAFTSMAN },
+        },
+        [diggingLayer.BORE] = -- Set: Shrooms
+        {
+            [1] = { xi.item.DEATHBALL,       100, xi.craftRank.AMATEUR    },
+            [2] = { xi.item.SLEEPSHROOM,     100, xi.craftRank.AMATEUR    },
+            [3] = { xi.item.CORAL_FUNGUS,     50, xi.craftRank.RECRUIT    },
+            [4] = { xi.item.WOOZYSHROOM,      10, xi.craftRank.INITIATE   },
+            [5] = { xi.item.PUFFBALL,         10, xi.craftRank.NOVICE     },
+            [6] = { xi.item.DANCESHROOM,       5, xi.craftRank.APPRENTICE },
+            [7] = { xi.item.REISHI_MUSHROOM,   1, xi.craftRank.JOURNEYMAN },
+            [8] = { xi.item.KING_TRUFFLE,      1, xi.craftRank.CRAFTSMAN  },
+        },
+    },
+
+    [xi.zone.BEAUCEDINE_GLACIER] = -- 111
+    {
+        [diggingLayer.TREASURE] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.REGULAR] =
+        {
+            -- No entries.
         },
         [diggingLayer.BURROW] =
         {
-            -- No entries
+            -- No entries.
         },
         [diggingLayer.BORE] =
         {
-            -- No entries
+            -- No entries.
+        },
+    },
+
+    [xi.zone.XARCABARD] = -- 112
+    {
+        [diggingLayer.TREASURE] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.REGULAR] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.BURROW] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.BORE] =
+        {
+            -- No entries.
+        },
+    },
+
+    [xi.zone.CAPE_TERIGGAN] = -- 113
+    {
+        [diggingLayer.TREASURE] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.REGULAR] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.BURROW] = -- Set: Feathers
+        {
+            [1] = { xi.item.CLUMP_OF_RED_MOKO_GRASS, 100, xi.craftRank.AMATEUR   },
+            [2] = { xi.item.BLACK_CHOCOBO_FEATHER,    50, xi.craftRank.RECRUIT   },
+            [4] = { xi.item.GIANT_BIRD_PLUME,         10, xi.craftRank.INITIATE  },
+            [3] = { xi.item.SPIDER_WEB,                5, xi.craftRank.NOVICE    },
+            [5] = { xi.item.PHOENIX_FEATHER,           1, xi.craftRank.CRAFTSMAN },
+        },
+        [diggingLayer.BORE] = -- Set: Logs 1
+        {
+            [1] = { xi.item.ARROWWOOD_LOG,           240, xi.craftRank.AMATEUR    },
+            [2] = { xi.item.YEW_LOG,                 150, xi.craftRank.AMATEUR    },
+            [3] = { xi.item.ELM_LOG,                 100, xi.craftRank.RECRUIT    },
+            [4] = { xi.item.OAK_LOG,                  50, xi.craftRank.INITIATE   },
+            [5] = { xi.item.ROSEWOOD_LOG,             10, xi.craftRank.NOVICE     },
+            [6] = { xi.item.MAHOGANY_LOG,              5, xi.craftRank.APPRENTICE },
+            [7] = { xi.item.EBONY_LOG,                 5, xi.craftRank.JOURNEYMAN },
+            [8] = { xi.item.PIECE_OF_ANCIENT_LUMBER,   1, xi.craftRank.CRAFTSMAN  },
+            [9] = { xi.item.LACQUER_TREE_LOG,          1, xi.craftRank.ARTISAN    },
         },
     },
 
@@ -725,40 +1330,40 @@ local digInfo =
     {
         [diggingLayer.TREASURE] =
         {
-            -- No entries
+            [1] = { xi.item.PLATE_OF_HEAVY_METAL, 5, xi.craftRank.ADEPT },
         },
         [diggingLayer.REGULAR] =
         {
-            { xi.item.FLINT_STONE,              240, xi.craftRank.AMATEUR },
-            { xi.item.BONE_CHIP,                100, xi.craftRank.AMATEUR },
-            { xi.item.BAG_OF_FRUIT_SEEDS,        50, xi.craftRank.AMATEUR },
-            { xi.item.GIANT_FEMUR,               50, xi.craftRank.AMATEUR },
-            { xi.item.BAG_OF_GRAIN_SEEDS,        50, xi.craftRank.AMATEUR },
-            { xi.item.BAG_OF_HERB_SEEDS,         50, xi.craftRank.AMATEUR },
-            { xi.item.PEBBLE,                    50, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_SILVER_ORE,       50, xi.craftRank.AMATEUR },
-            { xi.item.BAG_OF_VEGETABLE_SEEDS,    50, xi.craftRank.AMATEUR },
-            { xi.item.BAG_OF_WILDGRASS_SEEDS,    50, xi.craftRank.AMATEUR },
-            { xi.item.HANDFUL_OF_WYVERN_SCALES,  50, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_ZINC_ORE,         50, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_ALUMINUM_ORE,     10, xi.craftRank.AMATEUR },
-            { xi.item.BAG_OF_CACTUS_STEMS,       10, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_MYTHRIL_ORE,      10, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_ORICHALCUM_ORE,   10, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_PLATINUM_ORE,     10, xi.craftRank.AMATEUR },
-            { xi.item.BAG_OF_TREE_CUTTINGS,      10, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_GOLD_ORE,          5, xi.craftRank.AMATEUR },
-            { xi.item.PLATE_OF_HEAVY_METAL,       5, xi.craftRank.AMATEUR },
-            { xi.item.PHILOSOPHERS_STONE,         5, xi.craftRank.AMATEUR },
-            { xi.item.FIRE_CRYSTAL,             100, xi.craftRank.AMATEUR },
+            [ 1] = { xi.item.FLINT_STONE,              240, xi.craftRank.AMATEUR    },
+            [ 2] = { xi.item.BONE_CHIP,                100, xi.craftRank.AMATEUR    },
+            [ 3] = { xi.item.PEBBLE,                    50, xi.craftRank.RECRUIT    },
+            [ 4] = { xi.item.CHUNK_OF_ZINC_ORE,         50, xi.craftRank.RECRUIT    },
+            [ 5] = { xi.item.CHUNK_OF_SILVER_ORE,       50, xi.craftRank.INITIATE   },
+            [ 6] = { xi.item.GIANT_FEMUR,               50, xi.craftRank.NOVICE     },
+            [ 7] = { xi.item.HANDFUL_OF_WYVERN_SCALES,  50, xi.craftRank.APPRENTICE },
+            [ 8] = { xi.item.CHUNK_OF_MYTHRIL_ORE,      10, xi.craftRank.JOURNEYMAN },
+            [ 9] = { xi.item.CHUNK_OF_PLATINUM_ORE,     10, xi.craftRank.JOURNEYMAN },
+            [10] = { xi.item.PHILOSOPHERS_STONE,         5, xi.craftRank.CRAFTSMAN  },
         },
         [diggingLayer.BURROW] =
         {
-            -- No entries
+            [1] = { xi.item.BAG_OF_GRAIN_SEEDS,     50, xi.craftRank.AMATEUR    },
+            [2] = { xi.item.BAG_OF_VEGETABLE_SEEDS, 50, xi.craftRank.RECRUIT    },
+            [3] = { xi.item.BAG_OF_HERB_SEEDS,      50, xi.craftRank.INITIATE   },
+            [4] = { xi.item.BAG_OF_WILDGRASS_SEEDS, 50, xi.craftRank.NOVICE     },
+            [5] = { xi.item.BAG_OF_FRUIT_SEEDS,     50, xi.craftRank.APPRENTICE },
+            [6] = { xi.item.BAG_OF_TREE_CUTTINGS,   10, xi.craftRank.JOURNEYMAN },
+            [7] = { xi.item.BAG_OF_CACTUS_STEMS,    10, xi.craftRank.CRAFTSMAN  },
         },
-        [diggingLayer.BORE] =
+        [diggingLayer.BORE] = -- Set: Ores 1
         {
-            -- No entries
+            [1] = { xi.item.FLINT_STONE,             240, xi.craftRank.AMATEUR    },
+            [2] = { xi.item.CHUNK_OF_ALUMINUM_ORE,   100, xi.craftRank.RECRUIT    },
+            [3] = { xi.item.CHUNK_OF_GOLD_ORE,        50, xi.craftRank.INITIATE   },
+            [4] = { xi.item.CHUNK_OF_DARKSTEEL_ORE,   10, xi.craftRank.NOVICE     },
+            [5] = { xi.item.CHUNK_OF_ADAMAN_ORE,       5, xi.craftRank.JOURNEYMAN },
+            [6] = { xi.item.CHUNK_OF_PLATINUM_ORE,     5, xi.craftRank.JOURNEYMAN },
+            [7] = { xi.item.CHUNK_OF_ORICHALCUM_ORE,   1, xi.craftRank.CRAFTSMAN  },
         },
     },
 
@@ -766,35 +1371,38 @@ local digInfo =
     {
         [diggingLayer.TREASURE] =
         {
-            -- No entries
+            [1] = { xi.item.PLATE_OF_HEAVY_METAL, 5, xi.craftRank.ADEPT },
+            [2] = { xi.item.COIN_OF_DECAY,        5, xi.craftRank.ADEPT },
         },
         [diggingLayer.REGULAR] =
         {
-            { xi.item.BUNCH_OF_GYSAHL_GREENS, 150, xi.craftRank.AMATEUR },
-            { xi.item.CHAMOMILE,               50, xi.craftRank.AMATEUR },
-            { xi.item.LAUAN_LOG,               50, xi.craftRank.AMATEUR },
-            { xi.item.LITTLE_WORM,             50, xi.craftRank.AMATEUR },
-            { xi.item.PEBBLE,                  50, xi.craftRank.AMATEUR },
-            { xi.item.CLUMP_OF_MOKO_GRASS,     50, xi.craftRank.AMATEUR },
-            { xi.item.GINGER_ROOT,             50, xi.craftRank.AMATEUR },
-            { xi.item.INSECT_WING,             50, xi.craftRank.AMATEUR },
-            { xi.item.YAGUDO_FEATHER,          50, xi.craftRank.AMATEUR },
-            { xi.item.HEAD_OF_NAPA,            10, xi.craftRank.AMATEUR },
-            { xi.item.BALL_OF_SARUTA_COTTON,   10, xi.craftRank.AMATEUR },
-            { xi.item.BIRD_FEATHER,            10, xi.craftRank.AMATEUR },
-            { xi.item.EBONY_LOG,               10, xi.craftRank.AMATEUR },
-            { xi.item.BAG_OF_TREE_CUTTINGS,    10, xi.craftRank.AMATEUR },
-            { xi.item.ROSEWOOD_LOG,             5, xi.craftRank.AMATEUR },
-            { xi.item.PLATE_OF_HEAVY_METAL,     5, xi.craftRank.AMATEUR },
-            { xi.item.FIRE_CRYSTAL,           100, xi.craftRank.AMATEUR },
+            [1] = { xi.item.PEBBLE,                50, xi.craftRank.AMATEUR  },
+            [2] = { xi.item.LITTLE_WORM,           50, xi.craftRank.AMATEUR  },
+            [3] = { xi.item.CLUMP_OF_MOKO_GRASS,   50, xi.craftRank.RECRUIT  },
+            [4] = { xi.item.LAUAN_LOG,             50, xi.craftRank.RECRUIT  },
+            [5] = { xi.item.INSECT_WING,           50, xi.craftRank.RECRUIT  },
+            [6] = { xi.item.YAGUDO_FEATHER,        50, xi.craftRank.INITIATE },
+            [7] = { xi.item.BIRD_FEATHER,          10, xi.craftRank.INITIATE },
+            [8] = { xi.item.BALL_OF_SARUTA_COTTON, 10, xi.craftRank.INITIATE },
+            [9] = { xi.item.ROSEWOOD_LOG,           5, xi.craftRank.NOVICE   },
         },
-        [diggingLayer.BURROW] =
+        [diggingLayer.BURROW] = -- Set: Gysahl Greens
         {
-            -- No entries
+            [1] = { xi.item.BUNCH_OF_GYSAHL_GREENS, 150, xi.craftRank.AMATEUR  },
+            [2] = { xi.item.CHAMOMILE,               50, xi.craftRank.AMATEUR  },
+            [3] = { xi.item.GINGER_ROOT,             50, xi.craftRank.RECRUIT  },
+            [4] = { xi.item.HEAD_OF_NAPA,            50, xi.craftRank.INITIATE },
         },
-        [diggingLayer.BORE] =
+        [diggingLayer.BORE] = -- Set: Crystals
         {
-            -- No entries
+            [1] = { xi.item.FIRE_CRYSTAL,      50, xi.craftRank.AMATEUR },
+            [2] = { xi.item.ICE_CRYSTAL,       50, xi.craftRank.AMATEUR },
+            [3] = { xi.item.WIND_CRYSTAL,      50, xi.craftRank.AMATEUR },
+            [4] = { xi.item.EARTH_CRYSTAL,     50, xi.craftRank.AMATEUR },
+            [5] = { xi.item.LIGHTNING_CRYSTAL, 50, xi.craftRank.AMATEUR },
+            [6] = { xi.item.WATER_CRYSTAL,     50, xi.craftRank.AMATEUR },
+            [7] = { xi.item.LIGHT_CRYSTAL,     50, xi.craftRank.AMATEUR },
+            [8] = { xi.item.DARK_CRYSTAL,      50, xi.craftRank.AMATEUR },
         },
     },
 
@@ -802,33 +1410,38 @@ local digInfo =
     {
         [diggingLayer.TREASURE] =
         {
-            -- No entries
+            [1] = { xi.item.PLATE_OF_HEAVY_METAL, 5, xi.craftRank.ADEPT },
         },
         [diggingLayer.REGULAR] =
         {
-            { xi.item.BUNCH_OF_GYSAHL_GREENS, 150, xi.craftRank.AMATEUR },
-            { xi.item.CHAMOMILE,               50, xi.craftRank.AMATEUR },
-            { xi.item.LAUAN_LOG,               50, xi.craftRank.AMATEUR },
-            { xi.item.PEBBLE,                  50, xi.craftRank.AMATEUR },
-            { xi.item.GINGER_ROOT,             50, xi.craftRank.AMATEUR },
-            { xi.item.INSECT_WING,             50, xi.craftRank.AMATEUR },
-            { xi.item.YAGUDO_FEATHER,          50, xi.craftRank.AMATEUR },
-            { xi.item.BALL_OF_SARUTA_COTTON,   50, xi.craftRank.AMATEUR },
-            { xi.item.PAPAKA_GRASS,            50, xi.craftRank.AMATEUR },
-            { xi.item.HEAD_OF_NAPA,            10, xi.craftRank.AMATEUR },
-            { xi.item.BIRD_FEATHER,            10, xi.craftRank.AMATEUR },
-            { xi.item.EBONY_LOG,               10, xi.craftRank.AMATEUR },
-            { xi.item.ROSEWOOD_LOG,             5, xi.craftRank.AMATEUR },
-            { xi.item.PLATE_OF_HEAVY_METAL,     5, xi.craftRank.AMATEUR },
-            { xi.item.FIRE_CRYSTAL,           100, xi.craftRank.AMATEUR },
+            [ 1] = { xi.item.PEBBLE,                50, xi.craftRank.AMATEUR  },
+            [ 2] = { xi.item.PAPAKA_GRASS,          50, xi.craftRank.AMATEUR  },
+            [ 3] = { xi.item.LAUAN_LOG,             50, xi.craftRank.AMATEUR  },
+            [ 4] = { xi.item.INSECT_WING,           50, xi.craftRank.RECRUIT  },
+            [ 5] = { xi.item.YAGUDO_FEATHER,        50, xi.craftRank.RECRUIT  },
+            [ 6] = { xi.item.BALL_OF_SARUTA_COTTON, 50, xi.craftRank.RECRUIT  },
+            [ 7] = { xi.item.BAG_OF_HERB_SEEDS,     50, xi.craftRank.INITIATE },
+            [ 8] = { xi.item.BIRD_FEATHER,          10, xi.craftRank.INITIATE },
+            [ 9] = { xi.item.EBONY_LOG,             10, xi.craftRank.INITIATE },
+            [10] = { xi.item.ROSEWOOD_LOG,           5, xi.craftRank.NOVICE   },
         },
-        [diggingLayer.BURROW] =
+        [diggingLayer.BURROW] = -- Set: Gysahl Greens
         {
-            -- No entries
+            [1] = { xi.item.BUNCH_OF_GYSAHL_GREENS, 150, xi.craftRank.AMATEUR  },
+            [2] = { xi.item.CHAMOMILE,               50, xi.craftRank.AMATEUR  },
+            [3] = { xi.item.GINGER_ROOT,             50, xi.craftRank.RECRUIT  },
+            [4] = { xi.item.HEAD_OF_NAPA,            50, xi.craftRank.INITIATE },
         },
-        [diggingLayer.BORE] =
+        [diggingLayer.BORE] = -- Set: Crystals
         {
-            -- No entries
+            [1] = { xi.item.FIRE_CRYSTAL,      50, xi.craftRank.AMATEUR },
+            [2] = { xi.item.ICE_CRYSTAL,       50, xi.craftRank.AMATEUR },
+            [3] = { xi.item.WIND_CRYSTAL,      50, xi.craftRank.AMATEUR },
+            [4] = { xi.item.EARTH_CRYSTAL,     50, xi.craftRank.AMATEUR },
+            [5] = { xi.item.LIGHTNING_CRYSTAL, 50, xi.craftRank.AMATEUR },
+            [6] = { xi.item.WATER_CRYSTAL,     50, xi.craftRank.AMATEUR },
+            [7] = { xi.item.LIGHT_CRYSTAL,     50, xi.craftRank.AMATEUR },
+            [8] = { xi.item.DARK_CRYSTAL,      50, xi.craftRank.AMATEUR },
         },
     },
 
@@ -836,43 +1449,41 @@ local digInfo =
     {
         [diggingLayer.TREASURE] =
         {
-            -- No entries
+            [1] = { xi.item.PLATE_OF_HEAVY_METAL, 5, xi.craftRank.ADEPT },
+            [2] = { xi.item.COIN_OF_ADVANCEMENT,  5, xi.craftRank.ADEPT },
         },
         [diggingLayer.REGULAR] =
         {
-            { xi.item.BEASTCOIN,                150, xi.craftRank.AMATEUR },
-            { xi.item.BONE_CHIP,                100, xi.craftRank.AMATEUR },
-            { xi.item.SEASHELL,                 100, xi.craftRank.AMATEUR },
-            { xi.item.SILVER_BEASTCOIN,         100, xi.craftRank.AMATEUR },
-            { xi.item.HANDFUL_OF_FISH_SCALES,    50, xi.craftRank.AMATEUR },
-            { xi.item.GOLD_BEASTCOIN,            50, xi.craftRank.AMATEUR },
-            { xi.item.HIGH_QUALITY_PUGIL_SCALE,  50, xi.craftRank.AMATEUR },
-            { xi.item.INSECT_WING,               50, xi.craftRank.AMATEUR },
-            { xi.item.MYTHRIL_BEASTCOIN,         50, xi.craftRank.AMATEUR },
-            { xi.item.PEBBLE,                    50, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_TIN_ORE,          50, xi.craftRank.AMATEUR },
-            { xi.item.TITANICTUS_SHELL,          50, xi.craftRank.AMATEUR },
-            { xi.item.TURTLE_SHELL,              50, xi.craftRank.AMATEUR },
-            { xi.item.YAGUDO_FEATHER,            50, xi.craftRank.AMATEUR },
-            { xi.item.DEMON_HORN,                10, xi.craftRank.AMATEUR },
-            { xi.item.DEMON_SKULL,               10, xi.craftRank.AMATEUR },
-            { xi.item.HANDFUL_OF_DRAGON_SCALES,  10, xi.craftRank.AMATEUR },
-            { xi.item.GIANT_FEMUR,               10, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_GOLD_ORE,         10, xi.craftRank.AMATEUR },
-            { xi.item.COIN_OF_ADVANCEMENT,        5, xi.craftRank.AMATEUR },
-            { xi.item.PLATE_OF_HEAVY_METAL,       5, xi.craftRank.AMATEUR },
-            { xi.item.PLATINUM_BEASTCOIN,         5, xi.craftRank.AMATEUR },
-            { xi.item.HANDFUL_OF_WYVERN_SCALES,   5, xi.craftRank.AMATEUR },
-            { xi.item.FIRE_CRYSTAL,             100, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_FIRE_ORE,         10, xi.craftRank.AMATEUR },
+            [1] = { xi.item.PEBBLE,            50, xi.craftRank.AMATEUR    },
+            [2] = { xi.item.BONE_CHIP,         50, xi.craftRank.AMATEUR    },
+            [3] = { xi.item.SEASHELL,          50, xi.craftRank.RECRUIT    },
+            [4] = { xi.item.CHUNK_OF_TIN_ORE,  50, xi.craftRank.RECRUIT    },
+            [5] = { xi.item.GIANT_FEMUR,       50, xi.craftRank.INITIATE   },
+            [6] = { xi.item.INSECT_WING,       50, xi.craftRank.INITIATE   },
+            [7] = { xi.item.YAGUDO_FEATHER,    50, xi.craftRank.NOVICE     },
+            [8] = { xi.item.GOLD_BEASTCOIN,    10, xi.craftRank.APPRENTICE },
+            [9] = { xi.item.CHUNK_OF_GOLD_ORE, 10, xi.craftRank.APPRENTICE },
         },
-        [diggingLayer.BURROW] =
+        [diggingLayer.BURROW] = -- Set: Beastcoins
         {
-            -- No entries
+            [1] = { xi.item.BEASTCOIN,          100, xi.craftRank.AMATEUR    },
+            [2] = { xi.item.SILVER_BEASTCOIN,    50, xi.craftRank.RECRUIT    },
+            [3] = { xi.item.GOLD_BEASTCOIN,      10, xi.craftRank.INITIATE   },
+            [4] = { xi.item.MYTHRIL_BEASTCOIN,    5, xi.craftRank.NOVICE     },
+            [5] = { xi.item.PLATINUM_BEASTCOIN,   1, xi.craftRank.APPRENTICE },
         },
-        [diggingLayer.BORE] =
+        [diggingLayer.BORE] = -- Set: Bones
         {
-            -- No entries
+            [ 1] = { xi.item.BONE_CHIP,                150, xi.craftRank.AMATEUR    },
+            [ 2] = { xi.item.HANDFUL_OF_FISH_SCALES,   150, xi.craftRank.AMATEUR    },
+            [ 3] = { xi.item.SEASHELL,                 150, xi.craftRank.RECRUIT    },
+            [ 4] = { xi.item.HIGH_QUALITY_PUGIL_SCALE,  50, xi.craftRank.INITIATE   },
+            [ 5] = { xi.item.TITANICTUS_SHELL,          50, xi.craftRank.APPRENTICE },
+            [ 6] = { xi.item.DEMON_HORN,                10, xi.craftRank.JOURNEYMAN },
+            [ 7] = { xi.item.HANDFUL_OF_WYVERN_SCALES,   5, xi.craftRank.CRAFTSMAN  },
+            [ 8] = { xi.item.TURTLE_SHELL,               5, xi.craftRank.CRAFTSMAN  },
+            [ 9] = { xi.item.DEMON_SKULL,                1, xi.craftRank.ARTISAN    },
+            [10] = { xi.item.HANDFUL_OF_DRAGON_SCALES,   1, xi.craftRank.ARTISAN    },
         },
     },
 
@@ -880,45 +1491,44 @@ local digInfo =
     {
         [diggingLayer.TREASURE] =
         {
-            -- No entries
+            [1] = { xi.item.PLATE_OF_HEAVY_METAL, 5, xi.craftRank.ADEPT },
+            [2] = { xi.item.COIN_OF_BIRTH,        5, xi.craftRank.ADEPT },
+            [3] = { xi.item.ORDELLE_BRONZEPIECE,  5, xi.craftRank.ADEPT },
+            [4] = { xi.item.ONE_BYNE_BILL,        5, xi.craftRank.ADEPT },
+            [5] = { xi.item.TUKUKU_WHITESHELL,    5, xi.craftRank.ADEPT },
         },
         [diggingLayer.REGULAR] =
         {
-            { xi.item.BLACK_CHOCOBO_FEATHER,    100, xi.craftRank.AMATEUR },
-            { xi.item.PHOENIX_FEATHER,          100, xi.craftRank.AMATEUR },
-            { xi.item.SEASHELL,                 100, xi.craftRank.AMATEUR },
-            { xi.item.BIRD_FEATHER,              50, xi.craftRank.AMATEUR },
-            { xi.item.BONE_CHIP,                 50, xi.craftRank.AMATEUR },
-            { xi.item.DEMON_SKULL,               50, xi.craftRank.AMATEUR },
-            { xi.item.HANDFUL_OF_FISH_SCALES,    50, xi.craftRank.AMATEUR },
-            { xi.item.GIANT_FEMUR,               50, xi.craftRank.AMATEUR },
-            { xi.item.HIGH_QUALITY_PUGIL_SCALE,  50, xi.craftRank.AMATEUR },
-            { xi.item.LUGWORM,                   50, xi.craftRank.AMATEUR },
-            { xi.item.CLUMP_OF_RED_MOKO_GRASS,   50, xi.craftRank.AMATEUR },
-            { xi.item.SHALL_SHELL,               50, xi.craftRank.AMATEUR },
-            { xi.item.SHELL_BUG,                 50, xi.craftRank.AMATEUR },
-            { xi.item.SPIDER_WEB,                50, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_TIN_ORE,          50, xi.craftRank.AMATEUR },
-            { xi.item.TITANICTUS_SHELL,          50, xi.craftRank.AMATEUR },
-            { xi.item.TURTLE_SHELL,              50, xi.craftRank.AMATEUR },
-            { xi.item.DEMON_HORN,                10, xi.craftRank.AMATEUR },
-            { xi.item.HANDFUL_OF_DRAGON_SCALES,  10, xi.craftRank.AMATEUR },
-            { xi.item.GIANT_BIRD_PLUME,          10, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_PLATINUM_ORE,     10, xi.craftRank.AMATEUR },
-            { xi.item.ONE_BYNE_BILL,              5, xi.craftRank.AMATEUR },
-            { xi.item.COIN_OF_BIRTH,              5, xi.craftRank.AMATEUR },
-            { xi.item.COIN_OF_DECAY,              5, xi.craftRank.AMATEUR },
-            { xi.item.PLATE_OF_HEAVY_METAL,       5, xi.craftRank.AMATEUR },
-            { xi.item.HANDFUL_OF_WYVERN_SCALES,   5, xi.craftRank.AMATEUR },
-            { xi.item.FIRE_CRYSTAL,             100, xi.craftRank.AMATEUR },
+            [1] = { xi.item.LUGWORM,               100, xi.craftRank.AMATEUR    },
+            [2] = { xi.item.SHELL_BUG,             100, xi.craftRank.AMATEUR    },
+            [3] = { xi.item.SEASHELL,              100, xi.craftRank.AMATEUR    },
+            [4] = { xi.item.SHALL_SHELL,            50, xi.craftRank.RECRUIT    },
+            [5] = { xi.item.BIRD_FEATHER,           50, xi.craftRank.RECRUIT    },
+            [6] = { xi.item.CHUNK_OF_TIN_ORE,       10, xi.craftRank.INITIATE   },
+            [7] = { xi.item.GIANT_FEMUR,            10, xi.craftRank.INITIATE   },
+            [8] = { xi.item.CHUNK_OF_PLATINUM_ORE,   5, xi.craftRank.APPRENTICE },
+            [9] = { xi.item.CORAL_FRAGMENT,          5, xi.craftRank.CRAFTSMAN  },
         },
-        [diggingLayer.BURROW] =
+        [diggingLayer.BURROW] = -- Set: Feathers
         {
-            -- No entries
+            [1] = { xi.item.CLUMP_OF_RED_MOKO_GRASS, 100, xi.craftRank.AMATEUR   },
+            [2] = { xi.item.BLACK_CHOCOBO_FEATHER,    50, xi.craftRank.RECRUIT   },
+            [4] = { xi.item.GIANT_BIRD_PLUME,         10, xi.craftRank.INITIATE  },
+            [3] = { xi.item.SPIDER_WEB,                5, xi.craftRank.NOVICE    },
+            [5] = { xi.item.PHOENIX_FEATHER,           1, xi.craftRank.CRAFTSMAN },
         },
-        [diggingLayer.BORE] =
+        [diggingLayer.BORE] = -- Set: Bones
         {
-            -- No entries
+            [ 1] = { xi.item.BONE_CHIP,                150, xi.craftRank.AMATEUR    },
+            [ 2] = { xi.item.HANDFUL_OF_FISH_SCALES,   150, xi.craftRank.AMATEUR    },
+            [ 3] = { xi.item.SEASHELL,                 150, xi.craftRank.RECRUIT    },
+            [ 4] = { xi.item.HIGH_QUALITY_PUGIL_SCALE,  50, xi.craftRank.INITIATE   },
+            [ 5] = { xi.item.TITANICTUS_SHELL,          50, xi.craftRank.APPRENTICE },
+            [ 6] = { xi.item.DEMON_HORN,                10, xi.craftRank.JOURNEYMAN },
+            [ 7] = { xi.item.HANDFUL_OF_WYVERN_SCALES,   5, xi.craftRank.CRAFTSMAN  },
+            [ 8] = { xi.item.TURTLE_SHELL,               5, xi.craftRank.CRAFTSMAN  },
+            [ 9] = { xi.item.DEMON_SKULL,                1, xi.craftRank.ARTISAN    },
+            [10] = { xi.item.HANDFUL_OF_DRAGON_SCALES,   1, xi.craftRank.ARTISAN    },
         },
     },
 
@@ -926,37 +1536,37 @@ local digInfo =
     {
         [diggingLayer.TREASURE] =
         {
-            -- No entries
+            [1] = { xi.item.PLATE_OF_HEAVY_METAL, 5, xi.craftRank.ADEPT },
+            [2] = { xi.item.COIN_OF_ADVANCEMENT,  5, xi.craftRank.ADEPT },
         },
         [diggingLayer.REGULAR] =
         {
-            { xi.item.FLINT_STONE,               240, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_SILVER_ORE,       100, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_IRON_ORE,         100, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_KOPPARNICKEL_ORE, 100, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_COPPER_ORE,        50, xi.craftRank.AMATEUR },
-            { xi.item.GIANT_FEMUR,                50, xi.craftRank.AMATEUR },
-            { xi.item.INSECT_WING,                50, xi.craftRank.AMATEUR },
-            { xi.item.LIZARD_MOLT,                50, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_MYTHRIL_ORE,       50, xi.craftRank.AMATEUR },
-            { xi.item.PEBBLE,                     50, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_DARKSTEEL_ORE,     10, xi.craftRank.AMATEUR },
-            { xi.item.GOLD_BEASTCOIN,             10, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_ADAMAN_ORE,         5, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_ALUMINUM_ORE,       5, xi.craftRank.AMATEUR },
-            { xi.item.COIN_OF_ADVANCEMENT,         5, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_GOLD_ORE,           5, xi.craftRank.AMATEUR },
-            { xi.item.PLATE_OF_HEAVY_METAL,        5, xi.craftRank.AMATEUR },
-            { xi.item.FIRE_CRYSTAL,              100, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_FIRE_ORE,          10, xi.craftRank.AMATEUR },
+            [1] = { xi.item.FLINT_STONE,           240, xi.craftRank.AMATEUR    },
+            [2] = { xi.item.PEBBLE,                100, xi.craftRank.AMATEUR    },
+            [3] = { xi.item.CHUNK_OF_COPPER_ORE,    50, xi.craftRank.RECRUIT    },
+            [4] = { xi.item.GIANT_FEMUR,            50, xi.craftRank.RECRUIT    },
+            [5] = { xi.item.LIZARD_MOLT,            50, xi.craftRank.INITIATE   },
+            [6] = { xi.item.BLACK_CHOCOBO_FEATHER,  10, xi.craftRank.NOVICE     },
+            [7] = { xi.item.GOLD_BEASTCOIN,         10, xi.craftRank.APPRENTICE },
+            [8] = { xi.item.CHUNK_OF_ADAMAN_ORE,     5, xi.craftRank.JOURNEYMAN },
         },
-        [diggingLayer.BURROW] =
+        [diggingLayer.BURROW] = -- Set: Ores 4
         {
-            -- No entries
+            [1] = { xi.item.CHUNK_OF_SILVER_ORE,       100, xi.craftRank.AMATEUR },
+            [2] = { xi.item.CHUNK_OF_IRON_ORE,         100, xi.craftRank.RECRUIT },
+            [3] = { xi.item.CHUNK_OF_KOPPARNICKEL_ORE, 100, xi.craftRank.RECRUIT },
+            [4] = { xi.item.CHUNK_OF_MYTHRIL_ORE,      100, xi.craftRank.RECRUIT },
+            [5] = { xi.item.CHUNK_OF_DARKSTEEL_ORE,     10, xi.craftRank.NOVICE  },
         },
-        [diggingLayer.BORE] =
+        [diggingLayer.BORE] = -- Set: Ores 1
         {
-            -- No entries
+            [1] = { xi.item.FLINT_STONE,             240, xi.craftRank.AMATEUR    },
+            [2] = { xi.item.CHUNK_OF_ALUMINUM_ORE,   100, xi.craftRank.RECRUIT    },
+            [3] = { xi.item.CHUNK_OF_GOLD_ORE,        50, xi.craftRank.INITIATE   },
+            [4] = { xi.item.CHUNK_OF_DARKSTEEL_ORE,   10, xi.craftRank.NOVICE     },
+            [5] = { xi.item.CHUNK_OF_ADAMAN_ORE,       5, xi.craftRank.JOURNEYMAN },
+            [6] = { xi.item.CHUNK_OF_PLATINUM_ORE,     5, xi.craftRank.JOURNEYMAN },
+            [7] = { xi.item.CHUNK_OF_ORICHALCUM_ORE,   1, xi.craftRank.CRAFTSMAN  },
         },
     },
 
@@ -964,43 +1574,41 @@ local digInfo =
     {
         [diggingLayer.TREASURE] =
         {
-            -- No entries
+            [1] = { xi.item.PLATE_OF_HEAVY_METAL, 5, xi.craftRank.ADEPT },
+            [2] = { xi.item.COIN_OF_GLORY,        5, xi.craftRank.ADEPT },
         },
         [diggingLayer.REGULAR] =
         {
-            { xi.item.BEASTCOIN,                100, xi.craftRank.AMATEUR },
-            { xi.item.SILVER_BEASTCOIN,         100, xi.craftRank.AMATEUR },
-            { xi.item.BONE_CHIP,                100, xi.craftRank.AMATEUR },
-            { xi.item.HANDFUL_OF_FISH_SCALES,    50, xi.craftRank.AMATEUR },
-            { xi.item.FLINT_STONE,               50, xi.craftRank.AMATEUR },
-            { xi.item.GOLD_BEASTCOIN,            50, xi.craftRank.AMATEUR },
-            { xi.item.HIGH_QUALITY_PUGIL_SCALE,  50, xi.craftRank.AMATEUR },
-            { xi.item.INSECT_WING,               50, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_IRON_ORE,         50, xi.craftRank.AMATEUR },
-            { xi.item.LIZARD_MOLT,               50, xi.craftRank.AMATEUR },
-            { xi.item.MYTHRIL_BEASTCOIN,         50, xi.craftRank.AMATEUR },
-            { xi.item.PEBBLE,                    50, xi.craftRank.AMATEUR },
-            { xi.item.SEASHELL,                  50, xi.craftRank.AMATEUR },
-            { xi.item.TURTLE_SHELL,              50, xi.craftRank.AMATEUR },
-            { xi.item.BLACK_CHOCOBO_FEATHER,     10, xi.craftRank.AMATEUR },
-            { xi.item.DEMON_HORN,                10, xi.craftRank.AMATEUR },
-            { xi.item.DEMON_SKULL,               10, xi.craftRank.AMATEUR },
-            { xi.item.HANDFUL_OF_DRAGON_SCALES,  10, xi.craftRank.AMATEUR },
-            { xi.item.RED_JAR,                   10, xi.craftRank.AMATEUR },
-            { xi.item.TITANICTUS_SHELL,          10, xi.craftRank.AMATEUR },
-            { xi.item.HANDFUL_OF_WYVERN_SCALES,  10, xi.craftRank.AMATEUR },
-            { xi.item.COIN_OF_GLORY,              5, xi.craftRank.AMATEUR },
-            { xi.item.PLATE_OF_HEAVY_METAL,       5, xi.craftRank.AMATEUR },
-            { xi.item.PLATINUM_BEASTCOIN,         5, xi.craftRank.AMATEUR },
-            { xi.item.FIRE_CRYSTAL,             100, xi.craftRank.AMATEUR },
+            [1] = { xi.item.FLINT_STONE,           240, xi.craftRank.AMATEUR    },
+            [2] = { xi.item.PEBBLE,                100, xi.craftRank.AMATEUR    },
+            [3] = { xi.item.BONE_CHIP,             100, xi.craftRank.AMATEUR    },
+            [4] = { xi.item.INSECT_WING,            50, xi.craftRank.RECRUIT    },
+            [5] = { xi.item.LIZARD_MOLT,            50, xi.craftRank.RECRUIT    },
+            [6] = { xi.item.CHUNK_OF_IRON_ORE,      50, xi.craftRank.INITIATE   },
+            [7] = { xi.item.BLACK_CHOCOBO_FEATHER,  10, xi.craftRank.NOVICE     },
+            [8] = { xi.item.RED_JAR,                10, xi.craftRank.NOVICE     },
+            [9] = { xi.item.GOLD_BEASTCOIN,          5, xi.craftRank.APPRENTICE },
         },
-        [diggingLayer.BURROW] =
+        [diggingLayer.BURROW] = -- Set: Beastcoins
         {
-            -- No entries
+            [1] = { xi.item.BEASTCOIN,          100, xi.craftRank.AMATEUR    },
+            [2] = { xi.item.SILVER_BEASTCOIN,    50, xi.craftRank.RECRUIT    },
+            [3] = { xi.item.GOLD_BEASTCOIN,      10, xi.craftRank.INITIATE   },
+            [4] = { xi.item.MYTHRIL_BEASTCOIN,    5, xi.craftRank.NOVICE     },
+            [5] = { xi.item.PLATINUM_BEASTCOIN,   1, xi.craftRank.APPRENTICE },
         },
-        [diggingLayer.BORE] =
+        [diggingLayer.BORE] = -- Set: Bones
         {
-            -- No entries
+            [ 1] = { xi.item.BONE_CHIP,                150, xi.craftRank.AMATEUR    },
+            [ 2] = { xi.item.HANDFUL_OF_FISH_SCALES,   150, xi.craftRank.AMATEUR    },
+            [ 3] = { xi.item.SEASHELL,                 150, xi.craftRank.RECRUIT    },
+            [ 4] = { xi.item.HIGH_QUALITY_PUGIL_SCALE,  50, xi.craftRank.INITIATE   },
+            [ 5] = { xi.item.TITANICTUS_SHELL,          50, xi.craftRank.APPRENTICE },
+            [ 6] = { xi.item.DEMON_HORN,                10, xi.craftRank.JOURNEYMAN },
+            [ 7] = { xi.item.HANDFUL_OF_WYVERN_SCALES,   5, xi.craftRank.CRAFTSMAN  },
+            [ 8] = { xi.item.TURTLE_SHELL,               5, xi.craftRank.CRAFTSMAN  },
+            [ 9] = { xi.item.DEMON_SKULL,                1, xi.craftRank.ARTISAN    },
+            [10] = { xi.item.HANDFUL_OF_DRAGON_SCALES,   1, xi.craftRank.ARTISAN    },
         },
     },
 
@@ -1008,39 +1616,39 @@ local digInfo =
     {
         [diggingLayer.TREASURE] =
         {
-            -- No entries
+            [1] = { xi.item.PLATE_OF_HEAVY_METAL, 5, xi.craftRank.ADEPT },
+            [2] = { xi.item.COIN_OF_DECAY,        5, xi.craftRank.ADEPT },
         },
         [diggingLayer.REGULAR] =
         {
-            { xi.item.SILVER_BEASTCOIN,        150, xi.craftRank.AMATEUR },
-            { xi.item.ARROWWOOD_LOG,           100, xi.craftRank.AMATEUR },
-            { xi.item.BEASTCOIN,               100, xi.craftRank.AMATEUR },
-            { xi.item.PEBBLE,                  100, xi.craftRank.AMATEUR },
-            { xi.item.YEW_LOG,                 100, xi.craftRank.AMATEUR },
-            { xi.item.BONE_CHIP,                50, xi.craftRank.AMATEUR },
-            { xi.item.ELM_LOG,                  50, xi.craftRank.AMATEUR },
-            { xi.item.CLUMP_OF_MOKO_GRASS,      50, xi.craftRank.AMATEUR },
-            { xi.item.MYTHRIL_BEASTCOIN,        50, xi.craftRank.AMATEUR },
-            { xi.item.OAK_LOG,                  50, xi.craftRank.AMATEUR },
-            { xi.item.EBONY_LOG,                10, xi.craftRank.AMATEUR },
-            { xi.item.GOLD_BEASTCOIN,           10, xi.craftRank.AMATEUR },
-            { xi.item.MAHOGANY_LOG,             10, xi.craftRank.AMATEUR },
-            { xi.item.ROSEWOOD_LOG,             10, xi.craftRank.AMATEUR },
-            { xi.item.PIECE_OF_ANCIENT_LUMBER,   5, xi.craftRank.AMATEUR },
-            { xi.item.COIN_OF_DECAY,             5, xi.craftRank.AMATEUR },
-            { xi.item.LACQUER_TREE_LOG,          5, xi.craftRank.AMATEUR },
-            { xi.item.PETRIFIED_LOG,             5, xi.craftRank.AMATEUR },
-            { xi.item.PLATINUM_BEASTCOIN,        5, xi.craftRank.AMATEUR },
-            { xi.item.FIRE_CRYSTAL,            100, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_FIRE_ORE,        10, xi.craftRank.AMATEUR },
+            [1] = { xi.item.PEBBLE,              100, xi.craftRank.AMATEUR    },
+            [2] = { xi.item.CLUMP_OF_MOKO_GRASS, 100, xi.craftRank.AMATEUR    },
+            [3] = { xi.item.BONE_CHIP,           100, xi.craftRank.AMATEUR    },
+            [4] = { xi.item.ARROWWOOD_LOG,        50, xi.craftRank.RECRUIT    },
+            [5] = { xi.item.YEW_LOG,              50, xi.craftRank.RECRUIT    },
+            [6] = { xi.item.ELM_LOG,              50, xi.craftRank.INITIATE   },
+            [7] = { xi.item.KING_TRUFFLE,          5, xi.craftRank.NOVICE     },
+            [8] = { xi.item.PETRIFIED_LOG,         5, xi.craftRank.APPRENTICE },
         },
-        [diggingLayer.BURROW] =
+        [diggingLayer.BURROW] = -- Set: Beastcoins
         {
-            -- No entries
+            [1] = { xi.item.BEASTCOIN,          100, xi.craftRank.AMATEUR    },
+            [2] = { xi.item.SILVER_BEASTCOIN,    50, xi.craftRank.RECRUIT    },
+            [3] = { xi.item.GOLD_BEASTCOIN,      10, xi.craftRank.INITIATE   },
+            [4] = { xi.item.MYTHRIL_BEASTCOIN,    5, xi.craftRank.NOVICE     },
+            [5] = { xi.item.PLATINUM_BEASTCOIN,   1, xi.craftRank.APPRENTICE },
         },
-        [diggingLayer.BORE] =
+        [diggingLayer.BORE] = -- Set: Logs 1
         {
-            -- No entries
+            [1] = { xi.item.ARROWWOOD_LOG,           240, xi.craftRank.AMATEUR    },
+            [2] = { xi.item.YEW_LOG,                 150, xi.craftRank.AMATEUR    },
+            [3] = { xi.item.ELM_LOG,                 100, xi.craftRank.RECRUIT    },
+            [4] = { xi.item.OAK_LOG,                  50, xi.craftRank.INITIATE   },
+            [5] = { xi.item.ROSEWOOD_LOG,             10, xi.craftRank.NOVICE     },
+            [6] = { xi.item.MAHOGANY_LOG,              5, xi.craftRank.APPRENTICE },
+            [7] = { xi.item.EBONY_LOG,                 5, xi.craftRank.JOURNEYMAN },
+            [8] = { xi.item.PIECE_OF_ANCIENT_LUMBER,   1, xi.craftRank.CRAFTSMAN  },
+            [9] = { xi.item.LACQUER_TREE_LOG,          1, xi.craftRank.ARTISAN    },
         },
     },
 
@@ -1048,40 +1656,42 @@ local digInfo =
     {
         [diggingLayer.TREASURE] =
         {
-            -- No entries
+            [1] = { xi.item.PLATE_OF_HEAVY_METAL, 5, xi.craftRank.ADEPT },
         },
         [diggingLayer.REGULAR] =
         {
-            { xi.item.ARROWWOOD_LOG,           100, xi.craftRank.AMATEUR },
-            { xi.item.BONE_CHIP,               100, xi.craftRank.AMATEUR },
-            { xi.item.DANCESHROOM,             100, xi.craftRank.AMATEUR },
-            { xi.item.WOOZYSHROOM,             100, xi.craftRank.AMATEUR },
-            { xi.item.STICK_OF_CINNAMON,        50, xi.craftRank.AMATEUR },
-            { xi.item.EBONY_LOG,                50, xi.craftRank.AMATEUR },
-            { xi.item.ELM_LOG,                  50, xi.craftRank.AMATEUR },
-            { xi.item.PUFFBALL,                 50, xi.craftRank.AMATEUR },
-            { xi.item.PIECE_OF_RATTAN_LUMBER,   50, xi.craftRank.AMATEUR },
-            { xi.item.ROSEWOOD_LOG,             50, xi.craftRank.AMATEUR },
-            { xi.item.SLEEPSHROOM,              50, xi.craftRank.AMATEUR },
-            { xi.item.YEW_LOG,                  50, xi.craftRank.AMATEUR },
-            { xi.item.DEATHBALL,                10, xi.craftRank.AMATEUR },
-            { xi.item.KING_TRUFFLE,             10, xi.craftRank.AMATEUR },
-            { xi.item.OAK_LOG,                  10, xi.craftRank.AMATEUR },
-            { xi.item.PETRIFIED_LOG,            10, xi.craftRank.AMATEUR },
-            { xi.item.REISHI_MUSHROOM,          10, xi.craftRank.AMATEUR },
-            { xi.item.PIECE_OF_ANCIENT_LUMBER,   5, xi.craftRank.AMATEUR },
-            { xi.item.PLATE_OF_HEAVY_METAL,      5, xi.craftRank.AMATEUR },
-            { xi.item.LACQUER_TREE_LOG,          5, xi.craftRank.AMATEUR },
-            { xi.item.MAHOGANY_LOG,              5, xi.craftRank.AMATEUR },
-            { xi.item.FIRE_CRYSTAL,            100, xi.craftRank.AMATEUR },
+            [1] = { xi.item.BONE_CHIP,              100, xi.craftRank.AMATEUR    },
+            [2] = { xi.item.DANCESHROOM,            100, xi.craftRank.AMATEUR    },
+            [3] = { xi.item.STICK_OF_CINNAMON,       50, xi.craftRank.RECRUIT    },
+            [4] = { xi.item.PIECE_OF_RATTAN_LUMBER,  50, xi.craftRank.RECRUIT    },
+            [5] = { xi.item.ROSEWOOD_LOG,            50, xi.craftRank.INITIATE   },
+            [6] = { xi.item.PUFFBALL,                50, xi.craftRank.INITIATE   },
+            [7] = { xi.item.PETRIFIED_LOG,           10, xi.craftRank.NOVICE     },
+            [8] = { xi.item.KING_TRUFFLE,            10, xi.craftRank.NOVICE     },
+            [9] = { xi.item.EBONY_LOG,                5, xi.craftRank.JOURNEYMAN },
         },
-        [diggingLayer.BURROW] =
+        [diggingLayer.BURROW] = -- Set: Shrooms
         {
-            -- No entries
+            [1] = { xi.item.DEATHBALL,       100, xi.craftRank.AMATEUR    },
+            [2] = { xi.item.SLEEPSHROOM,     100, xi.craftRank.AMATEUR    },
+            [3] = { xi.item.CORAL_FUNGUS,     50, xi.craftRank.RECRUIT    },
+            [4] = { xi.item.WOOZYSHROOM,      10, xi.craftRank.INITIATE   },
+            [5] = { xi.item.PUFFBALL,         10, xi.craftRank.NOVICE     },
+            [6] = { xi.item.DANCESHROOM,       5, xi.craftRank.APPRENTICE },
+            [7] = { xi.item.REISHI_MUSHROOM,   1, xi.craftRank.JOURNEYMAN },
+            [8] = { xi.item.KING_TRUFFLE,      1, xi.craftRank.CRAFTSMAN  },
         },
-        [diggingLayer.BORE] =
+        [diggingLayer.BORE] = -- Set: Logs 1
         {
-            -- No entries
+            [1] = { xi.item.ARROWWOOD_LOG,           240, xi.craftRank.AMATEUR    },
+            [2] = { xi.item.YEW_LOG,                 150, xi.craftRank.AMATEUR    },
+            [3] = { xi.item.ELM_LOG,                 100, xi.craftRank.RECRUIT    },
+            [4] = { xi.item.OAK_LOG,                  50, xi.craftRank.INITIATE   },
+            [5] = { xi.item.ROSEWOOD_LOG,             10, xi.craftRank.NOVICE     },
+            [6] = { xi.item.MAHOGANY_LOG,              5, xi.craftRank.APPRENTICE },
+            [7] = { xi.item.EBONY_LOG,                 5, xi.craftRank.JOURNEYMAN },
+            [8] = { xi.item.PIECE_OF_ANCIENT_LUMBER,   1, xi.craftRank.CRAFTSMAN  },
+            [9] = { xi.item.LACQUER_TREE_LOG,          1, xi.craftRank.ARTISAN    },
         },
     },
 
@@ -1089,40 +1699,41 @@ local digInfo =
     {
         [diggingLayer.TREASURE] =
         {
-            -- No entries
+            [1] = { xi.item.PLATE_OF_HEAVY_METAL, 5, xi.craftRank.ADEPT },
         },
         [diggingLayer.REGULAR] =
         {
-            { xi.item.ARROWWOOD_LOG,           100, xi.craftRank.AMATEUR },
-            { xi.item.BONE_CHIP,               100, xi.craftRank.AMATEUR },
-            { xi.item.DANCESHROOM,             100, xi.craftRank.AMATEUR },
-            { xi.item.WOOZYSHROOM,             100, xi.craftRank.AMATEUR },
-            { xi.item.DANCESHROOM,              50, xi.craftRank.AMATEUR },
-            { xi.item.DRYAD_ROOT,               50, xi.craftRank.AMATEUR },
-            { xi.item.EBONY_LOG,                50, xi.craftRank.AMATEUR },
-            { xi.item.ELM_LOG,                  50, xi.craftRank.AMATEUR },
-            { xi.item.KAZHAM_PINEAPPLE,         50, xi.craftRank.AMATEUR },
-            { xi.item.LAUAN_LOG,                50, xi.craftRank.AMATEUR },
-            { xi.item.MAHOGANY_LOG,             50, xi.craftRank.AMATEUR },
-            { xi.item.OAK_LOG,                  50, xi.craftRank.AMATEUR },
-            { xi.item.REISHI_MUSHROOM,          50, xi.craftRank.AMATEUR },
-            { xi.item.ROSEWOOD_LOG,             50, xi.craftRank.AMATEUR },
-            { xi.item.YEW_LOG,                  50, xi.craftRank.AMATEUR },
-            { xi.item.CORAL_FUNGUS,             10, xi.craftRank.AMATEUR },
-            { xi.item.PETRIFIED_LOG,            10, xi.craftRank.AMATEUR },
-            { xi.item.PUFFBALL,                 10, xi.craftRank.AMATEUR },
-            { xi.item.PIECE_OF_ANCIENT_LUMBER,   5, xi.craftRank.AMATEUR },
-            { xi.item.DEATHBALL,                 5, xi.craftRank.AMATEUR },
-            { xi.item.LACQUER_TREE_LOG,          5, xi.craftRank.AMATEUR },
-            { xi.item.FIRE_CRYSTAL,            100, xi.craftRank.AMATEUR },
+            [1] = { xi.item.BONE_CHIP,        100, xi.craftRank.AMATEUR    },
+            [2] = { xi.item.KAZHAM_PINEAPPLE,  50, xi.craftRank.AMATEUR    },
+            [3] = { xi.item.LAUAN_LOG,         50, xi.craftRank.AMATEUR    },
+            [4] = { xi.item.MAHOGANY_LOG,      50, xi.craftRank.RECRUIT    },
+            [5] = { xi.item.DRYAD_ROOT,        50, xi.craftRank.RECRUIT    },
+            [6] = { xi.item.REISHI_MUSHROOM,   10, xi.craftRank.RECRUIT    },
+            [7] = { xi.item.CORAL_FUNGUS,      10, xi.craftRank.NOVICE     },
+            [8] = { xi.item.EBONY_LOG,          5, xi.craftRank.JOURNEYMAN },
         },
-        [diggingLayer.BURROW] =
+        [diggingLayer.BURROW] = -- Set: Shrooms
         {
-            -- No entries
+            [1] = { xi.item.DEATHBALL,       100, xi.craftRank.AMATEUR    },
+            [2] = { xi.item.SLEEPSHROOM,     100, xi.craftRank.AMATEUR    },
+            [3] = { xi.item.CORAL_FUNGUS,     50, xi.craftRank.RECRUIT    },
+            [4] = { xi.item.WOOZYSHROOM,      10, xi.craftRank.INITIATE   },
+            [5] = { xi.item.PUFFBALL,         10, xi.craftRank.NOVICE     },
+            [6] = { xi.item.DANCESHROOM,       5, xi.craftRank.APPRENTICE },
+            [7] = { xi.item.REISHI_MUSHROOM,   1, xi.craftRank.JOURNEYMAN },
+            [8] = { xi.item.KING_TRUFFLE,      1, xi.craftRank.CRAFTSMAN  },
         },
-        [diggingLayer.BORE] =
+        [diggingLayer.BORE] = -- Set: Logs 1
         {
-            -- No entries
+            [1] = { xi.item.ARROWWOOD_LOG,           240, xi.craftRank.AMATEUR    },
+            [2] = { xi.item.YEW_LOG,                 150, xi.craftRank.AMATEUR    },
+            [3] = { xi.item.ELM_LOG,                 100, xi.craftRank.RECRUIT    },
+            [4] = { xi.item.OAK_LOG,                  50, xi.craftRank.INITIATE   },
+            [5] = { xi.item.ROSEWOOD_LOG,             10, xi.craftRank.NOVICE     },
+            [6] = { xi.item.MAHOGANY_LOG,              5, xi.craftRank.APPRENTICE },
+            [7] = { xi.item.EBONY_LOG,                 5, xi.craftRank.JOURNEYMAN },
+            [8] = { xi.item.PIECE_OF_ANCIENT_LUMBER,   1, xi.craftRank.CRAFTSMAN  },
+            [9] = { xi.item.LACQUER_TREE_LOG,          1, xi.craftRank.ARTISAN    },
         },
     },
 
@@ -1130,43 +1741,357 @@ local digInfo =
     {
         [diggingLayer.TREASURE] =
         {
-            -- No entries
+            [1] = { xi.item.PLATE_OF_HEAVY_METAL, 5, xi.craftRank.ADEPT },
         },
         [diggingLayer.REGULAR] =
         {
-            { xi.item.BONE_CHIP,                240, xi.craftRank.AMATEUR },
-            { xi.item.BLACK_CHOCOBO_FEATHER,    100, xi.craftRank.AMATEUR },
-            { xi.item.GIANT_FEMUR,              100, xi.craftRank.AMATEUR },
-            { xi.item.PHOENIX_FEATHER,          100, xi.craftRank.AMATEUR },
-            { xi.item.CORAL_FRAGMENT,            50, xi.craftRank.AMATEUR },
-            { xi.item.HANDFUL_OF_FISH_SCALES,    50, xi.craftRank.AMATEUR },
-            { xi.item.HIGH_QUALITY_PUGIL_SCALE,  50, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_IRON_ORE,         50, xi.craftRank.AMATEUR },
-            { xi.item.PEBBLE,                    50, xi.craftRank.AMATEUR },
-            { xi.item.CLUMP_OF_RED_MOKO_GRASS,   50, xi.craftRank.AMATEUR },
-            { xi.item.SEASHELL,                  50, xi.craftRank.AMATEUR },
-            { xi.item.TURTLE_SHELL,              50, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_ZINC_ORE,         50, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_DARKSTEEL_ORE,    10, xi.craftRank.AMATEUR },
-            { xi.item.DEMON_HORN,                10, xi.craftRank.AMATEUR },
-            { xi.item.DEMON_SKULL,               10, xi.craftRank.AMATEUR },
-            { xi.item.HANDFUL_OF_DRAGON_SCALES,  10, xi.craftRank.AMATEUR },
-            { xi.item.GIANT_BIRD_PLUME,          10, xi.craftRank.AMATEUR },
-            { xi.item.CHUNK_OF_GOLD_ORE,         10, xi.craftRank.AMATEUR },
-            { xi.item.PHILOSOPHERS_STONE,        10, xi.craftRank.AMATEUR },
-            { xi.item.SPIDER_WEB,                10, xi.craftRank.AMATEUR },
-            { xi.item.TITANICTUS_SHELL,          10, xi.craftRank.AMATEUR },
-            { xi.item.HANDFUL_OF_WYVERN_SCALES,  10, xi.craftRank.AMATEUR },
-            { xi.item.PLATE_OF_HEAVY_METAL,       5, xi.craftRank.AMATEUR },
-            { xi.item.FIRE_CRYSTAL,             100, xi.craftRank.AMATEUR },
+            [1] = { xi.item.BONE_CHIP,              240, xi.craftRank.AMATEUR    },
+            [2] = { xi.item.PEBBLE,                 150, xi.craftRank.AMATEUR    },
+            [3] = { xi.item.CHUNK_OF_ZINC_ORE,      100, xi.craftRank.RECRUIT    },
+            [4] = { xi.item.GIANT_FEMUR,            100, xi.craftRank.RECRUIT    },
+            [5] = { xi.item.CHUNK_OF_IRON_ORE,       50, xi.craftRank.INITIATE   },
+            [6] = { xi.item.CHUNK_OF_DARKSTEEL_ORE,  10, xi.craftRank.NOVICE     },
+            [7] = { xi.item.CHUNK_OF_GOLD_ORE,       10, xi.craftRank.NOVICE     },
+            [8] = { xi.item.CORAL_FRAGMENT,           5, xi.craftRank.APPRENTICE },
+            [9] = { xi.item.PHILOSOPHERS_STONE,       5, xi.craftRank.APPRENTICE },
         },
-        [diggingLayer.BURROW] =
+        [diggingLayer.BURROW] = -- Set: Feathers
         {
-            -- No entries
+            [1] = { xi.item.CLUMP_OF_RED_MOKO_GRASS, 100, xi.craftRank.AMATEUR   },
+            [2] = { xi.item.BLACK_CHOCOBO_FEATHER,    50, xi.craftRank.RECRUIT   },
+            [4] = { xi.item.GIANT_BIRD_PLUME,         10, xi.craftRank.INITIATE  },
+            [3] = { xi.item.SPIDER_WEB,                5, xi.craftRank.NOVICE    },
+            [5] = { xi.item.PHOENIX_FEATHER,           1, xi.craftRank.CRAFTSMAN },
+        },
+        [diggingLayer.BORE] = -- Set: Bones
+        {
+            [ 1] = { xi.item.BONE_CHIP,                150, xi.craftRank.AMATEUR    },
+            [ 2] = { xi.item.HANDFUL_OF_FISH_SCALES,   150, xi.craftRank.AMATEUR    },
+            [ 3] = { xi.item.SEASHELL,                 150, xi.craftRank.RECRUIT    },
+            [ 4] = { xi.item.HIGH_QUALITY_PUGIL_SCALE,  50, xi.craftRank.INITIATE   },
+            [ 5] = { xi.item.TITANICTUS_SHELL,          50, xi.craftRank.APPRENTICE },
+            [ 6] = { xi.item.DEMON_HORN,                10, xi.craftRank.JOURNEYMAN },
+            [ 7] = { xi.item.HANDFUL_OF_WYVERN_SCALES,   5, xi.craftRank.CRAFTSMAN  },
+            [ 8] = { xi.item.TURTLE_SHELL,               5, xi.craftRank.CRAFTSMAN  },
+            [ 9] = { xi.item.DEMON_SKULL,                1, xi.craftRank.ARTISAN    },
+            [10] = { xi.item.HANDFUL_OF_DRAGON_SCALES,   1, xi.craftRank.ARTISAN    },
+        },
+    },
+
+    [xi.zone.QUFIM_ISLAND] = -- 126
+    {
+        [diggingLayer.TREASURE] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.REGULAR] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.BURROW] = -- Set: Beastcoins
+        {
+            [1] = { xi.item.BEASTCOIN,          100, xi.craftRank.AMATEUR    },
+            [2] = { xi.item.SILVER_BEASTCOIN,    50, xi.craftRank.RECRUIT    },
+            [3] = { xi.item.GOLD_BEASTCOIN,      10, xi.craftRank.INITIATE   },
+            [4] = { xi.item.MYTHRIL_BEASTCOIN,    5, xi.craftRank.NOVICE     },
+            [5] = { xi.item.PLATINUM_BEASTCOIN,   1, xi.craftRank.APPRENTICE },
+        },
+        [diggingLayer.BORE] = -- Set: Crystals
+        {
+            [1] = { xi.item.FIRE_CRYSTAL,      50, xi.craftRank.AMATEUR },
+            [2] = { xi.item.ICE_CRYSTAL,       50, xi.craftRank.AMATEUR },
+            [3] = { xi.item.WIND_CRYSTAL,      50, xi.craftRank.AMATEUR },
+            [4] = { xi.item.EARTH_CRYSTAL,     50, xi.craftRank.AMATEUR },
+            [5] = { xi.item.LIGHTNING_CRYSTAL, 50, xi.craftRank.AMATEUR },
+            [6] = { xi.item.WATER_CRYSTAL,     50, xi.craftRank.AMATEUR },
+            [7] = { xi.item.LIGHT_CRYSTAL,     50, xi.craftRank.AMATEUR },
+            [8] = { xi.item.DARK_CRYSTAL,      50, xi.craftRank.AMATEUR },
+        },
+    },
+
+    [xi.zone.BEHEMOTHS_DOMINION] = -- 127
+    {
+        [diggingLayer.TREASURE] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.REGULAR] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.BURROW] = -- Set: Yellow Ginseng seeds
+        {
+            [1] = { xi.item.PIECE_OF_YELLOW_GINSENG, 150, xi.craftRank.AMATEUR  },
+            [2] = { xi.item.BAG_OF_WILDGRASS_SEEDS,   50, xi.craftRank.RECRUIT  },
+            [3] = { xi.item.BAG_OF_TREE_CUTTINGS,     10, xi.craftRank.INITIATE },
+            [4] = { xi.item.BAG_OF_CACTUS_STEMS,       5, xi.craftRank.NOVICE   },
+        },
+        [diggingLayer.BORE] = -- Set: Ores 1
+        {
+            [1] = { xi.item.FLINT_STONE,             240, xi.craftRank.AMATEUR    },
+            [2] = { xi.item.CHUNK_OF_ALUMINUM_ORE,   100, xi.craftRank.RECRUIT    },
+            [3] = { xi.item.CHUNK_OF_GOLD_ORE,        50, xi.craftRank.INITIATE   },
+            [4] = { xi.item.CHUNK_OF_DARKSTEEL_ORE,   10, xi.craftRank.NOVICE     },
+            [5] = { xi.item.CHUNK_OF_ADAMAN_ORE,       5, xi.craftRank.JOURNEYMAN },
+            [6] = { xi.item.CHUNK_OF_PLATINUM_ORE,     5, xi.craftRank.JOURNEYMAN },
+            [7] = { xi.item.CHUNK_OF_ORICHALCUM_ORE,   1, xi.craftRank.CRAFTSMAN  },
+        },
+    },
+
+    [xi.zone.VALLEY_OF_SORROWS] = -- 128
+    {
+        [diggingLayer.TREASURE] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.REGULAR] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.BURROW] = -- Set: Feathers
+        {
+            [1] = { xi.item.CLUMP_OF_RED_MOKO_GRASS, 100, xi.craftRank.AMATEUR   },
+            [2] = { xi.item.BLACK_CHOCOBO_FEATHER,    50, xi.craftRank.RECRUIT   },
+            [4] = { xi.item.GIANT_BIRD_PLUME,         10, xi.craftRank.INITIATE  },
+            [3] = { xi.item.SPIDER_WEB,                5, xi.craftRank.NOVICE    },
+            [5] = { xi.item.PHOENIX_FEATHER,           1, xi.craftRank.CRAFTSMAN },
         },
         [diggingLayer.BORE] =
         {
-            -- No entries
+            -- No entries.
+        },
+    },
+
+    [xi.zone.BEAUCEDINE_GLACIER_S] = -- 136
+    {
+        [diggingLayer.TREASURE] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.REGULAR] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.BURROW] = -- Set Ores 3
+        {
+            [1] = { xi.item.FLINT_STONE,               240, xi.craftRank.AMATEUR },
+            [2] = { xi.item.CHUNK_OF_SILVER_ORE,       100, xi.craftRank.AMATEUR },
+            [3] = { xi.item.CHUNK_OF_IRON_ORE,         100, xi.craftRank.RECRUIT },
+            [4] = { xi.item.SHARD_OF_OBSIDIAN,         100, xi.craftRank.RECRUIT },
+            [5] = { xi.item.CHUNK_OF_KOPPARNICKEL_ORE, 100, xi.craftRank.RECRUIT },
+            [6] = { xi.item.CHUNK_OF_MYTHRIL_ORE,      100, xi.craftRank.RECRUIT },
+            [7] = { xi.item.CHUNK_OF_DARKSTEEL_ORE,     10, xi.craftRank.NOVICE  },
+            [8] = { xi.item.CHUNK_OF_SWAMP_ORE,         10, xi.craftRank.NOVICE  },
+        },
+        [diggingLayer.BORE] = -- Set: Crystals
+        {
+            [1] = { xi.item.FIRE_CRYSTAL,      50, xi.craftRank.AMATEUR },
+            [2] = { xi.item.ICE_CRYSTAL,       50, xi.craftRank.AMATEUR },
+            [3] = { xi.item.WIND_CRYSTAL,      50, xi.craftRank.AMATEUR },
+            [4] = { xi.item.EARTH_CRYSTAL,     50, xi.craftRank.AMATEUR },
+            [5] = { xi.item.LIGHTNING_CRYSTAL, 50, xi.craftRank.AMATEUR },
+            [6] = { xi.item.WATER_CRYSTAL,     50, xi.craftRank.AMATEUR },
+            [7] = { xi.item.LIGHT_CRYSTAL,     50, xi.craftRank.AMATEUR },
+            [8] = { xi.item.DARK_CRYSTAL,      50, xi.craftRank.AMATEUR },
+        },
+    },
+
+    [xi.zone.XARCABARD_S] = -- 137
+    {
+        [diggingLayer.TREASURE] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.REGULAR] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.BURROW] = -- Set: Beastcoins
+        {
+            [1] = { xi.item.BEASTCOIN,          100, xi.craftRank.AMATEUR    },
+            [2] = { xi.item.SILVER_BEASTCOIN,    50, xi.craftRank.RECRUIT    },
+            [3] = { xi.item.GOLD_BEASTCOIN,      10, xi.craftRank.INITIATE   },
+            [4] = { xi.item.MYTHRIL_BEASTCOIN,    5, xi.craftRank.NOVICE     },
+            [5] = { xi.item.PLATINUM_BEASTCOIN,   1, xi.craftRank.APPRENTICE },
+        },
+        [diggingLayer.BORE] = -- Set: Logs 4
+        {
+            [1] = { xi.item.ARROWWOOD_LOG,           240, xi.craftRank.AMATEUR   },
+            [2] = { xi.item.YEW_LOG,                 150, xi.craftRank.AMATEUR   },
+            [3] = { xi.item.ELM_LOG,                 100, xi.craftRank.RECRUIT   },
+            [4] = { xi.item.FEYWEALD_LOG,             50, xi.craftRank.INITIATE  },
+            [5] = { xi.item.OAK_LOG,                  50, xi.craftRank.INITIATE  },
+            [6] = { xi.item.TEAK_LOG,                  1, xi.craftRank.CRAFTSMAN },
+            [7] = { xi.item.PIECE_OF_ANCIENT_LUMBER,   1, xi.craftRank.CRAFTSMAN },
+            [8] = { xi.item.JACARANDA_LOG,             1, xi.craftRank.ARTISAN   },
+            [9] = { xi.item.LACQUER_TREE_LOG,          1, xi.craftRank.ARTISAN   },
+        },
+    },
+
+    [xi.zone.YAHSE_HUNTING_GROUNDS] = -- 260
+    {
+        [diggingLayer.TREASURE] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.REGULAR] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.BURROW] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.BORE] =
+        {
+            -- No entries.
+        },
+    },
+
+    [xi.zone.CEIZAK_BATTLEGROUNDS] = -- 261
+    {
+        [diggingLayer.TREASURE] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.REGULAR] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.BURROW] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.BORE] =
+        {
+            -- No entries.
+        },
+    },
+
+    [xi.zone.FORET_DE_HENNETIEL] = -- 262
+    {
+        [diggingLayer.TREASURE] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.REGULAR] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.BURROW] = -- Set: Shrooms
+        {
+            [1] = { xi.item.DEATHBALL,       100, xi.craftRank.AMATEUR    },
+            [2] = { xi.item.SLEEPSHROOM,     100, xi.craftRank.AMATEUR    },
+            [3] = { xi.item.CORAL_FUNGUS,     50, xi.craftRank.RECRUIT    },
+            [4] = { xi.item.WOOZYSHROOM,      10, xi.craftRank.INITIATE   },
+            [5] = { xi.item.PUFFBALL,         10, xi.craftRank.NOVICE     },
+            [6] = { xi.item.DANCESHROOM,       5, xi.craftRank.APPRENTICE },
+            [7] = { xi.item.REISHI_MUSHROOM,   1, xi.craftRank.JOURNEYMAN },
+            [8] = { xi.item.KING_TRUFFLE,      1, xi.craftRank.CRAFTSMAN  },
+        },
+        [diggingLayer.BORE] = -- Set: Ores 1
+        {
+            [1] = { xi.item.FLINT_STONE,            240, xi.craftRank.AMATEUR    },
+            [2] = { xi.item.CHUNK_OF_ALUMINUM_ORE,  100, xi.craftRank.RECRUIT    },
+            [3] = { xi.item.CHUNK_OF_GOLD_ORE,       50, xi.craftRank.INITIATE   },
+            [4] = { xi.item.CHUNK_OF_DARKSTEEL_ORE,  10, xi.craftRank.NOVICE     },
+            [5] = { xi.item.CHUNK_OF_ADAMAN_ORE,      5, xi.craftRank.JOURNEYMAN },
+            [6] = { xi.item.CHUNK_OF_PLATINUM_ORE,    5, xi.craftRank.JOURNEYMAN },
+            [7] = { xi.item.CHUNK_OF_ORICHALCUM_ORE,  1, xi.craftRank.CRAFTSMAN  },
+        },
+    },
+
+    [xi.zone.YORCIA_WEALD] = -- 263
+    {
+        [diggingLayer.TREASURE] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.REGULAR] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.BURROW] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.BORE] = -- Set: Yellow Ginseng seeds
+        {
+            [1] = { xi.item.PIECE_OF_YELLOW_GINSENG, 150, xi.craftRank.AMATEUR  },
+            [2] = { xi.item.BAG_OF_WILDGRASS_SEEDS,   50, xi.craftRank.RECRUIT  },
+            [3] = { xi.item.BAG_OF_TREE_CUTTINGS,     10, xi.craftRank.INITIATE },
+            [4] = { xi.item.BAG_OF_CACTUS_STEMS,       5, xi.craftRank.NOVICE   },
+        },
+    },
+
+    [xi.zone.MORIMAR_BASALT_FIELDS] = -- 265
+    {
+        [diggingLayer.TREASURE] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.REGULAR] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.BURROW] = -- Set: Yellow Ginseng seeds
+        {
+            [1] = { xi.item.PIECE_OF_YELLOW_GINSENG, 150, xi.craftRank.AMATEUR  },
+            [2] = { xi.item.BAG_OF_WILDGRASS_SEEDS,   50, xi.craftRank.RECRUIT  },
+            [3] = { xi.item.BAG_OF_TREE_CUTTINGS,     10, xi.craftRank.INITIATE },
+            [4] = { xi.item.BAG_OF_CACTUS_STEMS,       5, xi.craftRank.NOVICE   },
+        },
+        [diggingLayer.BORE] =
+        {
+            -- No entries.
+        },
+    },
+
+    [xi.zone.MARJAMI_RAVINE] = -- 266
+    {
+        [diggingLayer.TREASURE] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.REGULAR] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.BURROW] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.BORE] =
+        {
+            -- No entries.
+        },
+    },
+
+    [xi.zone.KAMIHR_DRIFTS] = -- 267
+    {
+        [diggingLayer.TREASURE] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.REGULAR] =
+        {
+            -- No entries.
+        },
+        [diggingLayer.BURROW] = -- Set: Logs 1
+        {
+            [1] = { xi.item.ARROWWOOD_LOG,           240, xi.craftRank.AMATEUR    },
+            [2] = { xi.item.YEW_LOG,                 150, xi.craftRank.AMATEUR    },
+            [3] = { xi.item.ELM_LOG,                 100, xi.craftRank.RECRUIT    },
+            [4] = { xi.item.OAK_LOG,                  50, xi.craftRank.INITIATE   },
+            [5] = { xi.item.ROSEWOOD_LOG,             10, xi.craftRank.NOVICE     },
+            [6] = { xi.item.MAHOGANY_LOG,              5, xi.craftRank.APPRENTICE },
+            [7] = { xi.item.EBONY_LOG,                 5, xi.craftRank.JOURNEYMAN },
+            [8] = { xi.item.PIECE_OF_ANCIENT_LUMBER,   1, xi.craftRank.CRAFTSMAN  },
+            [9] = { xi.item.LACQUER_TREE_LOG,          1, xi.craftRank.ARTISAN    },
+        },
+        [diggingLayer.BORE] =
+        {
+            -- No entries.
         },
     },
 }
@@ -1298,6 +2223,16 @@ xi.chocoboDig.start = function(player)
     local todayDigCount = player:getCharVar('[DIG]DigCount')
     local currentX      = player:getXPos()
     local currentZ      = player:getZPos()
+    local currentXSign  = 0
+    local currentZSign  = 0
+
+    if currentX < 0 then
+        currentXSign = 2
+    end
+
+    if currentZ < 0 then
+        currentZSign = 2
+    end
 
     -----------------------------------
     -- Early returns and exceptions
@@ -1332,12 +2267,12 @@ xi.chocoboDig.start = function(player)
     end
 
     -- Handle auto-fail from position.
-    local lastX = player:getLocalVar('[DIG]LastXPos')
-    local lastZ = player:getLocalVar('[DIG]LastZPos')
+    local lastX = player:getLocalVar('[DIG]LastXPos') * (1 - player:getLocalVar('[DIG]LastXPosSign'))
+    local lastZ = player:getLocalVar('[DIG]LastZPos') * (1 - player:getLocalVar('[DIG]LastZPosSign'))
 
     if
-        currentX >= lastX - 2 and currentX <= lastX + 2 and -- Check current X axis to see if you are too close to your last X.
-        currentZ >= lastZ - 2 and currentZ <= lastZ + 2     -- Check current Z axis to see if you are too close to your last Z.
+        currentX >= lastX - 5 and currentX <= lastX + 5 and -- Check current X axis to see if you are too close to your last X.
+        currentZ >= lastZ - 5 and currentZ <= lastZ + 5     -- Check current Z axis to see if you are too close to your last Z.
     then
         player:messageText(player, text.FIND_NOTHING)
         player:setLocalVar('[DIG]LastDigTime', os.time())
@@ -1352,6 +2287,8 @@ xi.chocoboDig.start = function(player)
     -- Set player variables, no matter the result.
     player:setLocalVar('[DIG]LastXPos', currentX)
     player:setLocalVar('[DIG]LastZPos', currentZ)
+    player:setLocalVar('[DIG]LastXPosSign', currentXSign)
+    player:setLocalVar('[DIG]LastZPosSign', currentZSign)
     player:setLocalVar('[DIG]LastDigTime', os.time())
     player:setVar('[DIG]DigCount', todayDigCount + 1, NextJstDay())
 
@@ -1365,6 +2302,9 @@ xi.chocoboDig.start = function(player)
 
         return true
     end
+
+    -- Handle regional currency here. Incompatible with the other 3 layers. "Early" return.
+    -- TODO: Implement logic and message to zones.
 
     -- Handle regular layer. This also contains, elemental ores, weather crystals and day-element geodes.
     local regularItemId = handleDiggingLayer(player, zoneId, diggingLayer.REGULAR)
