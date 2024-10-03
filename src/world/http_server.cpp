@@ -232,8 +232,8 @@ void HTTPServer::LockingUpdate()
             {
                 while (rset->next())
                 {
-                    auto zoneId = rset->getUInt("pos_zone");
-                    auto count  = rset->getUInt("count");
+                    auto zoneId = rset->get<uint16>("pos_zone");
+                    auto count  = rset->get<uint32>("count");
 
                     apiDataCache.zonePlayerCounts[zoneId] = count;
                 }
