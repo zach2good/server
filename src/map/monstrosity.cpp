@@ -182,28 +182,28 @@ void monstrosity::ReadMonstrosityData(CCharEntity* PChar)
 
     if (rset && rset->rowsCount() && rset->next())
     {
-        data->MonstrosityId = static_cast<uint16>(rset->getUInt("current_monstrosity_id"));
-        data->Species       = static_cast<uint16>(rset->getUInt("current_monstrosity_species"));
+        data->MonstrosityId = rset->get<uint16>("current_monstrosity_id");
+        data->Species       = rset->get<uint16>("current_monstrosity_species");
         data->Look          = gMonstrositySpeciesMap[data->Species].look;
 
-        data->NamePrefix1 = static_cast<uint8>(rset->getUInt("current_monstrosity_name_prefix_1"));
-        data->NamePrefix2 = static_cast<uint8>(rset->getUInt("current_monstrosity_name_prefix_2"));
-        data->CurrentExp  = static_cast<uint32>(rset->getUInt("current_exp"));
+        data->NamePrefix1 = rset->get<uint8>("current_monstrosity_name_prefix_1");
+        data->NamePrefix2 = rset->get<uint8>("current_monstrosity_name_prefix_2");
+        data->CurrentExp  = rset->get<uint32>("current_exp");
 
         db::extractFromBlob(rset, "equip", data->EquippedInstincts);
         db::extractFromBlob(rset, "levels", data->levels);
         db::extractFromBlob(rset, "instincts", data->instincts);
         db::extractFromBlob(rset, "variants", data->variants);
 
-        data->Belligerency = static_cast<bool>(rset->getUInt("belligerency"));
+        data->Belligerency = static_cast<bool>(rset->get<uint32>("belligerency"));
 
-        data->EntryPos.x        = rset->getFloat("entry_x");
-        data->EntryPos.y        = rset->getFloat("entry_y");
-        data->EntryPos.z        = rset->getFloat("entry_z");
-        data->EntryPos.rotation = static_cast<uint8>(rset->getUInt("entry_rot"));
-        data->EntryZoneId       = static_cast<uint16>(rset->getUInt("entry_zone_id"));
-        data->EntryMainJob      = static_cast<uint8>(rset->getUInt("entry_mjob"));
-        data->EntrySubJob       = static_cast<uint8>(rset->getUInt("entry_sjob"));
+        data->EntryPos.x        = rset->get<float>("entry_x");
+        data->EntryPos.y        = rset->get<float>("entry_y");
+        data->EntryPos.z        = rset->get<float>("entry_z");
+        data->EntryPos.rotation = rset->get<uint8>("entry_rot");
+        data->EntryZoneId       = rset->get<uint16>("entry_zone_id");
+        data->EntryMainJob      = rset->get<uint8>("entry_mjob");
+        data->EntrySubJob       = rset->get<uint8>("entry_sjob");
 
         // Build additional data from lookups
         data->MainJob = gMonstrositySpeciesMap[data->Species].mjob;

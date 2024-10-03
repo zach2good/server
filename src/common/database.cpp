@@ -127,7 +127,7 @@ mutex_guarded<db::detail::State>& db::detail::getState()
     return state;
 }
 
-auto db::query(std::string const& rawQuery) -> std::unique_ptr<db::detail::ResultSetWrapper>
+auto db::queryStr(std::string const& rawQuery) -> std::unique_ptr<db::detail::ResultSetWrapper>
 {
     TracyZoneScoped;
     TracyZoneString(rawQuery);
@@ -150,4 +150,31 @@ auto db::query(std::string const& rawQuery) -> std::unique_ptr<db::detail::Resul
         }
     });
     // clang-format on
+}
+
+auto db::escapeString(std::string const& str) -> std::string
+{
+    std::string escapedStr = str;
+
+    // Replacement map similar to str_replace in PHP
+    static std::unordered_map<std::string, std::string> replacements = {
+        {"\\", "\\\\"},
+        {"\0", "\\0"},
+        {"\n", "\\n"},
+        {"\r", "\\r"},
+        {"'", "\\'"},
+        {"\"", "\\\""},
+        {"\x1a", "\\Z"}
+    };
+
+    // Replace each character based on the replacement map
+    for (const auto& [from, to] : replacements) {
+        std::string::size_type pos = 0;
+        while ((pos = escapedStr.find(from, pos)) != std::string::npos) {
+            escapedStr.replace(pos, from.length(), to);
+            pos += to.length();
+        }
+    }
+
+    return escapedStr;
 }

@@ -160,6 +160,13 @@ namespace db
                 return value;
             }
 
+            template <typename T>
+            auto get(const std::size_t index) -> T
+            {
+                // TODO: Implement this
+                return T{};
+            }
+
         private:
             std::unique_ptr<sql::ResultSet> resultSet;
         };
@@ -258,7 +265,14 @@ namespace db
     // @param query The query string to execute.
     // @return A unique pointer to the result set of the query.
     // @note Everything in database-land is 1-indexed, not 0-indexed.
-    auto query(std::string const& rawQuery) -> std::unique_ptr<db::detail::ResultSetWrapper>;
+    auto queryStr(std::string const& rawQuery) -> std::unique_ptr<db::detail::ResultSetWrapper>;
+
+    template <typename... Args>
+    auto query(std::string const& query, Args... args)
+    {
+        std::string query_v = fmt::sprintf(query, args...);
+        return queryStr(query_v.c_str());
+    }
 
     // @brief Execute a prepared statement with the given query string and arguments.
     // @param query The query string to execute.
@@ -463,7 +477,7 @@ namespace db
     // @param blobKey The key of the blob in the result set.
     // @param destination The struct to extract the blob into.
     template <typename T>
-    void extractFromBlob(std::unique_ptr<sql::ResultSet>& rset, std::string const& blobKey, T& destination)
+    void extractFromBlob(std::unique_ptr<db::detail::ResultSetWrapper> const& rset, std::string const& blobKey, T& destination)
     {
         static_assert(std::is_trivially_copyable_v<T>, "T must be trivially copyable");
 
@@ -471,9 +485,11 @@ namespace db
 
         // If we use getString on a null blob we will get back garbage data.
         // This will introduce difficult to track down crashes.
-        if (!rset->isNull(blobKey.c_str()))
+
+        // TODO
+        // if (!rset->isNull(blobKey.c_str()))
         {
-            auto blobStr = rset->getString(blobKey.c_str());
+            auto blobStr = rset->get<std::string>(blobKey.c_str());
             // Login server creates new chars with null blobs. Map server then initializes.
             // We don't want to overwrite the initialized map data with null blobs / 0 values.
             // See: login_helpers.cpp saveCharacter() and charutils::LoadChar
@@ -481,4 +497,6 @@ namespace db
             std::memcpy(&destination, blobStr.c_str(), std::min(sizeof(T), blobStr.length()));
         }
     }
+
+    auto escapeString(std::string const& str) -> std::string;
 } // namespace db
