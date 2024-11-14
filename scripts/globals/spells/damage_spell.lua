@@ -812,10 +812,10 @@ xi.spells.damage.calculateIfMagicBurst = function(target, spellElement, skillcha
     -- Sengikori appears to add to base mb multiplier per JP wiki https://wiki.ffo.jp/html/20051.html
     if
         skillchainCount >= 1 and
-        target:getMod(xi.mod.SENGIKORI_DEBUFF) > 0
+        target:getMod(xi.mod.SENGIKORI_MB_DMG_DEBUFF) > 0
     then
-        magicBurst = magicBurst + target:getMod(xi.mod.SENGIKORI_DEBUFF) / 100
-        target:setMod(xi.mod.SENGIKORI_DEBUFF, 0) -- Consume the "Effect" upon magic burst.
+        magicBurst = magicBurst + target:getMod(xi.mod.SENGIKORI_MB_DMG_DEBUFF) / 100
+        target:setMod(xi.mod.SENGIKORI_MB_DMG_DEBUFF, 0) -- Consume the "Effect" upon magic burst.
     end
 
     return magicBurst
