@@ -831,7 +831,7 @@ xi.mod =
     -- Crafting food effects
     SYNTH_SUCCESS                   = 851, -- Rate of synthesis success
     SYNTH_SKILL_GAIN                = 852, -- Synthesis skill gain rate
-    SYNTH_FAIL_RATE                 = 861, -- Synthesis failure rate (percent)
+    SYNTH_FAIL_RATE                 = 861, -- Synthesis material loss rate (percent)
     SYNTH_HQ_RATE                   = 862, -- High-quality success rate (not a percent)
     DESYNTH_SUCCESS                 = 916, -- Rate of desynthesis success
     SYNTH_FAIL_RATE_FIRE            = 917, -- Amount synthesis failure rate is reduced when using a fire crystal

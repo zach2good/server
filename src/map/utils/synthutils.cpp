@@ -674,33 +674,33 @@ namespace synthutils
      *                                                                         *
      **************************************************************************/
 
-    int32 handleMaterialLoss(CCharEntity* PChar)
+    void handleMaterialLoss(CCharEntity* PChar)
     {
-        uint8 currentCraft     = PChar->CraftContainer->getInvSlotID(0);
-        int16 synthDifficulty  = getSynthDifficulty(PChar, currentCraft);
-        int16 modSynthFailRate = PChar->getMod(Mod::SYNTH_FAIL_RATE);
+        uint8 currentCraft = PChar->CraftContainer->getInvSlotID(0);
 
-        // We are able to get the correct elemental mod here by adding the element to it since they are in the same order
-        double reduction = PChar->getMod((Mod)((int32)Mod::SYNTH_FAIL_RATE_FIRE + PChar->CraftContainer->getType()));
-
-        // Similarly we get the correct craft mod here by adding the current craft to it since they are in the same order
-        reduction += PChar->getMod((Mod)((int32)Mod::SYNTH_FAIL_RATE_WOOD + (currentCraft - SKILL_WOODWORKING)));
-        reduction /= 100.0;
-
-        uint8 invSlotID  = 0;
+        // Loop variables
+        uint8 invSlotID  = PChar->CraftContainer->getInvSlotID(1);
         uint8 nextSlotID = 0;
         uint8 lostCount  = 0;
         uint8 totalCount = 0;
+        uint8 random     = 0;
 
-        double random   = 0;
-        double lostItem = std::clamp(0.15 - reduction + (synthDifficulty > 0 ? synthDifficulty / 20 : 0), 0.0, 1.0);
+        // Synth material loss modifiers. TODO: Audit usage of this modifiers.
+        int16 breakGlobalReduction    = PChar->getMod(Mod::SYNTH_FAIL_RATE);
+        int16 breakElementalReduction = PChar->getMod((Mod)((int32)Mod::SYNTH_FAIL_RATE_FIRE + PChar->CraftContainer->getType()));
+        int16 breakTypeReduction      = PChar->getMod((Mod)((int32)Mod::SYNTH_FAIL_RATE_WOOD + currentCraft - SKILL_WOODWORKING));
+        int16 synthDifficulty         = getSynthDifficulty(PChar, currentCraft);
 
-        // Translation of JP wiki for the "Synthesis failure rate" modifier is "Synthetic material loss rate"
-        // see: http://wiki.ffo.jp/html/18416.html
-        lostItem += (double)modSynthFailRate * 0.01;
+        if (synthDifficulty < 0)
+        {
+            synthDifficulty = 0;
+        }
 
-        invSlotID = PChar->CraftContainer->getInvSlotID(1);
+        // Break Chance.
+        // Clamp note: https://wiki-ffo-jp.translate.goog/html/36626.html?_x_tr_sl=ja&_x_tr_tl=en&_x_tr_hl=en&_x_tr_pto=sc
+        int16 breakChance = std::clamp(50 - breakGlobalReduction - breakElementalReduction - breakTypeReduction + 5 * synthDifficulty, 20, 100);
 
+        // Loop through craft container items.
         for (uint8 slotID = 1; slotID <= 8; ++slotID)
         {
             if (slotID != 8)
@@ -708,9 +708,9 @@ namespace synthutils
                 nextSlotID = PChar->CraftContainer->getInvSlotID(slotID + 1);
             }
 
-            random = xirand::GetRandomNumber(1.);
+            random = xirand::GetRandomNumber(1, 100);
 
-            if (random < lostItem)
+            if (random <= breakChance)
             {
                 PChar->CraftContainer->setQuantity(slotID, 0);
                 lostCount++;
@@ -739,14 +739,14 @@ namespace synthutils
                 }
                 invSlotID = nextSlotID;
             }
+
             nextSlotID = 0;
+
             if (invSlotID == 0xFF)
             {
                 break;
             }
         }
-
-        return 0;
     }
 
     /**************************************************************************
