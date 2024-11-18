@@ -3993,6 +3993,13 @@ namespace battleutils
         {
             damage = (int32)(damage * (1.f + PChar->PMeritPoints->GetMeritValue(MERIT_INNIN_EFFECT, PChar) / 100.f));
         }
+
+        if (PDefender->getMod(Mod::SENGIKORI_SC_DMG_DEBUFF) > 0)
+        {
+            damage = static_cast<int32>(damage * (1.f + PDefender->getMod(Mod::SENGIKORI_SC_DMG_DEBUFF) / 100.f));
+            PDefender->setModifier(Mod::SENGIKORI_SC_DMG_DEBUFF, 0); // Consume the effect
+        }
+
         damage = damage * (10000 - resistance) / 10000;
         damage = MagicDmgTaken(PDefender, damage, appliedEle);
         if (damage > 0)
