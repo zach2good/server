@@ -263,7 +263,7 @@ INSERT INTO `merits` VALUES (2752,'shikikoyo',5,12,2048,7,42);
 INSERT INTO `merits` VALUES (2754,'blade_bash',5,15,2048,7,42);
 INSERT INTO `merits` VALUES (2756,'ikishoten',5,30,2048,7,42);
 INSERT INTO `merits` VALUES (2758,'overwhelm',5,1,2048,7,42);
-INSERT INTO `merits` VALUES (2816,'sange',5,25,4096,7,43);
+INSERT INTO `merits` VALUES (2816,'sange',5,1,4096,7,43);
 INSERT INTO `merits` VALUES (2818,'ninja_tool_expertise',5,5,4096,7,43);
 INSERT INTO `merits` VALUES (2820,'katon_san',5,5,4096,7,43);
 INSERT INTO `merits` VALUES (2822,'hyoton_san',5,5,4096,7,43);
