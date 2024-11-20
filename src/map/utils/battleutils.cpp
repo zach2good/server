@@ -1514,7 +1514,7 @@ namespace battleutils
         // TODO: remove function
     }
 
-    uint8 GetRangedHitRate(CBattleEntity* PAttacker, CBattleEntity* PDefender, bool isBarrage, int8 accBonus)
+    uint8 GetRangedHitRate(CBattleEntity* PAttacker, CBattleEntity* PDefender, bool isBarrage, int16 accBonus)
     {
         int acc     = 0;
         int hitrate = 75;
@@ -1581,7 +1581,7 @@ namespace battleutils
     }
 
     // todo: need to penalise attacker's RangedAttack depending on distance from mob. (% decrease)
-    float GetRangedDamageRatio(CBattleEntity* PAttacker, CBattleEntity* PDefender, bool isCritical)
+    float GetRangedDamageRatio(CBattleEntity* PAttacker, CBattleEntity* PDefender, bool isCritical, int16 bonusRangedAttack)
     {
         // get ranged attack value
         uint16 rAttack = 1;
@@ -1618,6 +1618,8 @@ namespace battleutils
             // assume mobs capped
             rAttack = battleutils::GetMaxSkill(SKILL_ARCHERY, JOB_RNG, PAttacker->GetMLevel());
         }
+
+        rAttack += bonusRangedAttack;
 
         // get ratio (not capped for RAs)
         float ratio = (float)rAttack / (float)PDefender->DEF();
