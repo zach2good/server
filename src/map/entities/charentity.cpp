@@ -209,15 +209,16 @@ CCharEntity::CCharEntity()
 
     BazaarID.clean();
 
+    WideScanTarget = std::nullopt;
+
     lastTradeInvite = {};
     TradePending.clean();
     InvitePending.clean();
 
-    PLinkshell1     = nullptr;
-    PLinkshell2     = nullptr;
-    PUnityChat      = nullptr;
-    PTreasurePool   = nullptr;
-    PWideScanTarget = nullptr;
+    PLinkshell1   = nullptr;
+    PLinkshell2   = nullptr;
+    PUnityChat    = nullptr;
+    PTreasurePool = nullptr;
 
     PAutomaton             = nullptr;
     PClaimedMob            = nullptr;
