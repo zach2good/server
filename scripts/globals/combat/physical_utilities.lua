@@ -840,7 +840,8 @@ xi.combat.physical.calculateGuardRate = function(defender, attacker)
     local attackerDex = attacker:getStat(xi.mod.DEX)
     local defenderAgi = defender:getStat(xi.mod.AGI)
 
-    guardRate = utils.clamp(((guardSkill * 0.1 + (defenderAgi - attackerDex) * 0.125 + 10) * levelDiffMult), 5, 25)
+    -- Dodge's guard bonus goes over the cap
+    guardRate = utils.clamp(((guardSkill * 0.1 + (defenderAgi - attackerDex) * 0.125 + 10) * levelDiffMult), 5, 25) + defender:getMod(xi.mod.ADDITIVE_GUARD)
 
     return guardRate
 end

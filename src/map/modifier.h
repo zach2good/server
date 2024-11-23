@@ -413,6 +413,7 @@ enum class Mod
     COUNTERSTANCE_EFFECT = 543,  // Counterstance effect in percents
     DODGE_EFFECT         = 552,  // Dodge effect in percents
     FOCUS_EFFECT         = 561,  // Focus effect in percents
+    ADDITIVE_GUARD       = 1092, // Additive % bonus to final Guard rate (adds after clamp)
 
     // White Mage
     AFFLATUS_SOLACE  = 293, // Pool of HP accumulated during Afflatus Solace
@@ -1030,7 +1031,7 @@ enum class Mod
     // The spares take care of finding the next ID to use so long as we don't forget to list IDs that have been freed up by refactoring.
     // 570 through 825 used by WS DMG mods these are not spares.
     //
-    // SPARE IDs: 1092 and onward
+    // SPARE IDs: 1093 and onward
 };
 
 // temporary workaround for using enum class as unordered_map key until compilers support it
