@@ -742,6 +742,11 @@ INSERT INTO `traits` VALUES (134,'ws damage boost',14,75,4,840,16,'ROV',0);
 INSERT INTO `traits` VALUES (134,'ws damage boost',14,85,5,840,19,'ROV',0);
 INSERT INTO `traits` VALUES (134,'ws damage boost',14,95,6,840,21,'ROV',0);
 
+-- These are additive to Max HP boost, https://www.bg-wiki.com/ffxi/Max_HP_Boost
+INSERT INTO `traits` VALUES (135,'max hp boost II',2,75,1,1095,150,'ROV',0);
+INSERT INTO `traits` VALUES (135,'max hp boost II',2,85,2,1095,300,'ROV',0);
+INSERT INTO `traits` VALUES (135,'max hp boost II',2,95,3,1095,450,'ROV',0);
+
 INSERT INTO `traits` VALUES (136,'shield barrier',7,70,1,1082,1,'ROV',0);
 
 INSERT INTO `traits` VALUES (137,'tandem strike',9,30,1,271,10,'ROV',0);
