@@ -254,7 +254,12 @@ void CBattleEntity::UpdateHealth()
 
 uint8 CBattleEntity::GetHPP() const
 {
-    return (uint8)ceil(((float)health.hp / (float)GetMaxHP()) * 100);
+    if (health.hp == 0)
+    {
+        return 0;
+    }
+
+    return static_cast<uint8>(std::floor((static_cast<float>(health.hp) / static_cast<float>(GetMaxHP())) * 100.f));
 }
 
 int32 CBattleEntity::GetMaxHP() const
@@ -270,7 +275,12 @@ int32 CBattleEntity::GetMaxHP() const
 
 uint8 CBattleEntity::GetMPP() const
 {
-    return (uint8)ceil(((float)health.mp / (float)GetMaxMP()) * 100);
+    if (health.mp == 0)
+    {
+        return 0;
+    }
+
+    return static_cast<uint8>(std::floor((static_cast<float>(health.mp) / static_cast<float>(GetMaxMP())) * 100.f));
 }
 
 int32 CBattleEntity::GetMaxMP() const
