@@ -30,6 +30,10 @@ xi.mod =
     INT                             = 12,
     MND                             = 13,
     CHR                             = 14,
+    WEAKNESS_PCT                    = 1093, -- Weakness HP/MP reduction term, -1 = - 1% HP/MP
+    CURSE_PCT                       = 1094, -- Curse HP/MP reduction term, -1 = - 1% HP/MP
+    BASE_HP                         = 1095, -- Base HP bonus (like merits)
+    BASE_MP                         = 1096, -- Base MP bonus (like merits)
 
     TWOHAND_STR                     = 218, -- Same as STR, but only active when using a two handed weapon (e.g. Hasso)
 
