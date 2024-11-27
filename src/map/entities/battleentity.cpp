@@ -2378,6 +2378,8 @@ bool CBattleEntity::OnAttack(CAttackState& state, action_t& action)
                         }
                     }
                 }
+
+                this->PAI->EventHandler.triggerListener("MELEE_SWING_MISS", CLuaBaseEntity(this), CLuaBaseEntity(PTarget), CLuaAttack(&attack));
             }
             else
             {
@@ -2492,6 +2494,8 @@ bool CBattleEntity::OnAttack(CAttackState& state, action_t& action)
             {
                 charutils::TrySkillUP(PChar, SKILL_EVASION, GetMLevel());
             }
+
+            this->PAI->EventHandler.triggerListener("MELEE_SWING_MISS", CLuaBaseEntity(this), CLuaBaseEntity(PTarget), CLuaAttack(&attack));
         }
 
         // If we didn't hit at all, set param to 0 if we didn't blink any shadows.

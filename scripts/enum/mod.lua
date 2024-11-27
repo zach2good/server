@@ -440,6 +440,7 @@ xi.mod =
 
     -- Monk
     ADDITIVE_GUARD                  = 1092, -- Additive % bonus to final Guard rate (adds after clamp)
+    AUGMENTS_IMPETUS                = 1097, -- see https://www.bg-wiki.com/ffxi/Impetus, adds Crit Hit Damage & Accuracy for Impetus
 
     -- Paladin
     ENHANCES_CHIVALRY               = 1061, -- Enhances "Chivalry" effect (increases the base TP modifier by the provided value / 100, e.g. mod value 5 = +0.05)
