@@ -59,6 +59,12 @@ Application::Application(std::string const& serverName, int argc, char** argv)
     settings::init();
     ShowInfo("Begin %s-server Init...", serverName);
 
+#ifdef ENV64BIT
+    ShowInfo("64-bit environment detected");
+#else
+    ShowInfo("32-bit environment detected");
+#endif
+
     debug::init();
 
     ShowInfo("The %s-server is ready to work...", serverName);
