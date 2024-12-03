@@ -983,7 +983,15 @@ enum class Mod
     SYNTH_ANTI_HQ_ALCHEMY      = 150, // Craft Rings. They ONLY prevent their associated skill type HQs, even if item description doesn't state it.
     SYNTH_ANTI_HQ_COOKING      = 151, // Craft Rings. They ONLY prevent their associated skill type HQs, even if item description doesn't state it.
 
-    SYNTH_HQ_RATE = 862, // High-quality success rate (not a percent)
+    SYNTH_HQ_RATE              = 862,  // High-quality success rate (not a percent)
+    SYNTH_HQ_RATE_WOODWORKING  = 1122, // High-quality success rate (not a percent) for specific skill. Used by Escutcheon's enchantment.
+    SYNTH_HQ_RATE_SMITHING     = 1123, // High-quality success rate (not a percent) for specific skill. Used by Escutcheon's enchantment.
+    SYNTH_HQ_RATE_GOLDSMITHING = 1124, // High-quality success rate (not a percent) for specific skill. Used by Escutcheon's enchantment.
+    SYNTH_HQ_RATE_CLOTHCRAFT   = 1125, // High-quality success rate (not a percent) for specific skill. Used by Escutcheon's enchantment.
+    SYNTH_HQ_RATE_LEATHERCRAFT = 1126, // High-quality success rate (not a percent) for specific skill. Used by Escutcheon's enchantment.
+    SYNTH_HQ_RATE_BONECRAFT    = 1127, // High-quality success rate (not a percent) for specific skill. Used by Escutcheon's enchantment.
+    SYNTH_HQ_RATE_ALCHEMY      = 1128, // High-quality success rate (not a percent) for specific skill. Used by Escutcheon's enchantment.
+    SYNTH_HQ_RATE_COOKING      = 1129, // High-quality success rate (not a percent) for specific skill. Used by Escutcheon's enchantment.
 
     SYNTH_FAIL_RATE           = 861, // Synthesis material loss rate (percent)
     SYNTH_FAIL_RATE_FIRE      = 917, // Amount synthesis failure rate is reduced when using a fire crystal
@@ -1063,7 +1071,7 @@ enum class Mod
     // The spares take care of finding the next ID to use so long as we don't forget to list IDs that have been freed up by refactoring.
     // 570 through 825 used by WS DMG mods these are not spares.
     //
-    // SPARE IDs: 1122 and onward
+    // SPARE IDs: 1130 and onward
 };
 
 // temporary workaround for using enum class as unordered_map key until compilers support it

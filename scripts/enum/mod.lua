@@ -877,7 +877,15 @@ xi.mod =
     SYNTH_ANTI_HQ_ALCHEMY            =  150, -- Craft Rings. They ONLY prevent their associated skill type HQs, even if item description doesn't state it.
     SYNTH_ANTI_HQ_COOKING            =  151, -- Craft Rings. They ONLY prevent their associated skill type HQs, even if item description doesn't state it.
 
-    SYNTH_HQ_RATE                   = 862, -- High-quality success rate (not a percent)
+    SYNTH_HQ_RATE                  =  862, -- High-quality success rate (not a percent)
+    SYNTH_HQ_RATE_WOODWORKING      = 1122, -- High-quality success rate (not a percent) for specific skill. Used by Escutcheon's enchantment.
+    SYNTH_HQ_RATE_SMITHING         = 1123, -- High-quality success rate (not a percent) for specific skill. Used by Escutcheon's enchantment.
+    SYNTH_HQ_RATE_GOLDSMITHING     = 1124, -- High-quality success rate (not a percent) for specific skill. Used by Escutcheon's enchantment.
+    SYNTH_HQ_RATE_CLOTHCRAFT       = 1125, -- High-quality success rate (not a percent) for specific skill. Used by Escutcheon's enchantment.
+    SYNTH_HQ_RATE_LEATHERCRAFT     = 1126, -- High-quality success rate (not a percent) for specific skill. Used by Escutcheon's enchantment.
+    SYNTH_HQ_RATE_BONECRAFT        = 1127, -- High-quality success rate (not a percent) for specific skill. Used by Escutcheon's enchantment.
+    SYNTH_HQ_RATE_ALCHEMY          = 1128, -- High-quality success rate (not a percent) for specific skill. Used by Escutcheon's enchantment.
+    SYNTH_HQ_RATE_COOKING          = 1129, -- High-quality success rate (not a percent) for specific skill. Used by Escutcheon's enchantment.
 
     SYNTH_FAIL_RATE                 = 861, -- Synthesis material loss rate (percent)
     SYNTH_FAIL_RATE_ICE             = 918, -- Amount synthesis failure rate is reduced when using a ice crystal
