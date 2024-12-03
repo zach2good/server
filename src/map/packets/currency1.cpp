@@ -88,7 +88,7 @@ CCurrencyPacket1::CCurrencyPacket1(CCharEntity* PChar)
         ref<uint16>(0x5C) = rset->get<uint16>("chocobuck_windurst");
 
         const auto dailyTally = rset->get<int32>("daily_tally");
-        ref<uint16>(0x5E) = dailyTally == -1 ? 0 : static_cast<uint16>(dailyTally);
+        ref<uint16>(0x5E)     = dailyTally == -1 ? 0 : static_cast<uint16>(dailyTally);
 
         ref<uint32>(0x60) = rset->get<uint32>("research_mark");
         ref<uint8>(0x64)  = rset->get<uint8>("tunnel_worm");

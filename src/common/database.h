@@ -55,7 +55,7 @@ namespace db
 
         template <class T>
         inline constexpr bool always_false_v = always_false<T>::value;
-        struct State final
+        struct State          final
         {
             std::unique_ptr<sql::Connection>                                         connection;
             std::unordered_map<std::string, std::unique_ptr<sql::PreparedStatement>> lazyPreparedStatements;
@@ -69,20 +69,24 @@ namespace db
             {
             }
 
-            bool next()
+            auto next() -> bool
             {
                 return resultSet->next();
             }
 
-            auto rowsCount() -> uint32
+            auto rowsCount() -> std::size_t
             {
                 return resultSet->rowsCount();
             }
 
+            // Get the value of the associated key.
             template <typename T>
             auto get(const std::string& key) -> T
             {
-                T value{};
+                // Remove const and reference qualifiers
+                using UnderlyingT = std::decay_t<T>;
+
+                UnderlyingT value{};
 
                 if (resultSet->isNull(key.c_str()))
                 {
@@ -90,81 +94,92 @@ namespace db
                     return value;
                 }
 
-                if constexpr (std::is_same_v<std::decay_t<T>, int64>)
+                if constexpr (std::is_same_v<UnderlyingT, int64>)
                 {
                     value = static_cast<T>(resultSet->getInt64(key.c_str()));
                 }
-                else if constexpr (std::is_same_v<std::decay_t<T>, uint64>)
+                else if constexpr (std::is_same_v<UnderlyingT, uint64>)
                 {
                     value = static_cast<T>(resultSet->getUInt64(key.c_str()));
                 }
-                else if constexpr (std::is_same_v<std::decay_t<T>, int32>)
+                else if constexpr (std::is_same_v<UnderlyingT, int32>)
                 {
                     value = static_cast<T>(resultSet->getInt(key.c_str()));
                 }
-                else if constexpr (std::is_same_v<std::decay_t<T>, uint32>)
+                else if constexpr (std::is_same_v<UnderlyingT, uint32>)
                 {
                     value = static_cast<T>(resultSet->getUInt(key.c_str()));
                 }
-                else if constexpr (std::is_same_v<std::decay_t<T>, int16>)
+                else if constexpr (std::is_same_v<UnderlyingT, int16>)
                 {
-                    value = static_cast<T>(resultSet->getShort(key.c_str()));
+                    value = static_cast<T>(resultSet->getInt(key.c_str()));
                 }
-                else if constexpr (std::is_same_v<std::decay_t<T>, uint16>)
+                else if constexpr (std::is_same_v<UnderlyingT, uint16>)
                 {
-                    value = static_cast<T>(resultSet->getShort(key.c_str()));
+                    value = static_cast<T>(resultSet->getUInt(key.c_str()));
                 }
-                else if constexpr (std::is_same_v<std::decay_t<T>, int8>)
+                else if constexpr (std::is_same_v<UnderlyingT, int8>)
                 {
+                    // There is only a signed byte accessor
                     value = static_cast<T>(resultSet->getByte(key.c_str()));
                 }
-                else if constexpr (std::is_same_v<std::decay_t<T>, uint8>)
+                else if constexpr (std::is_same_v<UnderlyingT, uint8>)
                 {
-                    value = static_cast<T>(resultSet->getByte(key.c_str()));
+                    // There isn't an unsigned byte accessor, so we'll just use getUInt
+                    value = static_cast<T>(resultSet->getUInt(key.c_str()));
                 }
-                else if constexpr (std::is_same_v<std::decay_t<T>, bool>)
+                else if constexpr (std::is_same_v<UnderlyingT, bool>)
                 {
                     value = static_cast<T>(resultSet->getBoolean(key.c_str()));
                 }
-                else if constexpr (std::is_same_v<std::decay_t<T>, double>)
+                else if constexpr (std::is_same_v<UnderlyingT, double>)
                 {
                     value = static_cast<T>(resultSet->getDouble(key.c_str()));
                 }
-                else if constexpr (std::is_same_v<std::decay_t<T>, float>)
+                else if constexpr (std::is_same_v<UnderlyingT, float>)
                 {
                     value = static_cast<T>(resultSet->getFloat(key.c_str()));
                 }
-                else if constexpr (std::is_same_v<std::decay_t<T>, const std::string>)
+                else if constexpr (std::is_same_v<UnderlyingT, std::string>)
                 {
                     value = resultSet->getString(key.c_str());
                 }
-                else if constexpr (std::is_same_v<std::decay_t<T>, std::string>)
+                else if constexpr (std::is_same_v<UnderlyingT, char*>)
                 {
                     value = resultSet->getString(key.c_str());
                 }
-                else if constexpr (std::is_same_v<std::decay_t<T>, const char*>)
-                {
-                    value = resultSet->getString(key.c_str());
-                }
-                else if constexpr (std::is_same_v<std::decay_t<T>, char*>)
-                {
-                    value = resultSet->getString(key.c_str());
-                }
+                // TODO: If a struct/blob type, use extractFromBlob
+                // else if constexpr (std::is_standard_layout_v<T>) // If is a simple struct
+                // {
+                //     extractFromBlob(resultSet, key, value);
+                //     const auto blob = resultSet->getBlob(key.c_str());
+                // }
                 else
                 {
                     static_assert(always_false_v<T>, "Trying to extract unsupported type from ResultSetWrapper");
                 }
 
-                // TODO: If a struct/blob type, use extractFromBlob
-
                 return value;
             }
 
+            // Get the value of the 0-indexed column. Behind the scenes this is automatically converted to be 1-indexed for
+            // use by the underlying database library.
             template <typename T>
-            auto get(const std::size_t index) -> T
+            auto get(const uint32 index) -> T
             {
-                // TODO: Implement this
-                return T{};
+                const auto columnName = resultSet->getMetaData()->getColumnLabel(index + 1);
+                return get<T>(columnName.c_str());
+            }
+
+            // Check if the value of the associated key is null/not-populated.
+            auto isNull(const std::string& key) -> bool
+            {
+                return resultSet->isNull(key.c_str());
+            }
+
+            auto& getNativeResultSet() const
+            {
+                return resultSet;
             }
 
         private:
@@ -172,8 +187,6 @@ namespace db
         };
 
         auto getState() -> mutex_guarded<db::detail::State>&;
-
-        auto sanitise(std::string const& query) -> std::string;
 
         template <typename T>
         void bindValue(std::unique_ptr<sql::PreparedStatement>& stmt, int& counter, T&& value)
@@ -267,11 +280,15 @@ namespace db
     // @note Everything in database-land is 1-indexed, not 0-indexed.
     auto queryStr(std::string const& rawQuery) -> std::unique_ptr<db::detail::ResultSetWrapper>;
 
+    // @brief Execute a query with the given query string and sprintf-style arguments.
+    // @param query The query string to execute.
+    // @param args The arguments to bind to the query string.
+    // @return A unique pointer to the result set of the query.
+    // @note Everything in database-land is 1-indexed, not 0-indexed.
     template <typename... Args>
     auto query(std::string const& query, Args... args)
     {
-        std::string query_v = fmt::sprintf(query, args...);
-        return queryStr(query_v.c_str());
+        return queryStr(fmt::sprintf(query, args...));
     }
 
     // @brief Execute a prepared statement with the given query string and arguments.
@@ -485,11 +502,13 @@ namespace db
 
         // If we use getString on a null blob we will get back garbage data.
         // This will introduce difficult to track down crashes.
-
-        // TODO
-        // if (!rset->isNull(blobKey.c_str()))
+        if (!rset->isNull(blobKey.c_str()))
         {
-            auto blobStr = rset->get<std::string>(blobKey.c_str());
+            // TODO: This is kind of nasty. The underlying handle will properly
+            //     : return an escaped string, so we can use it for blobs. If we
+            //     : use rset->get<std::string>(...) it will truncate the result.
+            auto blobStr = rset->getNativeResultSet()->getString(blobKey.c_str());
+
             // Login server creates new chars with null blobs. Map server then initializes.
             // We don't want to overwrite the initialized map data with null blobs / 0 values.
             // See: login_helpers.cpp saveCharacter() and charutils::LoadChar
@@ -498,5 +517,8 @@ namespace db
         }
     }
 
+    // @brief Escape a string for use in a query.
+    // @param str The string to escape.
+    // @return The escaped string.
     auto escapeString(std::string const& str) -> std::string;
 } // namespace db

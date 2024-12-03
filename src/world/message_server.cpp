@@ -163,7 +163,7 @@ void message_server_parse(MSGSERVTYPE type, zmq::message_t* extra, zmq::message_
         {
             const char* query = "SELECT server_addr, server_port FROM accounts_sessions LEFT JOIN chars ON "
                                 "accounts_sessions.charid = chars.charid WHERE charname = '%s' LIMIT 1";
-            auto        rset  = db::query(fmt::sprintf(query, str((int8*)extra->data() + 4)));
+            auto        rset  = db::query(query, str((int8*)extra->data() + 4));
             if (rset)
             {
                 forward_message(std::move(rset));
@@ -171,7 +171,7 @@ void message_server_parse(MSGSERVTYPE type, zmq::message_t* extra, zmq::message_
             else
             {
                 query = "SELECT server_addr, server_port FROM accounts_sessions WHERE charid = %d LIMIT 1";
-                forward_message(db::query(fmt::sprintf(query, ref<uint32>((uint8*)extra->data(), 0))));
+                forward_message(db::query(query, ref<uint32>((uint8*)extra->data(), 0)));
             }
             break;
         }
@@ -185,7 +185,7 @@ void message_server_parse(MSGSERVTYPE type, zmq::message_t* extra, zmq::message_
                                 "partyid = %d) GROUP BY server_addr, server_port";
 
             uint32 partyid = ref<uint32>((uint8*)extra->data(), 0);
-            forward_message(db::query(fmt::sprintf(query, partyid, partyid)));
+            forward_message(db::query(query, partyid, partyid));
             break;
         }
         case MSG_CHAT_ALLIANCE:
@@ -197,21 +197,21 @@ void message_server_parse(MSGSERVTYPE type, zmq::message_t* extra, zmq::message_
                                 "GROUP BY server_addr, server_port";
 
             uint32 allianceid = ref<uint32>((uint8*)extra->data(), 0);
-            forward_message(db::query(fmt::sprintf(query, allianceid)));
+            forward_message(db::query(query, allianceid));
             break;
         }
         case MSG_CHAT_LINKSHELL:
         {
             const char* query = "SELECT server_addr, server_port FROM accounts_sessions "
                                 "WHERE linkshellid1 = %d OR linkshellid2 = %d GROUP BY server_addr, server_port";
-            forward_message(db::query(fmt::sprintf(query, ref<uint32>((uint8*)extra->data(), 0), ref<uint32>((uint8*)extra->data(), 0))));
+            forward_message(db::query(query, ref<uint32>((uint8*)extra->data(), 0), ref<uint32>((uint8*)extra->data(), 0)));
             break;
         }
         case MSG_CHAT_UNITY:
         {
             const char* query = "SELECT server_addr, server_port FROM accounts_sessions "
                                 "WHERE unitychat = %d GROUP BY server_addr, server_port";
-            forward_message(db::query(fmt::sprintf(query, ref<uint32>((uint8*)extra->data(), 0), ref<uint32>((uint8*)extra->data(), 0))));
+            forward_message(db::query(query, ref<uint32>((uint8*)extra->data(), 0), ref<uint32>((uint8*)extra->data(), 0)));
             break;
         }
         case MSG_CHAT_YELL:
@@ -239,7 +239,7 @@ void message_server_parse(MSGSERVTYPE type, zmq::message_t* extra, zmq::message_
         case MSG_SEND_TO_ZONE:
         {
             const char* query = "SELECT server_addr, server_port FROM accounts_sessions WHERE charid = %d";
-            forward_message(db::query(fmt::sprintf(query, ref<uint32>((uint8*)extra->data(), 0))));
+            forward_message(db::query(query, ref<uint32>((uint8*)extra->data(), 0)));
             break;
         }
         case MSG_SEND_TO_ENTITY:
@@ -270,7 +270,7 @@ void message_server_parse(MSGSERVTYPE type, zmq::message_t* extra, zmq::message_
         {
             uint32      charid = ref<uint32>((uint8*)extra->data(), 0);
             const char* query  = "SELECT pos_prevzone, pos_zone from chars where charid = '%d' LIMIT 1;";
-            auto        rset   = db::query(fmt::sprintf(query, charid));
+            auto        rset   = db::query(query, charid);
 
             // Get zone ID from query and try to send to _just_ the previous zone
             if (rset && rset->rowsCount() && rset->next())

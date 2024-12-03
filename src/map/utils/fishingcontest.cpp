@@ -203,7 +203,7 @@ namespace fishingcontest
                 {
                     std::string Query = "INSERT INTO char_fishing_contest_history (charid, contest_rank_{}) "
                                         "VALUES ({}, 1) ON DUPLICATE KEY UPDATE contest_rank_{} = contest_rank_{} + 1;";
-                    auto        rset   = db::query(fmt::format(Query, rankGroup, charID, rankGroup, rankGroup));
+                    auto        rset  = db::query(fmt::format(Query, rankGroup, charID, rankGroup, rankGroup));
 
                     if (!rset)
                     {
@@ -353,11 +353,11 @@ namespace fishingcontest
                             "nextstagetime = (?);"; // Stage Change Time
 
         auto rset = db::preparedStmt(Query, static_cast<uint8>(CurrentFishingContest.status),
-                                    static_cast<uint8>(CurrentFishingContest.criteria),
-                                    static_cast<uint8>(CurrentFishingContest.measure),
-                                    CurrentFishingContest.fishId,
-                                    CurrentFishingContest.startTime,
-                                    CurrentFishingContest.changeTime);
+                                     static_cast<uint8>(CurrentFishingContest.criteria),
+                                     static_cast<uint8>(CurrentFishingContest.measure),
+                                     CurrentFishingContest.fishId,
+                                     CurrentFishingContest.startTime,
+                                     CurrentFishingContest.changeTime);
 
         if (!rset)
         {
@@ -387,11 +387,11 @@ namespace fishingcontest
                             "(?));"; // Stage Change Time
 
         auto rset = db::preparedStmt(Query, static_cast<uint8>(CurrentFishingContest.status),
-                                    static_cast<uint8>(CurrentFishingContest.criteria),
-                                    static_cast<uint8>(CurrentFishingContest.measure),
-                                    CurrentFishingContest.fishId,
-                                    CurrentFishingContest.startTime,
-                                    CurrentFishingContest.changeTime);
+                                     static_cast<uint8>(CurrentFishingContest.criteria),
+                                     static_cast<uint8>(CurrentFishingContest.measure),
+                                     CurrentFishingContest.fishId,
+                                     CurrentFishingContest.startTime,
+                                     CurrentFishingContest.changeTime);
 
         if (!rset)
         {
@@ -424,18 +424,18 @@ namespace fishingcontest
                             "FROM chars WHERE charname = '{}';";
 
         auto rset = db::query(fmt::format(Query,
-                                         entry->mjob,
-                                         entry->sjob,
-                                         entry->mlvl,
-                                         entry->slvl,
-                                         entry->race,
-                                         entry->allegiance,
-                                         entry->fishRank,
-                                         entry->score,
-                                         entry->submitTime,
-                                         entry->contestRank,
-                                         entry->share,
-                                         entry->name));
+                                          entry->mjob,
+                                          entry->sjob,
+                                          entry->mlvl,
+                                          entry->slvl,
+                                          entry->race,
+                                          entry->allegiance,
+                                          entry->fishRank,
+                                          entry->score,
+                                          entry->submitTime,
+                                          entry->contestRank,
+                                          entry->share,
+                                          entry->name));
 
         if (!rset)
         {
@@ -495,7 +495,7 @@ namespace fishingcontest
             // Remove from the database
             const char* Query = "DELETE FROM `fishing_contest_entries` \
                                  WHERE `charid` = {};";
-            auto        rset   = db::query(fmt::format(Query, PChar->id));
+            auto        rset  = db::query(fmt::format(Query, PChar->id));
 
             if (!rset)
             {
@@ -564,7 +564,7 @@ namespace fishingcontest
         std::string Query = "SELECT contest_rank_1, contest_rank_2, contest_rank_3, contest_rank_4 "
                             "FROM char_fishing_contest_history "
                             "WHERE charid = (?);";
-        auto        rset   = db::preparedStmt(Query, PChar->id);
+        auto        rset  = db::preparedStmt(Query, PChar->id);
 
         if (rset && rset->rowsCount() > 0 && rset->next())
         {

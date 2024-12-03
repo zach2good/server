@@ -316,7 +316,9 @@ namespace zoneutils
                     {
                         while (rset->next())
                         {
-                            if (!luautils::IsContentEnabled(rset->get<std::string>("content_tag").c_str()))
+                            // If there is no content tag, always load the NPC
+                            const auto contentTagFound = !rset->isNull("content_tag");
+                            if (contentTagFound && !luautils::IsContentEnabled(rset->get<std::string>("content_tag").c_str()))
                             {
                                 continue;
                             }

@@ -32,6 +32,17 @@ namespace
 {
     // TODO: Manual checkout and pooling of state
     mutex_guarded<db::detail::State> state;
+
+    // Replacement map similar to str_replace in PHP
+    const std::unordered_map<char, std::string> replacements = {
+        { '\\', "\\\\" },
+        { '\0', "\\0" },
+        { '\n', "\\n" },
+        { '\r', "\\r" },
+        { '\'', "\\'" },
+        { '\"', "\\\"" },
+        { '\x1a', "\\Z" }
+    };
 } // namespace
 
 int32 ping_connection(time_point tick, CTaskMgr::CTask* task)
@@ -154,25 +165,20 @@ auto db::queryStr(std::string const& rawQuery) -> std::unique_ptr<db::detail::Re
 
 auto db::escapeString(std::string const& str) -> std::string
 {
-    std::string escapedStr = str;
+    std::string escapedStr;
 
-    // Replacement map similar to str_replace in PHP
-    static std::unordered_map<std::string, std::string> replacements = {
-        {"\\", "\\\\"},
-        {"\0", "\\0"},
-        {"\n", "\\n"},
-        {"\r", "\\r"},
-        {"'", "\\'"},
-        {"\"", "\\\""},
-        {"\x1a", "\\Z"}
-    };
+    for (size_t i = 0; i < str.size(); ++i)
+    {
+        char c = str[i];
 
-    // Replace each character based on the replacement map
-    for (const auto& [from, to] : replacements) {
-        std::string::size_type pos = 0;
-        while ((pos = escapedStr.find(from, pos)) != std::string::npos) {
-            escapedStr.replace(pos, from.length(), to);
-            pos += to.length();
+        auto it = replacements.find(c);
+        if (it != replacements.end())
+        {
+            escapedStr += it->second;
+        }
+        else
+        {
+            escapedStr += c;
         }
     }
 

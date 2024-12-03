@@ -60,7 +60,7 @@ std::vector<ahHistory*> CDataLoader::GetAHItemHistory(uint16 ItemID, bool stack)
                            "ORDER BY sell_date DESC "
                            "LIMIT 10";
 
-    auto rset = db::query(fmt::sprintf(fmtQuery, ItemID, stack));
+    auto rset = db::query(fmtQuery, ItemID, stack);
 
     if (rset && rset->rowsCount())
     {
@@ -153,7 +153,7 @@ ahItem CDataLoader::GetAHItemFromItemID(uint16 ItemID)
                            "LEFT JOIN item_weapon ON item_basic.itemid = item_weapon.itemid "
                            "WHERE item_basic.itemid = %u";
 
-    auto rset = db::query(fmt::sprintf(fmtQuery, ItemID));
+    auto rset = db::query(fmtQuery, ItemID);
     if (rset && rset->rowsCount())
     {
         while (rset->next())
@@ -182,7 +182,7 @@ uint32 CDataLoader::GetPlayersCount(const search_req& sr)
     uint8 jobid = sr.jobid;
     if (jobid > 0 && jobid < 21)
     {
-        auto rset = db::query(fmt::sprintf("SELECT COUNT(*) FROM accounts_sessions LEFT JOIN char_stats USING (charid) WHERE mjob = %u", jobid));
+        auto rset = db::query("SELECT COUNT(*) FROM accounts_sessions LEFT JOIN char_stats USING (charid) WHERE mjob = %u", jobid);
         if (rset && rset->rowsCount() && rset->next())
         {
             return rset->get<uint32>("COUNT(*)");
@@ -494,7 +494,7 @@ std::list<SearchEntity*> CDataLoader::GetPartyList(uint32 PartyID, uint32 Allian
         "ORDER BY charname ASC "
         "LIMIT 64";
 
-    auto rset = db::query(fmt::sprintf(query, (!AllianceID ? PartyID : AllianceID), (!PartyID ? AllianceID : PartyID)));
+    auto rset = db::query(query, (!AllianceID ? PartyID : AllianceID), (!PartyID ? AllianceID : PartyID));
     if (rset && rset->rowsCount())
     {
         while (rset->next())
@@ -602,7 +602,7 @@ std::list<SearchEntity*> CDataLoader::GetLinkshellList(uint32 LinkshellID)
                                         "ORDER BY charname ASC "
                                         "LIMIT 18";
 
-    auto rset = db::query(fmt::sprintf(fmtQuery, LinkshellID, LinkshellID));
+    auto rset = db::query(fmtQuery, LinkshellID, LinkshellID);
     if (rset && rset->rowsCount())
     {
         while (rset->next())
@@ -713,7 +713,7 @@ void CDataLoader::ExpireAHItems(uint16 expireAgeInDays)
     std::string query0 = "SELECT T0.id,T0.itemid,T1.stacksize, T0.stack, T0.seller FROM auction_house T0 INNER JOIN item_basic T1 ON \
                             T0.itemid = T1.itemid WHERE datediff(now(),from_unixtime(date)) >= %u AND buyer_name IS NULL;";
 
-    const auto rset0 = db::query(fmt::sprintf(query0, expireAgeInDays));
+    const auto rset0           = db::query(query0, expireAgeInDays);
     const auto expiredAuctions = rset0->rowsCount();
 
     if (rset0 && expiredAuctions > 0)
@@ -742,14 +742,14 @@ void CDataLoader::ExpireAHItems(uint16 expireAgeInDays)
             }
 
             const auto query2 = fmt::format("INSERT INTO delivery_box (charid, charname, box, itemid, itemsubid, quantity, senderid, sender) VALUES "
-                               "({}, '{}', 1, {}, 0, {}, 0, 'AH-Jeuno');",
-                               listing.sellerID, listing.sellerName, listing.itemID, listing.ahStack == 1 ? listing.itemStack : 1);
+                                            "({}, '{}', 1, {}, 0, {}, 0, 'AH-Jeuno');",
+                                            listing.sellerID, listing.sellerName, listing.itemID, listing.ahStack == 1 ? listing.itemStack : 1);
 
             const auto [rset2, affectedRows] = db::preparedStmtWithAffectedRows(query2);
             if (rset2 && affectedRows > 0)
             {
                 // delete the item from the auction house
-                db::query(fmt::sprintf("DELETE FROM auction_house WHERE id=%u", listing.saleID));
+                db::query("DELETE FROM auction_house WHERE id=%u", listing.saleID);
             }
         }
     }

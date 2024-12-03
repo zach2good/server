@@ -188,7 +188,7 @@ bool ConquestSystem::updateInfluencePoints(int points, unsigned int nation, REGI
 
     std::string query = "SELECT sandoria_influence, bastok_influence, windurst_influence, beastmen_influence FROM conquest_system WHERE region_id = %d";
 
-    auto rset = db::query(fmt::sprintf(query.c_str(), static_cast<uint8>(region)));
+    auto rset = db::query(query.c_str(), static_cast<uint8>(region));
     if (!rset || rset->rowsCount() == 0 || !rset->next())
     {
         return false;
@@ -221,9 +221,9 @@ bool ConquestSystem::updateInfluencePoints(int points, unsigned int nation, REGI
 
     influences[nation] += lost;
 
-    auto rset2 = db::query(fmt::sprintf("UPDATE conquest_system SET sandoria_influence = %d, bastok_influence = %d, "
-                                        "windurst_influence = %d, beastmen_influence = %d WHERE region_id = %u",
-                                        influences[0], influences[1], influences[2], influences[3], static_cast<uint8>(region)));
+    auto rset2 = db::query("UPDATE conquest_system SET sandoria_influence = %d, bastok_influence = %d, "
+                           "windurst_influence = %d, beastmen_influence = %d WHERE region_id = %u",
+                           influences[0], influences[1], influences[2], influences[3], static_cast<uint8>(region));
 
     return !rset2;
 }

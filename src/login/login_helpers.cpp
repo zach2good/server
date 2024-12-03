@@ -31,17 +31,14 @@ namespace loginHelpers
         return authenticatedSessions_;
     }
 
-    bool check_string(std::string const& str, std::size_t max_length)
+    bool isStringMalformed(std::string const& str, std::size_t max_length)
     {
-        // clang-format off
-        return !str.empty() &&
-        str.size() <= max_length &&
-        std::all_of(str.cbegin(), str.cend(),
-        [](char const& c)
-        {
-            return c >= 0x20;
-        });
-        // clang-format on
+        const bool isEmpty        = str.empty();
+        const bool isTooLong      = str.size() > max_length;
+        const bool hasInvalidChar = std::any_of(str.cbegin(), str.cend(), [](char const& c)
+                                                { return c < 0x20; });
+
+        return isEmpty || isTooLong || hasInvalidChar;
     }
 
     session_t& get_authenticated_session(std::string const& ipAddr, std::string const& sessionHash)
@@ -62,7 +59,6 @@ namespace loginHelpers
     {
         uint32 ip = 0;
         inet_pton(AF_INET, ip_str, &ip);
-
         return ntohl(ip);
     }
 
@@ -146,82 +142,82 @@ namespace loginHelpers
 
     int32 saveCharacter(uint32 accid, uint32 charid, char_mini* createchar)
     {
-        if (db::query("INSERT INTO chars(charid,accid,charname,pos_zone,nation) VALUES(%u,%u,'%s',%u,%u)",
-                        charid, accid, str(createchar->m_name), createchar->m_zone, createchar->m_nation))
+        if (!db::query("INSERT INTO chars(charid,accid,charname,pos_zone,nation) VALUES(%u,%u,'%s',%u,%u)",
+                       charid, accid, str(createchar->m_name), createchar->m_zone, createchar->m_nation))
         {
             ShowDebug(fmt::format("lobby_ccsave: char<{}>, accid: {}, charid: {}", str(createchar->m_name), accid, charid));
             return -1;
         }
 
-        if (db::query("INSERT INTO char_look(charid,face,race,size) VALUES(%u,%u,%u,%u)",
-                        charid, createchar->m_look.face, createchar->m_look.race, createchar->m_look.size))
+        if (!db::query("INSERT INTO char_look(charid,face,race,size) VALUES(%u,%u,%u,%u)",
+                       charid, createchar->m_look.face, createchar->m_look.race, createchar->m_look.size))
         {
             ShowDebug(fmt::format("lobby_cLook: char<{}>, charid: {}", str(createchar->m_name), charid));
             return -1;
         }
 
-        if (db::query("INSERT INTO char_stats(charid,mjob) VALUES(%u,%u)",
-                        charid, createchar->m_mjob))
+        if (!db::query("INSERT INTO char_stats(charid,mjob) VALUES(%u,%u)",
+                       charid, createchar->m_mjob))
         {
             ShowDebug(fmt::format("lobby_cStats: charid: {}", charid));
             return -1;
         }
 
-        if (db::query("INSERT INTO char_exp(charid) VALUES(%u) ON DUPLICATE KEY UPDATE charid = charid",
-                        charid, createchar->m_mjob))
+        if (!db::query("INSERT INTO char_exp(charid) VALUES(%u) ON DUPLICATE KEY UPDATE charid = charid",
+                       charid, createchar->m_mjob))
         {
             return -1;
         }
 
-        if (db::query("INSERT INTO char_flags(charid) VALUES(%u) ON DUPLICATE KEY UPDATE disconnecting = disconnecting", charid))
+        if (!db::query("INSERT INTO char_flags(charid) VALUES(%u) ON DUPLICATE KEY UPDATE disconnecting = disconnecting", charid))
         {
             return -1;
         }
 
-        if (db::query("INSERT INTO char_jobs(charid) VALUES(%u) ON DUPLICATE KEY UPDATE charid = charid",
-                        charid, createchar->m_mjob))
+        if (!db::query("INSERT INTO char_jobs(charid) VALUES(%u) ON DUPLICATE KEY UPDATE charid = charid",
+                       charid, createchar->m_mjob))
         {
             return -1;
         }
 
-        if (db::query("INSERT INTO char_points(charid) VALUES(%u) ON DUPLICATE KEY UPDATE charid = charid",
-                        charid, createchar->m_mjob))
+        if (!db::query("INSERT INTO char_points(charid) VALUES(%u) ON DUPLICATE KEY UPDATE charid = charid",
+                       charid, createchar->m_mjob))
         {
             return -1;
         }
 
-        if (db::query("INSERT INTO char_unlocks(charid) VALUES(%u) ON DUPLICATE KEY UPDATE charid = charid",
-                        charid, createchar->m_mjob))
+        if (!db::query("INSERT INTO char_unlocks(charid) VALUES(%u) ON DUPLICATE KEY UPDATE charid = charid",
+                       charid, createchar->m_mjob))
         {
             return -1;
         }
 
-        if (db::query("INSERT INTO char_profile(charid) VALUES(%u) ON DUPLICATE KEY UPDATE charid = charid",
-                        charid, createchar->m_mjob))
+        if (!db::query("INSERT INTO char_profile(charid) VALUES(%u) ON DUPLICATE KEY UPDATE charid = charid",
+                       charid, createchar->m_mjob))
         {
             return -1;
         }
 
-        if (db::query("INSERT INTO char_storage(charid) VALUES(%u) ON DUPLICATE KEY UPDATE charid = charid",
-                        charid, createchar->m_mjob))
+        if (!db::query("INSERT INTO char_storage(charid) VALUES(%u) ON DUPLICATE KEY UPDATE charid = charid",
+                       charid, createchar->m_mjob))
         {
             return -1;
         }
 
-        if (db::query("DELETE FROM char_inventory WHERE charid = %u", charid))
+        if (!db::query("DELETE FROM char_inventory WHERE charid = %u", charid))
         {
             return -1;
         }
 
-        if (db::query("INSERT INTO char_inventory(charid) VALUES(%u)", charid, createchar->m_mjob))
+        if (!db::query("INSERT INTO char_inventory(charid) VALUES(%u)", charid, createchar->m_mjob))
         {
             return -1;
         }
 
         if (settings::get<bool>("main.NEW_CHARACTER_CUTSCENE"))
         {
-            if (db::query("INSERT INTO char_vars(charid, varname, value) VALUES(%u, '%s', %u)",
-                            charid, "HQuest[newCharacterCS]notSeen", 1))
+            if (!db::query("INSERT INTO char_vars(charid, varname, value) VALUES(%u, '%s', %u)",
+                           charid, "HQuest[newCharacterCS]notSeen", 1))
             {
                 return -1;
             }

@@ -100,7 +100,7 @@ void auth_session::do_read()
         }
         else
         {
-            DebugSockets(fmt::format("async_read_some error in auth_session from IP {}:\n{}", ipAddress, ec.message()));
+            DebugSockets(fmt::format("async_read_some error in auth_session from IP {} ({}: {})", ipAddress, ec.value(), ec.message()));
             handle_error(ec, self);
         }
     });
@@ -109,7 +109,7 @@ void auth_session::do_read()
 
 void auth_session::read_func()
 {
-    auto newModeFlag = ref<uint8>(data_, 0) == 0xFF;
+    const auto newModeFlag = ref<uint8>(data_, 0) == 0xFF;
     if (!newModeFlag)
     {
         ShowDebug("Old xiloader connected. Not supported.");
@@ -127,10 +127,10 @@ void auth_session::read_func()
     std::memcpy(passwordBuffer, data_ + 0x19, 32);
     // 1 byte of command at 0x39
     // 17 bytes of operator specific space starting at 0x50. This region will be used for anything server operators may install into custom launchers.
-    std::string version(data_ + 0x61, 5);
+    const std::string version(data_ + 0x61, 5);
 
-    std::string username(usernameBuffer, 16);
-    std::string password(passwordBuffer, 32);
+    std::string username{ usernameBuffer };
+    std::string password{ passwordBuffer };
 
     // Only match on the first 3 characters of the version string
     // ie. 1.1.1 -> 1.1.x
@@ -144,14 +144,20 @@ void auth_session::read_func()
         return;
     }
 
-    int8 code = ref<uint8>(data_, 0x39);
+    const int8 code = ref<uint8>(data_, 0x39);
 
     DebugSockets(fmt::format("auth code: {} from {}", code, ipAddress));
 
-    // data check
-    if (loginHelpers::check_string(username, 16) && loginHelpers::check_string(password, 32))
+    // data checks
+    if (loginHelpers::isStringMalformed(username, 16))
     {
-        ShowWarningFmt("login_parse: bad username or password from {}", ipAddress);
+        ShowWarningFmt("login_parse: malformed username from {}", ipAddress);
+        return;
+    }
+
+    if (loginHelpers::isStringMalformed(password, 32))
+    {
+        ShowWarningFmt("login_parse: malformed password from {}", ipAddress);
         return;
     }
 
@@ -172,7 +178,7 @@ void auth_session::read_func()
             // clang-format off
             auto passHash = [&]() -> std::string
             {
-                const auto rset = db::query(fmt::sprintf("SELECT accounts.password FROM accounts WHERE accounts.login = '%s'", username));
+                const auto rset = db::query("SELECT accounts.password FROM accounts WHERE accounts.login = '%s'", username);
                 if (rset && rset->rowsCount() != 0 && rset->next())
                 {
                     return rset->get<std::string>("password");
@@ -198,10 +204,11 @@ void auth_session::read_func()
             {
                 // It's not a BCrypt hash, so we need to use Maria's PASSWORD() to check if the password is actually correct,
                 // and then update the password to a BCrypt hash.
-                const auto rset = db::query(fmt::sprintf("SELECT PASSWORD('%s')", password));
+                const auto passColumn = fmt::sprintf("PASSWORD('%s')", password);
+                const auto rset       = db::query("SELECT %s", passColumn);
                 if (rset && rset->rowsCount() != 0 && rset->next())
                 {
-                    if (rset->get<std::string>("PASSWORD('%s')") != passHash)
+                    if (rset->get<std::string>(passColumn) != passHash)
                     {
                         ref<uint8>(data_, 0) = LOGIN_ERROR;
                         do_write(1);
@@ -210,7 +217,7 @@ void auth_session::read_func()
                     else
                     {
                         passHash = BCrypt::generateHash(password);
-                        db::query(fmt::sprintf("UPDATE accounts SET accounts.password = '%s' WHERE accounts.login = '%s'", passHash.c_str(), username));
+                        db::query("UPDATE accounts SET accounts.password = '%s' WHERE accounts.login = '%s'", passHash.c_str(), username);
                         if (!BCrypt::validatePassword(password, passHash))
                         {
                             ref<uint8>(data_, 0) = LOGIN_ERROR;
@@ -222,7 +229,7 @@ void auth_session::read_func()
             }
 
             // We've validated the password by this point, get account info
-            const auto rset = db::query(fmt::sprintf("SELECT accounts.id, accounts.status FROM accounts WHERE accounts.login = '%s'", username));
+            const auto rset = db::query("SELECT accounts.id, accounts.status FROM accounts WHERE accounts.login = '%s'", username);
             if (rset && rset->rowsCount() != 0 && rset->next())
             {
                 uint32 accountID = rset->get<uint32>("id");
@@ -230,13 +237,13 @@ void auth_session::read_func()
 
                 if (status & ACCOUNT_STATUS_CODE::NORMAL)
                 {
-                    db::query(fmt::sprintf("UPDATE accounts SET accounts.timelastmodify = NULL WHERE accounts.id = %d", accountID));
+                    db::query("UPDATE accounts SET accounts.timelastmodify = NULL WHERE accounts.id = %d", accountID);
 
-                    const auto rset = db::query(fmt::sprintf("SELECT charid, server_addr, server_port \
+                    const auto rset = db::query("SELECT charid, server_addr, server_port \
                                         FROM accounts_sessions JOIN accounts \
                                         ON accounts_sessions.accid = accounts.id \
                                         WHERE accounts.id = %d",
-                                      accountID));
+                                                accountID);
 
                     if (rset && rset->rowsCount() == 1)
                     {
@@ -333,7 +340,7 @@ void auth_session::read_func()
             }
 
             // looking for same login
-            const auto rset = db::query(fmt::sprintf("SELECT accounts.id FROM accounts WHERE accounts.login = '%s'", username));
+            const auto rset = db::query("SELECT accounts.id FROM accounts WHERE accounts.login = '%s'", username);
             if (!rset)
             {
                 ref<uint8>(data_, 0) = LOGIN_ERROR_CREATE;
@@ -370,9 +377,9 @@ void auth_session::read_func()
                 char strtimecreate[128];
                 strftime(strtimecreate, sizeof(strtimecreate), "%Y:%m:%d %H:%M:%S", &timecreateinfo);
 
-                const auto rset2 = db::query(fmt::sprintf("INSERT INTO accounts(id,login,password,timecreate,timelastmodify,status,priv) \
+                const auto rset2 = db::query("INSERT INTO accounts(id,login,password,timecreate,timelastmodify,status,priv) \
                                 VALUES(%d,'%s','%s','%s',NULL,%d,%d)",
-                                accid, username, BCrypt::generateHash(password), strtimecreate, ACCOUNT_STATUS_CODE::NORMAL, ACCOUNT_PRIVILEGE_CODE::USER));
+                                             accid, username, BCrypt::generateHash(password), strtimecreate, ACCOUNT_STATUS_CODE::NORMAL, ACCOUNT_PRIVILEGE_CODE::USER);
                 if (!rset2)
                 {
                     ref<uint8>(data_, 0) = LOGIN_ERROR_CREATE;
@@ -398,7 +405,7 @@ void auth_session::read_func()
             // clang-format off
             auto passHash = [&]() -> std::string
             {
-                const auto rset = db::query(fmt::sprintf("SELECT accounts.password FROM accounts WHERE accounts.login = '%s'", username));
+                const auto rset = db::query("SELECT accounts.password FROM accounts WHERE accounts.login = '%s'", username);
                 if (rset && rset->rowsCount() != 0 && rset->next())
                 {
                     return rset->get<std::string>("password");
@@ -424,10 +431,10 @@ void auth_session::read_func()
             {
                 // It's not a BCrypt hash, so we need to use Maria's PASSWORD() to check if the password is actually correct,
                 // and then update the password to a BCrypt hash.
-                const auto rset = db::query(fmt::sprintf("SELECT PASSWORD('%s')", password));
+                const auto rset = db::query("SELECT PASSWORD('%s')", password);
                 if (rset && rset->rowsCount() != 0 && rset->next())
                 {
-                    if (rset->get<std::string>("PASSWORD('%s')") != passHash)
+                    if (rset->get<std::string>(0) != passHash)
                     {
                         ref<uint8>(data_, 0) = LOGIN_ERROR_CHANGE_PASSWORD;
                         do_write(1);
@@ -436,7 +443,7 @@ void auth_session::read_func()
                     else
                     {
                         passHash = BCrypt::generateHash(password);
-                        db::query(fmt::sprintf("UPDATE accounts SET accounts.password = '%s' WHERE accounts.login = '%s'", passHash.c_str(), username));
+                        db::query("UPDATE accounts SET accounts.password = '%s' WHERE accounts.login = '%s'", passHash.c_str(), username);
                         if (!BCrypt::validatePassword(password, passHash))
                         {
                             ref<uint8>(data_, 0) = LOGIN_ERROR_CHANGE_PASSWORD;
@@ -447,10 +454,10 @@ void auth_session::read_func()
                 }
             }
 
-            const auto rset = db::query(fmt::sprintf("SELECT accounts.id, accounts.status \
+            const auto rset = db::query("SELECT accounts.id, accounts.status \
                                     FROM accounts \
                                     WHERE accounts.login = '%s'",
-                                    username));
+                                        username);
             if (rset == nullptr || rset->rowsCount() == 0)
             {
                 ShowWarningFmt("login_parse: user <{}> could not be found using the provided information. Aborting.", username);
@@ -489,7 +496,7 @@ void auth_session::read_func()
                 db::query("UPDATE accounts SET accounts.timelastmodify = NULL WHERE accounts.id = %d", accid);
 
                 const auto rset2 = db::query("UPDATE accounts SET accounts.password = '%s' WHERE accounts.id = %d",
-                                  BCrypt::generateHash(updated_password), accid);
+                                             BCrypt::generateHash(updated_password), accid);
                 if (!rset2)
                 {
                     ShowWarningFmt("login_parse: Error trying to update password in database for user <{}>.", username);
