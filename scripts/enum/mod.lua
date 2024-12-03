@@ -162,14 +162,6 @@ xi.mod =
     COOK                            = 135,
     SYNERGY                         = 136,
     RIDING                          = 137,
-    ANTIHQ_WOOD                     = 144,
-    ANTIHQ_SMITH                    = 145,
-    ANTIHQ_GOLDSMITH                = 146,
-    ANTIHQ_CLOTH                    = 147,
-    ANTIHQ_LEATHER                  = 148,
-    ANTIHQ_BONE                     = 149,
-    ANTIHQ_ALCHEMY                  = 150,
-    ANTIHQ_COOK                     = 151,
 
     -- Damage taken modifiers. All damage modifiers are base 10000, so 375 = 3.75% YES WE KNOW retail is using base 256.
     DMG                             = 160, -- Modifies all/any damage taken.
@@ -856,7 +848,34 @@ xi.mod =
     SYNTH_SUCCESS_RATE_ALCHEMY      = 1104, -- Success rate bonus (percent) for Alchemy, specifically.
     SYNTH_SUCCESS_RATE_COOKING      = 1105, -- Success rate bonus (percent) for Cooking, specifically.
 
-    SYNTH_SKILL_GAIN                = 852, -- Synthesis skill gain rate
+    SYNTH_SKILL_GAIN                =  852, -- Synthesis skill gain rate
+
+    SYNTH_SPEED_WOODWORKING          = 1106, -- Escutcheon (Phase 3 & 4). Bonus to synth speed (Makes process faster. Assuming miliseconds)
+    SYNTH_SPEED_SMITHING             = 1107, -- Escutcheon (Phase 3 & 4). Bonus to synth speed (Makes process faster. Assuming miliseconds)
+    SYNTH_SPEED_GOLDSMITHING         = 1108, -- Escutcheon (Phase 3 & 4). Bonus to synth speed (Makes process faster. Assuming miliseconds)
+    SYNTH_SPEED_CLOTHCRAFT           = 1109, -- Escutcheon (Phase 3 & 4). Bonus to synth speed (Makes process faster. Assuming miliseconds)
+    SYNTH_SPEED_LEATHERCRAFT         = 1110, -- Escutcheon (Phase 3 & 4). Bonus to synth speed (Makes process faster. Assuming miliseconds)
+    SYNTH_SPEED_BONECRAFT            = 1111, -- Escutcheon (Phase 3 & 4). Bonus to synth speed (Makes process faster. Assuming miliseconds)
+    SYNTH_SPEED_ALCHEMY              = 1112, -- Escutcheon (Phase 3 & 4). Bonus to synth speed (Makes process faster. Assuming miliseconds)
+    SYNTH_SPEED_COOKING              = 1113, -- Escutcheon (Phase 3 & 4). Bonus to synth speed (Makes process faster. Assuming miliseconds)
+
+    SYNTH_ANTI_NQ_WOODWORKING        = 1114, -- Escutcheon (Phase 4) "Artisanal Knowledge" Enchantment. Prevents NQ results, making them fails.
+    SYNTH_ANTI_NQ_SMITHING           = 1115, -- Escutcheon (Phase 4) "Artisanal Knowledge" Enchantment. Prevents NQ results, making them fails.
+    SYNTH_ANTI_NQ_GOLDSMITHING       = 1116, -- Escutcheon (Phase 4) "Artisanal Knowledge" Enchantment. Prevents NQ results, making them fails.
+    SYNTH_ANTI_NQ_CLOTHCRAFT         = 1117, -- Escutcheon (Phase 4) "Artisanal Knowledge" Enchantment. Prevents NQ results, making them fails.
+    SYNTH_ANTI_NQ_LEATHERCRAFT       = 1118, -- Escutcheon (Phase 4) "Artisanal Knowledge" Enchantment. Prevents NQ results, making them fails.
+    SYNTH_ANTI_NQ_BONECRAFT          = 1119, -- Escutcheon (Phase 4) "Artisanal Knowledge" Enchantment. Prevents NQ results, making them fails.
+    SYNTH_ANTI_NQ_ALCHEMY            = 1120, -- Escutcheon (Phase 4) "Artisanal Knowledge" Enchantment. Prevents NQ results, making them fails.
+    SYNTH_ANTI_NQ_COOKING            = 1121, -- Escutcheon (Phase 4) "Artisanal Knowledge" Enchantment. Prevents NQ results, making them fails.
+
+    SYNTH_ANTI_HQ_WOODWORKING        =  144, -- Craft Rings. They ONLY prevent their associated skill type HQs, even if item description doesn't state it.
+    SYNTH_ANTI_HQ_SMITHING           =  145, -- Craft Rings. They ONLY prevent their associated skill type HQs, even if item description doesn't state it.
+    SYNTH_ANTI_HQ_GOLDSMITHING       =  146, -- Craft Rings. They ONLY prevent their associated skill type HQs, even if item description doesn't state it.
+    SYNTH_ANTI_HQ_CLOTHCRAFT         =  147, -- Craft Rings. They ONLY prevent their associated skill type HQs, even if item description doesn't state it.
+    SYNTH_ANTI_HQ_LEATHERCRAFT       =  148, -- Craft Rings. They ONLY prevent their associated skill type HQs, even if item description doesn't state it.
+    SYNTH_ANTI_HQ_BONECRAFT          =  149, -- Craft Rings. They ONLY prevent their associated skill type HQs, even if item description doesn't state it.
+    SYNTH_ANTI_HQ_ALCHEMY            =  150, -- Craft Rings. They ONLY prevent their associated skill type HQs, even if item description doesn't state it.
+    SYNTH_ANTI_HQ_COOKING            =  151, -- Craft Rings. They ONLY prevent their associated skill type HQs, even if item description doesn't state it.
 
     SYNTH_HQ_RATE                   = 862, -- High-quality success rate (not a percent)
 

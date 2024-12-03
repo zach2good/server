@@ -183,28 +183,28 @@ namespace synthutils
         switch (skillID)
         {
             case SKILL_WOODWORKING:
-                ModID = Mod::ANTIHQ_WOOD;
+                ModID = Mod::SYNTH_ANTI_HQ_WOODWORKING;
                 break;
             case SKILL_SMITHING:
-                ModID = Mod::ANTIHQ_SMITH;
+                ModID = Mod::SYNTH_ANTI_HQ_SMITHING;
                 break;
             case SKILL_GOLDSMITHING:
-                ModID = Mod::ANTIHQ_GOLDSMITH;
+                ModID = Mod::SYNTH_ANTI_HQ_GOLDSMITHING;
                 break;
             case SKILL_CLOTHCRAFT:
-                ModID = Mod::ANTIHQ_CLOTH;
+                ModID = Mod::SYNTH_ANTI_HQ_CLOTHCRAFT;
                 break;
             case SKILL_LEATHERCRAFT:
-                ModID = Mod::ANTIHQ_LEATHER;
+                ModID = Mod::SYNTH_ANTI_HQ_LEATHERCRAFT;
                 break;
             case SKILL_BONECRAFT:
-                ModID = Mod::ANTIHQ_BONE;
+                ModID = Mod::SYNTH_ANTI_HQ_BONECRAFT;
                 break;
             case SKILL_ALCHEMY:
-                ModID = Mod::ANTIHQ_ALCHEMY;
+                ModID = Mod::SYNTH_ANTI_HQ_ALCHEMY;
                 break;
             case SKILL_COOKING:
-                ModID = Mod::ANTIHQ_COOK;
+                ModID = Mod::SYNTH_ANTI_HQ_COOKING;
                 break;
         }
 
