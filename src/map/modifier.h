@@ -953,11 +953,20 @@ enum class Mod
     QUICK_MAGIC = 909, // Percent chance spells cast instantly (also reduces recast to 0, similar to Chainspell)
 
     // Crafting food effects
-    SYNTH_SUCCESS             = 851, // Rate of synthesis success
+    SYNTH_SUCCESS_RATE              = 851,  // Success rate bonus (percent) for all synths except desynths.
+    SYNTH_SUCCESS_RATE_DESYNTHESIS  = 916,  // Success rate bonus (percent) for desynths, specifically.
+    SYNTH_SUCCESS_RATE_WOODWORKING  = 1098, // Success rate bonus (percent) for Woodworking, specifically.
+    SYNTH_SUCCESS_RATE_SMITHING     = 1099, // Success rate bonus (percent) for Smithing, specifically.
+    SYNTH_SUCCESS_RATE_GOLDSMITHING = 1100, // Success rate bonus (percent) for Goldsmithing, specifically.
+    SYNTH_SUCCESS_RATE_CLOTHCRAFT   = 1101, // Success rate bonus (percent) for Clothcraft, specifically.
+    SYNTH_SUCCESS_RATE_LEATHERCRAFT = 1102, // Success rate bonus (percent) for Leahercraft, specifically.
+    SYNTH_SUCCESS_RATE_BONECRAFT    = 1103, // Success rate bonus (percent) for Bonecraft, specifically.
+    SYNTH_SUCCESS_RATE_ALCHEMY      = 1104, // Success rate bonus (percent) for Alchemy, specifically.
+    SYNTH_SUCCESS_RATE_COOKING      = 1105, // Success rate bonus (percent) for Cooking, specifically.
+
     SYNTH_SKILL_GAIN          = 852, // Synthesis skill gain rate
     SYNTH_FAIL_RATE           = 861, // Synthesis material loss rate (percent)
     SYNTH_HQ_RATE             = 862, // High-quality success rate (not a percent)
-    DESYNTH_SUCCESS           = 916, // Rate of desynthesis success
     SYNTH_FAIL_RATE_FIRE      = 917, // Amount synthesis failure rate is reduced when using a fire crystal
     SYNTH_FAIL_RATE_ICE       = 918, // Amount synthesis failure rate is reduced when using a ice crystal
     SYNTH_FAIL_RATE_WIND      = 919, // Amount synthesis failure rate is reduced when using a wind crystal
@@ -1035,7 +1044,7 @@ enum class Mod
     // The spares take care of finding the next ID to use so long as we don't forget to list IDs that have been freed up by refactoring.
     // 570 through 825 used by WS DMG mods these are not spares.
     //
-    // SPARE IDs: 1098 and onward
+    // SPARE IDs: 1106 and onward
 };
 
 // temporary workaround for using enum class as unordered_map key until compilers support it

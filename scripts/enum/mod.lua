@@ -844,13 +844,23 @@ xi.mod =
     FORCE_JUMP_CRIT                 = 828, -- Force critical hit for all jumps
     QUICK_DRAW_DMG_PERCENT          = 834, -- Percentage increase to QD damage
 
-    -- Crafting food effects
-    SYNTH_SUCCESS                   = 851, -- Rate of synthesis success
+    -- Crafting/Synthesis modifiers
+    SYNTH_SUCCESS_RATE              =  851, -- Success rate bonus (percent) for all synths except desynths.
+    SYNTH_SUCCESS_RATE_DESYNTHESIS  =  916, -- Success rate bonus (percent) for desynths, specifically.
+    SYNTH_SUCCESS_RATE_WOODWORKING  = 1098, -- Success rate bonus (percent) for Woodworking, specifically.
+    SYNTH_SUCCESS_RATE_SMITHING     = 1099, -- Success rate bonus (percent) for Smithing, specifically.
+    SYNTH_SUCCESS_RATE_GOLDSMITHING = 1100, -- Success rate bonus (percent) for Goldsmithing, specifically.
+    SYNTH_SUCCESS_RATE_CLOTHCRAFT   = 1101, -- Success rate bonus (percent) for Clothcraft, specifically.
+    SYNTH_SUCCESS_RATE_LEATHERCRAFT = 1102, -- Success rate bonus (percent) for Leahercraft, specifically.
+    SYNTH_SUCCESS_RATE_BONECRAFT    = 1103, -- Success rate bonus (percent) for Bonecraft, specifically.
+    SYNTH_SUCCESS_RATE_ALCHEMY      = 1104, -- Success rate bonus (percent) for Alchemy, specifically.
+    SYNTH_SUCCESS_RATE_COOKING      = 1105, -- Success rate bonus (percent) for Cooking, specifically.
+
     SYNTH_SKILL_GAIN                = 852, -- Synthesis skill gain rate
-    SYNTH_FAIL_RATE                 = 861, -- Synthesis material loss rate (percent)
+
     SYNTH_HQ_RATE                   = 862, -- High-quality success rate (not a percent)
-    DESYNTH_SUCCESS                 = 916, -- Rate of desynthesis success
-    SYNTH_FAIL_RATE_FIRE            = 917, -- Amount synthesis failure rate is reduced when using a fire crystal
+
+    SYNTH_FAIL_RATE                 = 861, -- Synthesis material loss rate (percent)
     SYNTH_FAIL_RATE_ICE             = 918, -- Amount synthesis failure rate is reduced when using a ice crystal
     SYNTH_FAIL_RATE_WIND            = 919, -- Amount synthesis failure rate is reduced when using a wind crystal
     SYNTH_FAIL_RATE_EARTH           = 920, -- Amount synthesis failure rate is reduced when using a earth crystal

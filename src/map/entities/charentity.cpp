@@ -2898,7 +2898,7 @@ void CCharEntity::changeMoghancement(uint16 moghancementID, bool isAdding)
             addModifier(Mod::GARDENING_WILT_BONUS, 36 * multiplier);
             break;
         case MOGHANCEMENT_DESYNTHESIS:
-            addModifier(Mod::DESYNTH_SUCCESS, 2 * multiplier);
+            addModifier(Mod::SYNTH_SUCCESS_RATE_DESYNTHESIS, 2 * multiplier);
             break;
         case MOGHANCEMENT_CONQUEST:
             addModifier(Mod::CONQUEST_BONUS, 6 * multiplier);

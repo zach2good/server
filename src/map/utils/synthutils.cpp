@@ -306,11 +306,11 @@ namespace synthutils
             // Apply synthesis success rate modifier, based on synth type.
             if (PChar->CraftContainer->getCraftType() == CRAFT_DESYNTHESIS)
             {
-                successRate = successRate + PChar->getMod(Mod::DESYNTH_SUCCESS);
+                successRate = successRate + PChar->getMod(Mod::SYNTH_SUCCESS_RATE_DESYNTHESIS);
             }
             else
             {
-                successRate = successRate + PChar->getMod(Mod::SYNTH_SUCCESS);
+                successRate = successRate + PChar->getMod(Mod::SYNTH_SUCCESS_RATE);
             }
 
             // Crafting ring handling.
