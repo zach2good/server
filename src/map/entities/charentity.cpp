@@ -2831,63 +2831,64 @@ void CCharEntity::changeMoghancement(uint16 moghancementID, bool isAdding)
             break;
         case MOGLIFICATION_WOODWORKING:
             addModifier(Mod::WOOD, 1 * multiplier);
+            addModifier(Mod::SYNTH_FAIL_RATE_WOOD, 5 * multiplier);
             break;
         case MOGLIFICATION_SMITHING:
             addModifier(Mod::SMITH, 1 * multiplier);
+            addModifier(Mod::SYNTH_FAIL_RATE_SMITH, 5 * multiplier);
             break;
         case MOGLIFICATION_GOLDSMITHING:
             addModifier(Mod::GOLDSMITH, 1 * multiplier);
+            addModifier(Mod::SYNTH_FAIL_RATE_GOLDSMITH, 5 * multiplier);
             break;
         case MOGLIFICATION_CLOTHCRAFT:
             addModifier(Mod::CLOTH, 1 * multiplier);
+            addModifier(Mod::SYNTH_FAIL_RATE_CLOTH, 5 * multiplier);
             break;
         case MOGLIFICATION_LEATHERCRAFT:
             addModifier(Mod::LEATHER, 1 * multiplier);
+            addModifier(Mod::SYNTH_FAIL_RATE_LEATHER, 5 * multiplier);
             break;
         case MOGLIFICATION_BONECRAFT:
             addModifier(Mod::BONE, 1 * multiplier);
+            addModifier(Mod::SYNTH_FAIL_RATE_BONE, 5 * multiplier);
             break;
         case MOGLIFICATION_ALCHEMY:
             addModifier(Mod::ALCHEMY, 1 * multiplier);
+            addModifier(Mod::SYNTH_FAIL_RATE_ALCHEMY, 5 * multiplier);
             break;
         case MOGLIFICATION_COOKING:
             addModifier(Mod::COOK, 1 * multiplier);
+            addModifier(Mod::SYNTH_FAIL_RATE_COOK, 5 * multiplier);
             break;
 
+        // Mega Moglifications do not state anything about lowering material loss.
         case MEGA_MOGLIFICATION_FISHING:
             addModifier(Mod::FISH, 5 * multiplier);
             break;
         case MEGA_MOGLIFICATION_WOODWORKING:
             addModifier(Mod::WOOD, 5 * multiplier);
-            addModifier(Mod::SYNTH_FAIL_RATE_WOOD, 5 * multiplier);
             break;
         case MEGA_MOGLIFICATION_SMITHING:
             addModifier(Mod::SMITH, 5 * multiplier);
-            addModifier(Mod::SYNTH_FAIL_RATE_SMITH, 5 * multiplier);
             break;
         case MEGA_MOGLIFICATION_GOLDSMITHING:
             addModifier(Mod::GOLDSMITH, 5 * multiplier);
-            addModifier(Mod::SYNTH_FAIL_RATE_GOLDSMITH, 5 * multiplier);
             break;
         case MEGA_MOGLIFICATION_CLOTHCRAFT:
             addModifier(Mod::CLOTH, 5 * multiplier);
-            addModifier(Mod::SYNTH_FAIL_RATE_CLOTH, 5 * multiplier);
             break;
         case MEGA_MOGLIFICATION_LEATHERCRAFT:
             addModifier(Mod::LEATHER, 5 * multiplier);
-            addModifier(Mod::SYNTH_FAIL_RATE_LEATHER, 5 * multiplier);
             break;
         case MEGA_MOGLIFICATION_BONECRAFT:
             addModifier(Mod::BONE, 5 * multiplier);
-            addModifier(Mod::SYNTH_FAIL_RATE_BONE, 5 * multiplier);
             break;
         case MEGA_MOGLIFICATION_ALCHEMY:
             addModifier(Mod::ALCHEMY, 5 * multiplier);
-            addModifier(Mod::SYNTH_FAIL_RATE_ALCHEMY, 5 * multiplier);
             break;
         case MEGA_MOGLIFICATION_COOKING:
             addModifier(Mod::COOK, 5 * multiplier);
-            addModifier(Mod::SYNTH_FAIL_RATE_COOK, 5 * multiplier);
             break;
 
         case MOGHANCEMENT_EXPERIENCE:
