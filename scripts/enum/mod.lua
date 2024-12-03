@@ -837,18 +837,18 @@ xi.mod =
     QUICK_DRAW_DMG_PERCENT          = 834, -- Percentage increase to QD damage
 
     -- Crafting/Synthesis modifiers
-    SYNTH_SUCCESS_RATE              =  851, -- Success rate bonus (percent) for all synths except desynths.
-    SYNTH_SUCCESS_RATE_DESYNTHESIS  =  916, -- Success rate bonus (percent) for desynths, specifically.
-    SYNTH_SUCCESS_RATE_WOODWORKING  = 1098, -- Success rate bonus (percent) for Woodworking, specifically.
-    SYNTH_SUCCESS_RATE_SMITHING     = 1099, -- Success rate bonus (percent) for Smithing, specifically.
-    SYNTH_SUCCESS_RATE_GOLDSMITHING = 1100, -- Success rate bonus (percent) for Goldsmithing, specifically.
-    SYNTH_SUCCESS_RATE_CLOTHCRAFT   = 1101, -- Success rate bonus (percent) for Clothcraft, specifically.
-    SYNTH_SUCCESS_RATE_LEATHERCRAFT = 1102, -- Success rate bonus (percent) for Leahercraft, specifically.
-    SYNTH_SUCCESS_RATE_BONECRAFT    = 1103, -- Success rate bonus (percent) for Bonecraft, specifically.
-    SYNTH_SUCCESS_RATE_ALCHEMY      = 1104, -- Success rate bonus (percent) for Alchemy, specifically.
-    SYNTH_SUCCESS_RATE_COOKING      = 1105, -- Success rate bonus (percent) for Cooking, specifically.
+    SYNTH_SUCCESS_RATE               =  851, -- Success rate bonus (percent) for all synths except desynths.
+    SYNTH_SUCCESS_RATE_DESYNTHESIS   =  916, -- Success rate bonus (percent) for desynths, specifically.
+    SYNTH_SUCCESS_RATE_WOODWORKING   = 1098, -- Success rate bonus (percent) for Woodworking, specifically.
+    SYNTH_SUCCESS_RATE_SMITHING      = 1099, -- Success rate bonus (percent) for Smithing, specifically.
+    SYNTH_SUCCESS_RATE_GOLDSMITHING  = 1100, -- Success rate bonus (percent) for Goldsmithing, specifically.
+    SYNTH_SUCCESS_RATE_CLOTHCRAFT    = 1101, -- Success rate bonus (percent) for Clothcraft, specifically.
+    SYNTH_SUCCESS_RATE_LEATHERCRAFT  = 1102, -- Success rate bonus (percent) for Leahercraft, specifically.
+    SYNTH_SUCCESS_RATE_BONECRAFT     = 1103, -- Success rate bonus (percent) for Bonecraft, specifically.
+    SYNTH_SUCCESS_RATE_ALCHEMY       = 1104, -- Success rate bonus (percent) for Alchemy, specifically.
+    SYNTH_SUCCESS_RATE_COOKING       = 1105, -- Success rate bonus (percent) for Cooking, specifically.
 
-    SYNTH_SKILL_GAIN                =  852, -- Synthesis skill gain rate
+    SYNTH_SKILL_GAIN                 =  852, -- Synthesis skill gain rate
 
     SYNTH_SPEED_WOODWORKING          = 1106, -- Escutcheon (Phase 3 & 4). Bonus to synth speed (Makes process faster. Assuming miliseconds)
     SYNTH_SPEED_SMITHING             = 1107, -- Escutcheon (Phase 3 & 4). Bonus to synth speed (Makes process faster. Assuming miliseconds)
@@ -877,33 +877,35 @@ xi.mod =
     SYNTH_ANTI_HQ_ALCHEMY            =  150, -- Craft Rings. They ONLY prevent their associated skill type HQs, even if item description doesn't state it.
     SYNTH_ANTI_HQ_COOKING            =  151, -- Craft Rings. They ONLY prevent their associated skill type HQs, even if item description doesn't state it.
 
-    SYNTH_HQ_RATE                  =  862, -- High-quality success rate (not a percent)
-    SYNTH_HQ_RATE_WOODWORKING      = 1122, -- High-quality success rate (not a percent) for specific skill. Used by Escutcheon's enchantment.
-    SYNTH_HQ_RATE_SMITHING         = 1123, -- High-quality success rate (not a percent) for specific skill. Used by Escutcheon's enchantment.
-    SYNTH_HQ_RATE_GOLDSMITHING     = 1124, -- High-quality success rate (not a percent) for specific skill. Used by Escutcheon's enchantment.
-    SYNTH_HQ_RATE_CLOTHCRAFT       = 1125, -- High-quality success rate (not a percent) for specific skill. Used by Escutcheon's enchantment.
-    SYNTH_HQ_RATE_LEATHERCRAFT     = 1126, -- High-quality success rate (not a percent) for specific skill. Used by Escutcheon's enchantment.
-    SYNTH_HQ_RATE_BONECRAFT        = 1127, -- High-quality success rate (not a percent) for specific skill. Used by Escutcheon's enchantment.
-    SYNTH_HQ_RATE_ALCHEMY          = 1128, -- High-quality success rate (not a percent) for specific skill. Used by Escutcheon's enchantment.
-    SYNTH_HQ_RATE_COOKING          = 1129, -- High-quality success rate (not a percent) for specific skill. Used by Escutcheon's enchantment.
+    SYNTH_HQ_RATE                    =  862, -- High-quality success rate (not a percent)
+    SYNTH_HQ_RATE_WOODWORKING        = 1122, -- High-quality success rate (not a percent) for specific skill. Used by Escutcheon's enchantment.
+    SYNTH_HQ_RATE_SMITHING           = 1123, -- High-quality success rate (not a percent) for specific skill. Used by Escutcheon's enchantment.
+    SYNTH_HQ_RATE_GOLDSMITHING       = 1124, -- High-quality success rate (not a percent) for specific skill. Used by Escutcheon's enchantment.
+    SYNTH_HQ_RATE_CLOTHCRAFT         = 1125, -- High-quality success rate (not a percent) for specific skill. Used by Escutcheon's enchantment.
+    SYNTH_HQ_RATE_LEATHERCRAFT       = 1126, -- High-quality success rate (not a percent) for specific skill. Used by Escutcheon's enchantment.
+    SYNTH_HQ_RATE_BONECRAFT          = 1127, -- High-quality success rate (not a percent) for specific skill. Used by Escutcheon's enchantment.
+    SYNTH_HQ_RATE_ALCHEMY            = 1128, -- High-quality success rate (not a percent) for specific skill. Used by Escutcheon's enchantment.
+    SYNTH_HQ_RATE_COOKING            = 1129, -- High-quality success rate (not a percent) for specific skill. Used by Escutcheon's enchantment.
 
-    SYNTH_FAIL_RATE                 = 861, -- Synthesis material loss rate (percent)
-    SYNTH_FAIL_RATE_ICE             = 918, -- Amount synthesis failure rate is reduced when using a ice crystal
-    SYNTH_FAIL_RATE_WIND            = 919, -- Amount synthesis failure rate is reduced when using a wind crystal
-    SYNTH_FAIL_RATE_EARTH           = 920, -- Amount synthesis failure rate is reduced when using a earth crystal
-    SYNTH_FAIL_RATE_LIGHTNING       = 921, -- Amount synthesis failure rate is reduced when using a lightning crystal
-    SYNTH_FAIL_RATE_WATER           = 922, -- Amount synthesis failure rate is reduced when using a water crystal
-    SYNTH_FAIL_RATE_LIGHT           = 923, -- Amount synthesis failure rate is reduced when using a light crystal
-    SYNTH_FAIL_RATE_DARK            = 924, -- Amount synthesis failure rate is reduced when using a dark crystal
-    SYNTH_FAIL_RATE_WOOD            = 925, -- Amount synthesis failure rate is reduced when doing woodworking
-    SYNTH_FAIL_RATE_SMITH           = 926, -- Amount synthesis failure rate is reduced when doing smithing
-    SYNTH_FAIL_RATE_GOLDSMITH       = 927, -- Amount synthesis failure rate is reduced when doing goldsmithing
-    SYNTH_FAIL_RATE_CLOTH           = 928, -- Amount synthesis failure rate is reduced when doing clothcraft
-    SYNTH_FAIL_RATE_LEATHER         = 929, -- Amount synthesis failure rate is reduced when doing leathercraft
-    SYNTH_FAIL_RATE_BONE            = 930, -- Amount synthesis failure rate is reduced when doing bonecraft
-    SYNTH_FAIL_RATE_ALCHEMY         = 931, -- Amount synthesis failure rate is reduced when doing alchemy
-    SYNTH_FAIL_RATE_COOK            = 932, -- Amount synthesis failure rate is reduced when doing cooking
+    SYNTH_MATERIAL_LOSS              =  861, -- Material loss rate (percent) for all synths.
+    SYNTH_MATERIAL_LOSS_WOODWORKING  =  925, -- Material loss rate (percent) when doing woodworking
+    SYNTH_MATERIAL_LOSS_SMITHING     =  926, -- Material loss rate (percent) when doing smithing
+    SYNTH_MATERIAL_LOSS_GOLDSMITHING =  927, -- Material loss rate (percent) when doing goldsmithing
+    SYNTH_MATERIAL_LOSS_CLOTHCRAFT   =  928, -- Material loss rate (percent) when doing clothcraft
+    SYNTH_MATERIAL_LOSS_LEATHERCRAFT =  929, -- Material loss rate (percent) when doing leathercraft
+    SYNTH_MATERIAL_LOSS_BONECRAFT    =  930, -- Material loss rate (percent) when doing bonecraft
+    SYNTH_MATERIAL_LOSS_ALCHEMY      =  931, -- Material loss rate (percent) when doing alchemy
+    SYNTH_MATERIAL_LOSS_COOKING      =  932, -- Material loss rate (percent) when doing cooking
+    SYNTH_MATERIAL_LOSS_FIRE         =  917, -- Material loss rate (percent) when using a fire crystal (or HQ version)
+    SYNTH_MATERIAL_LOSS_ICE          =  918, -- Material loss rate (percent) when using a ice crystal (or HQ version)
+    SYNTH_MATERIAL_LOSS_WIND         =  919, -- Material loss rate (percent) when using a wind crystal (or HQ version)
+    SYNTH_MATERIAL_LOSS_EARTH        =  920, -- Material loss rate (percent) when using a earth crystal (or HQ version)
+    SYNTH_MATERIAL_LOSS_THUNDER      =  921, -- Material loss rate (percent) when using a lightning crystal (or HQ version)
+    SYNTH_MATERIAL_LOSS_WATER        =  922, -- Material loss rate (percent) when using a water crystal (or HQ version)
+    SYNTH_MATERIAL_LOSS_LIGHT        =  923, -- Material loss rate (percent) when using a light crystal (or HQ version)
+    SYNTH_MATERIAL_LOSS_DARK         =  924, -- Material loss rate (percent) when using a dark crystal (or HQ version)
 
+    -- Weaponskill modifiers
     WEAPONSKILL_DAMAGE_BASE         = 570, -- Specific to 1 Weaponskill: See modifier.h for how this is used
     ALL_WSDMG_ALL_HITS              = 840, -- Generic (all Weaponskills) damage, on all hits.
     -- Per https://www.bg-wiki.com/bg/Weapon_Skill_Damage we need all 3..

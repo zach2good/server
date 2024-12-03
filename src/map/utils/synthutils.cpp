@@ -471,8 +471,7 @@ namespace synthutils
             //------------------------------
             // Section 2: Skill up equations and penalties
             //------------------------------
-            double skillUpChance = 0;
-
+            double skillUpChance         = 0;
             double craftChanceMultiplier = settings::get<double>("map.CRAFT_CHANCE_MULTIPLIER");
 
             if (settings::get<bool>("map.CRAFT_MODERN_SYSTEM"))
@@ -685,9 +684,9 @@ namespace synthutils
         uint8 random     = 0;
 
         // Synth material loss modifiers. TODO: Audit usage of this modifiers.
-        int16 breakGlobalReduction    = PChar->getMod(Mod::SYNTH_FAIL_RATE);
-        int16 breakElementalReduction = PChar->getMod((Mod)((int32)Mod::SYNTH_FAIL_RATE_FIRE + PChar->CraftContainer->getType()));
-        int16 breakTypeReduction      = PChar->getMod((Mod)((int32)Mod::SYNTH_FAIL_RATE_WOOD + currentCraft - SKILL_WOODWORKING));
+        int16 breakGlobalReduction    = PChar->getMod(Mod::SYNTH_MATERIAL_LOSS);
+        int16 breakElementalReduction = PChar->getMod((Mod)((int32)Mod::SYNTH_MATERIAL_LOSS_FIRE + PChar->CraftContainer->getType()));
+        int16 breakTypeReduction      = PChar->getMod((Mod)((int32)Mod::SYNTH_MATERIAL_LOSS_WOODWORKING + currentCraft - SKILL_WOODWORKING));
         int16 synthDifficulty         = getSynthDifficulty(PChar, currentCraft);
 
         if (synthDifficulty < 0)
