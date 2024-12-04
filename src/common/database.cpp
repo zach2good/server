@@ -151,7 +151,7 @@ auto db::queryStr(std::string const& rawQuery) -> std::unique_ptr<db::detail::Re
         {
             DebugSQL(fmt::format("query: {}", rawQuery));
             auto rset = std::unique_ptr<sql::ResultSet>(stmt->executeQuery(rawQuery.data()));
-            return std::make_unique<db::detail::ResultSetWrapper>(std::move(rset));
+            return std::make_unique<db::detail::ResultSetWrapper>(std::move(rset), rawQuery);
         }
         catch (const std::exception& e)
         {

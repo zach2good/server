@@ -121,8 +121,8 @@ std::vector<ahItem*> CDataLoader::GetAHItemsToCategory(uint8 AHCategoryID, const
 
             PAHItem->ItemID = rset->get<uint16>("itemid");
 
-            PAHItem->SingleAmount = rset->get<uint32>("COUNT(*)-SUM(stack)");
-            PAHItem->StackAmount  = rset->get<uint32>("SUM(stack)");
+            PAHItem->SingleAmount = rset->getOrDefault<uint32>("COUNT(*)-SUM(stack)", 0);
+            PAHItem->StackAmount  = rset->getOrDefault<uint32>("SUM(stack)", 0);
             PAHItem->Category     = AHCategoryID;
 
             if (rset->get<uint32>("stackSize") == 1)
@@ -159,10 +159,10 @@ ahItem CDataLoader::GetAHItemFromItemID(uint16 ItemID)
         while (rset->next())
         {
             CAHItem.Category     = rset->get<uint16>("aH");
-            CAHItem.SingleAmount = rset->get<uint32>("COUNT(*)-SUM(stack)");
-            CAHItem.StackAmount  = rset->get<uint32>("SUM(stack)");
+            CAHItem.SingleAmount = rset->getOrDefault<uint32>("COUNT(*)-SUM(stack)", 0);
+            CAHItem.StackAmount  = rset->getOrDefault<uint32>("SUM(stack)", 0);
 
-            if (rset->get<uint32>("COUNT(*)-SUM(stack)") == 1)
+            if (rset->getOrDefault<uint32>("COUNT(*)-SUM(stack)", 0) == 1)
             {
                 CAHItem.StackAmount = 0;
             }
@@ -306,7 +306,8 @@ std::list<SearchEntity*> CDataLoader::GetPlayersList(search_req sr, int* count)
             PPlayer->seacom_type   = rset->get<uint8>("seacom_type");
             PPlayer->disconnecting = rset->get<bool>("disconnecting");
             PPlayer->gmHidden      = rset->get<bool>("gmHiddenEnabled");
-            uint32 partyid         = rset->get<uint32>("partyid");
+
+            const auto partyid = rset->getOrDefault<uint32>("partyid", 0);
 
             if (PPlayer->mentor)
             {
@@ -642,7 +643,8 @@ std::list<SearchEntity*> CDataLoader::GetLinkshellList(uint32 LinkshellID)
             PPlayer->linkshellrank1 = rset->get<uint8>("linkshellrank1");
             PPlayer->linkshellrank2 = rset->get<uint8>("linkshellrank2");
             PPlayer->disconnecting  = rset->get<bool>("disconnecting");
-            uint32 partyid          = rset->get<uint32>("partyid");
+
+            const auto partyid = rset->getOrDefault<uint32>("partyid", 0);
 
             uint32    settingsInt    = rset->get<uint32>("settings");
             SAVE_CONF playerSettings = {};

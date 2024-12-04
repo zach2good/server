@@ -45,6 +45,18 @@
 // @note Everything in sql:: database-land is 1-indexed, not 0-indexed.
 namespace db
 {
+    //
+    // Forward declarations
+    //
+
+    namespace detail
+    {
+        class ResultSetWrapper;
+    }
+
+    template <typename T>
+    void extractFromBlob(std::unique_ptr<db::detail::ResultSetWrapper> const& rset, std::string const& blobKey, T& destination);
+
     namespace detail
     {
         // Helpers to provide information to the static_assert below
@@ -55,7 +67,8 @@ namespace db
 
         template <class T>
         inline constexpr bool always_false_v = always_false<T>::value;
-        struct State          final
+
+        struct State final
         {
             std::unique_ptr<sql::Connection>                                         connection;
             std::unordered_map<std::string, std::unique_ptr<sql::PreparedStatement>> lazyPreparedStatements;
@@ -64,8 +77,9 @@ namespace db
         class ResultSetWrapper final
         {
         public:
-            ResultSetWrapper(std::unique_ptr<sql::ResultSet>&& resultSet)
+            ResultSetWrapper(std::unique_ptr<sql::ResultSet>&& resultSet, const std::string& query)
             : resultSet(std::move(resultSet))
+            , query(query)
             {
             }
 
@@ -90,7 +104,8 @@ namespace db
 
                 if (resultSet->isNull(key.c_str()))
                 {
-                    ShowWarning("ResultSetWrapper::get: key %s is null", key.c_str());
+                    ShowError("ResultSetWrapper::get: key %s is null", key.c_str());
+                    ShowError("Query: %s", query.c_str());
                     return value;
                 }
 
@@ -171,19 +186,47 @@ namespace db
                 return get<T>(columnName.c_str());
             }
 
+            // Get the value of the associated key or the default value if the key is null/not-populated.
+            template <typename T>
+            auto getOrDefault(const std::string& key, T defaultValue) -> T
+            {
+                if (resultSet->isNull(key.c_str()))
+                {
+                    return defaultValue;
+                }
+
+                return get<T>(key);
+            }
+
+            // Get the value of the 0-indexed column or the default value if the column is null/not-populated.
+            template <typename T>
+            auto getOrDefault(const uint32 index, T defaultValue) -> T
+            {
+                const auto columnName = resultSet->getMetaData()->getColumnLabel(index + 1);
+                return getOrDefault<T>(columnName.c_str(), defaultValue);
+            }
+
             // Check if the value of the associated key is null/not-populated.
             auto isNull(const std::string& key) -> bool
             {
                 return resultSet->isNull(key.c_str());
             }
 
-            auto& getNativeResultSet() const
+            auto getQuery() const
             {
-                return resultSet;
+                return query;
             }
+
+            //
+            // Friend function declarations
+            //
+
+            template <typename T>
+            friend void db::extractFromBlob(std::unique_ptr<ResultSetWrapper> const& rset, std::string const& blobKey, T& destination);
 
         private:
             std::unique_ptr<sql::ResultSet> resultSet;
+            std::string                     query;
         };
 
         auto getState() -> mutex_guarded<db::detail::State>&;
@@ -335,7 +378,7 @@ namespace db
                 auto counter = 0;
                 db::detail::binder(stmt, counter, std::forward<Args>(args)...);
                 auto rset = std::unique_ptr<sql::ResultSet>(stmt->executeQuery());
-                return std::make_unique<db::detail::ResultSetWrapper>(std::move(rset));
+                return std::make_unique<db::detail::ResultSetWrapper>(std::move(rset), rawQuery);
             }
             catch (const std::exception& e)
             {
@@ -414,7 +457,7 @@ namespace db
                     return { nullptr, 0 };
                 }
                 auto rowCount = rset2->getUInt("count");
-                return { std::make_unique<db::detail::ResultSetWrapper>(std::move(rset)), rowCount };
+                return { std::make_unique<db::detail::ResultSetWrapper>(std::move(rset), rawQuery), rowCount };
             }
             catch (const std::exception& e)
             {
@@ -504,10 +547,11 @@ namespace db
         // This will introduce difficult to track down crashes.
         if (!rset->isNull(blobKey.c_str()))
         {
-            // TODO: This is kind of nasty. The underlying handle will properly
-            //     : return an escaped string, so we can use it for blobs. If we
-            //     : use rset->get<std::string>(...) it will truncate the result.
-            auto blobStr = rset->getNativeResultSet()->getString(blobKey.c_str());
+            // TODO: This is kind of nasty. We can't use rset->get<std::string>(...)
+            //     : because it will truncate the blob result. So we're using a friend
+            //     : function to allow us to get access to the raw resultSet and
+            //     : call getString directly. This does not truncate the result.
+            auto blobStr = rset->resultSet->getString(blobKey.c_str());
 
             // Login server creates new chars with null blobs. Map server then initializes.
             // We don't want to overwrite the initialized map data with null blobs / 0 values.
