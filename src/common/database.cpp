@@ -184,3 +184,39 @@ auto db::escapeString(std::string const& str) -> std::string
 
     return escapedStr;
 }
+
+auto db::getDatabaseSchema() -> std::string
+{
+    TracyZoneScoped;
+
+    // clang-format off
+    return detail::getState().write([&](detail::State& state) -> std::string
+    {
+        return state.connection->getSchema().c_str();
+    });
+    // clang-format on
+}
+
+auto db::getDatabaseVersion() -> std::string
+{
+    TracyZoneScoped;
+
+    // clang-format off
+    return detail::getState().write([&](detail::State& state) -> std::string
+    {
+        const auto metadata = state.connection->getMetaData();
+        return fmt::format("{} {}", metadata->getDatabaseProductName().c_str(), metadata->getDatabaseProductVersion().c_str());
+    });
+    // clang-format on
+}
+
+auto db::getDriverVersion() -> std::string
+{
+    // clang-format off
+    return detail::getState().write([&](detail::State& state) -> std::string
+    {
+        const auto metadata = state.connection->getMetaData();
+        return fmt::format("{} {}", metadata->getDriverName().c_str(), metadata->getDriverVersion().c_str());
+    });
+    // clang-format on
+}

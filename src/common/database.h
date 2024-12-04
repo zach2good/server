@@ -565,4 +565,19 @@ namespace db
     // @param str The string to escape.
     // @return The escaped string.
     auto escapeString(std::string const& str) -> std::string;
+
+    // @brief Get the database schema.
+    // @return The database schema.
+    // @note This is the database name, ie. xidb.
+    auto getDatabaseSchema() -> std::string;
+
+    // @brief Get the database version.
+    // @return The database version.
+    // @note This is the version of the database software, ie. MariaDB 10.6.12-MariaDB.
+    auto getDatabaseVersion() -> std::string;
+
+    // @brief Get the driver version.
+    // @return The driver version.
+    // @note This is the version of the database driver, ie. MariaDB Connector/C++ 1.0.3
+    auto getDriverVersion() -> std::string;
 } // namespace db
