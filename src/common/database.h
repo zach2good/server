@@ -580,4 +580,13 @@ namespace db
     // @return The driver version.
     // @note This is the version of the database driver, ie. MariaDB Connector/C++ 1.0.3
     auto getDriverVersion() -> std::string;
+
+    void checkCharset();
+
+    bool setAutoCommit(bool value);
+    bool getAutoCommit();
+
+    bool transactionStart();
+    bool transactionCommit();
+    bool transactionRollback();
 } // namespace db

@@ -212,6 +212,8 @@ auto db::getDatabaseVersion() -> std::string
 
 auto db::getDriverVersion() -> std::string
 {
+    TracyZoneScoped;
+
     // clang-format off
     return detail::getState().write([&](detail::State& state) -> std::string
     {
@@ -219,4 +221,101 @@ auto db::getDriverVersion() -> std::string
         return fmt::format("{} {}", metadata->getDriverName().c_str(), metadata->getDriverVersion().c_str());
     });
     // clang-format on
+}
+
+void db::checkCharset()
+{
+    TracyZoneScoped;
+
+    // Check that the SQL charset is what we require
+    auto rset = query("SELECT @@character_set_database, @@collation_database");
+    if (rset && rset->rowsCount())
+    {
+        bool foundError = false;
+        while (rset->next())
+        {
+            auto charsetSetting   = rset->get<std::string>(0);
+            auto collationSetting = rset->get<std::string>(1);
+            if (!starts_with(charsetSetting, "utf8") || !starts_with(collationSetting, "utf8"))
+            {
+                foundError = true;
+                // clang-format off
+                ShowWarning(fmt::format("Unexpected character_set or collation setting in database: {}: {}. Expected utf8*.",
+                    charsetSetting, collationSetting).c_str());
+                // clang-format on
+            }
+        }
+
+        if (foundError)
+        {
+            ShowWarning("Non utf8 charset can result in data reads and writes being corrupted!");
+            ShowWarning("Non utf8 collation can be indicative that the database was not set up per required specifications.");
+        }
+    }
+}
+
+bool db::setAutoCommit(bool value)
+{
+    TracyZoneScoped;
+
+    if (!query("SET @@autocommit = %u", (value) ? 1 : 0))
+    {
+        // TODO: Logging
+        return false;
+    }
+
+    return true;
+}
+
+bool db::getAutoCommit()
+{
+    TracyZoneScoped;
+
+    auto rset = query("SELECT @@autocommit");
+    if (rset && rset->rowsCount() && rset->next())
+    {
+        return rset->get<uint32>(0) == 1;
+    }
+
+    // TODO: Logging
+    return false;
+}
+
+bool db::transactionStart()
+{
+    TracyZoneScoped;
+
+    if (!query("START TRANSACTION;"))
+    {
+        // TODO: Logging
+        return false;
+    }
+
+    return true;
+}
+
+bool db::transactionCommit()
+{
+    TracyZoneScoped;
+
+    if (!query("COMMIT;"))
+    {
+        // TODO: Logging
+        return false;
+    }
+
+    return true;
+}
+
+bool db::transactionRollback()
+{
+    TracyZoneScoped;
+
+    if (!query("ROLLBACK;"))
+    {
+        // TODO: Logging
+        return false;
+    }
+
+    return true;
 }
