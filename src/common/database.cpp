@@ -138,6 +138,29 @@ mutex_guarded<db::detail::State>& db::detail::getState()
     return state;
 }
 
+auto db::detail::timer(std::string const& query) -> xi::final_action<std::function<void()>>
+{
+    // clang-format off
+    const auto start = hires_clock::now();
+    return xi::finally<std::function<void()>>([query, start]() -> void
+    {
+        const auto end      = hires_clock::now();
+        const auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+        if (settings::get<bool>("logging.SQL_SLOW_QUERY_LOG_ENABLE"))
+        {
+            if (duration > settings::get<uint32>("logging.SQL_SLOW_QUERY_ERROR_TIME"))
+            {
+                ShowError(fmt::format("SQL query took {}ms: {}", duration, query));
+            }
+            else if (duration > settings::get<uint32>("logging.SQL_SLOW_QUERY_WARNING_TIME"))
+            {
+                ShowWarning(fmt::format("SQL query took {}ms: {}", duration, query));
+            }
+        }
+    });
+    // clang-format on
+}
+
 auto db::queryStr(std::string const& rawQuery) -> std::unique_ptr<db::detail::ResultSetWrapper>
 {
     TracyZoneScoped;
@@ -150,7 +173,8 @@ auto db::queryStr(std::string const& rawQuery) -> std::unique_ptr<db::detail::Re
         try
         {
             DebugSQL(fmt::format("query: {}", rawQuery));
-            auto rset = std::unique_ptr<sql::ResultSet>(stmt->executeQuery(rawQuery.data()));
+            auto queryTimer = detail::timer(rawQuery);
+            auto rset       = std::unique_ptr<sql::ResultSet>(stmt->executeQuery(rawQuery.data()));
             return std::make_unique<db::detail::ResultSetWrapper>(std::move(rset), rawQuery);
         }
         catch (const std::exception& e)

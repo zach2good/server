@@ -24,6 +24,7 @@
 #include "cbasetypes.h"
 #include "mutex_guarded.h"
 #include "tracy.h"
+#include "xi.h"
 
 #include <memory>
 #include <string>
@@ -315,6 +316,8 @@ namespace db
             bindValue(stmt, ++counter, std::forward<T>(first));
             binder(stmt, counter, std::forward<Args>(rest)...);
         }
+
+        auto timer(std::string const& query) -> xi::final_action<std::function<void()>>;
     } // namespace detail
 
     // @brief Execute a query with the given query string.
@@ -377,7 +380,8 @@ namespace db
                 // NOTE: Everything is 1-indexed, but we're going to increment right away insider binder!
                 auto counter = 0;
                 db::detail::binder(stmt, counter, std::forward<Args>(args)...);
-                auto rset = std::unique_ptr<sql::ResultSet>(stmt->executeQuery());
+                auto queryTimer = detail::timer(rawQuery);
+                auto rset       = std::unique_ptr<sql::ResultSet>(stmt->executeQuery());
                 return std::make_unique<db::detail::ResultSetWrapper>(std::move(rset), rawQuery);
             }
             catch (const std::exception& e)
@@ -449,8 +453,9 @@ namespace db
                 // NOTE: Everything is 1-indexed, but we're going to increment right away insider binder!
                 auto counter = 0;
                 db::detail::binder(stmt, counter, std::forward<Args>(args)...);
-                auto rset  = std::unique_ptr<sql::ResultSet>(stmt->executeQuery());
-                auto rset2 = std::unique_ptr<sql::ResultSet>(countStmt->executeQuery());
+                auto queryTimer = detail::timer(rawQuery);
+                auto rset       = std::unique_ptr<sql::ResultSet>(stmt->executeQuery());
+                auto rset2      = std::unique_ptr<sql::ResultSet>(countStmt->executeQuery());
                 if (!rset2 || !rset2->next())
                 {
                     ShowError("Failed to get row count");
