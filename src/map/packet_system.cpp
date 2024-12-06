@@ -5518,11 +5518,13 @@ void SmallPacket0x0B5(map_session_data_t* const PSession, CCharEntity* const PCh
                     // clang-format off
                     // NOTE: We capture rawMessage as a std::string because if we cast data[6] into a const char*, the underlying data might
                     //     : be gone by the time we action this lambda on the worker thread.
-                    Async::getInstance()->query([name = PChar->getName(), rawMessage = std::string((const char*)data[6])](SqlConnection* _sql)
+                    Async::getInstance()->submit([name = PChar->getName(), zoneId = PChar->getZone(), rawMessage = std::string((const char*)data[6])]()
                     {
-                        auto message = _sql->EscapeString(rawMessage);
-                        std::ignore  = _sql->Query("INSERT INTO audit_chat (speaker,type,message,datetime) VALUES('%s','SAY','%s',current_timestamp())",
-                            name.c_str(), message.c_str());
+                        const auto query = "INSERT INTO audit_chat (speaker, type, zoneid, message, datetime) VALUES(?, 'SAY', ?, ?, current_timestamp())";
+                        if (!db::preparedStmt(query, name, zoneId, rawMessage))
+                        {
+                            ShowError("Failed to insert SAY audit_chat record for player '%s'", name);
+                        }
                     });
                     // clang-format on
                 }
@@ -5544,11 +5546,13 @@ void SmallPacket0x0B5(map_session_data_t* const PSession, CCharEntity* const PCh
                         // clang-format off
                         // NOTE: We capture rawMessage as a std::string because if we cast data[6] into a const char*, the underlying data might
                         //     : be gone by the time we action this lambda on the worker thread.
-                        Async::getInstance()->query([name = PChar->getName(), rawMessage = std::string((const char*)data[6])](SqlConnection* _sql)
+                        Async::getInstance()->submit([name = PChar->getName(), zoneId = PChar->getZone(), rawMessage = std::string((const char*)data[6])]()
                         {
-                            auto message = _sql->EscapeString(rawMessage);
-                            std::ignore  = _sql->Query("INSERT INTO audit_chat (speaker,type,message,datetime) VALUES('%s','SAY','%s',current_timestamp())",
-                                name.c_str(), message.c_str());
+                            const auto query = "INSERT INTO audit_chat (speaker, type, zoneid, message, datetime) VALUES(?, 'SAY', ?, ?, current_timestamp())";
+                            if (!db::preparedStmt(query, name, zoneId, rawMessage))
+                            {
+                                ShowError("Failed to insert SAY audit_chat record for player '%s'", name);
+                            }
                         });
                         // clang-format on
                     }
@@ -5567,11 +5571,13 @@ void SmallPacket0x0B5(map_session_data_t* const PSession, CCharEntity* const PCh
                         // clang-format off
                         // NOTE: We capture rawMessage as a std::string because if we cast data[6] into a const char*, the underlying data might
                         //     : be gone by the time we action this lambda on the worker thread.
-                        Async::getInstance()->query([name = PChar->getName(), rawMessage = std::string((const char*)data[6])](SqlConnection* _sql)
+                        Async::getInstance()->submit([name = PChar->getName(), zoneId = PChar->getZone(), rawMessage = std::string((const char*)data[6])]()
                         {
-                            auto message = _sql->EscapeString(rawMessage);
-                            std::ignore  = _sql->Query("INSERT INTO audit_chat (speaker,type,message,datetime) VALUES('%s','SHOUT','%s',current_timestamp())",
-                                name.c_str(), message.c_str());
+                            const auto query = "INSERT INTO audit_chat (speaker, type, zoneid, message, datetime) VALUES(?, 'SHOUT', ?, ?, current_timestamp())";
+                            if (!db::preparedStmt(query, name, zoneId, rawMessage))
+                            {
+                                ShowError("Failed to insert SHOUT audit_chat record for player '%s'", name);
+                            }
                         });
                         // clang-format on
                     }
@@ -5592,14 +5598,17 @@ void SmallPacket0x0B5(map_session_data_t* const PSession, CCharEntity* const PCh
                         {
                             char decodedLinkshellName[DecodeStringLength];
                             DecodeStringLinkshell(PChar->PLinkshell1->getName(), decodedLinkshellName);
+
                             // clang-format off
                             // NOTE: We capture rawMessage as a std::string because if we cast data[6] into a const char*, the underlying data might
                             //     : be gone by the time we action this lambda on the worker thread.
-                            Async::getInstance()->query([name = PChar->getName(), rawMessage = std::string((const char*)data[6]), decodedLinkshellName](SqlConnection* _sql)
+                            Async::getInstance()->submit([name = PChar->getName(), zoneId = PChar->getZone(), rawMessage = std::string((const char*)data[6]), decodedLinkshellName]()
                             {
-                                auto message = _sql->EscapeString(rawMessage);
-                                std::ignore  = _sql->Query("INSERT INTO audit_chat (speaker,type,lsName,message,datetime) VALUES('%s','LINKSHELL','%s','%s',current_timestamp())",
-                                    name.c_str(), decodedLinkshellName, message.c_str());
+                                const auto query = "INSERT INTO audit_chat (speaker, type, lsName, zoneid, message, datetime) VALUES(?, 'LINKSHELL', ?, ?, ?, current_timestamp())";
+                                if (!db::preparedStmt(query, name, decodedLinkshellName, zoneId, rawMessage))
+                                {
+                                    ShowError("Failed to insert LINKSHELL audit_chat record for player '%s'", name);
+                                }
                             });
                             // clang-format on
                         }
@@ -5620,15 +5629,19 @@ void SmallPacket0x0B5(map_session_data_t* const PSession, CCharEntity* const PCh
                         {
                             char decodedLinkshellName[DecodeStringLength];
                             DecodeStringLinkshell(PChar->PLinkshell2->getName(), decodedLinkshellName);
+
                             // clang-format off
                             // NOTE: We capture rawMessage as a std::string because if we cast data[6] into a const char*, the underlying data might
                             //     : be gone by the time we action this lambda on the worker thread.
-                            Async::getInstance()->query([name = PChar->getName(), rawMessage = std::string((const char*)data[6]), decodedLinkshellName](SqlConnection* _sql)
+                            Async::getInstance()->submit([name = PChar->getName(), zoneId = PChar->getZone(), rawMessage = std::string((const char*)data[6]), decodedLinkshellName]()
                             {
-                                auto message = _sql->EscapeString(rawMessage);
-                                std::ignore  = _sql->Query("INSERT INTO audit_chat (speaker,type,lsName,message,datetime) VALUES('%s','LINKSHELL','%s','%s',current_timestamp())",
-                                    name.c_str(), decodedLinkshellName, message.c_str());
+                                const auto query = "INSERT INTO audit_chat (speaker, type, lsName, zoneid, message, datetime) VALUES(?, 'LINKSHELL', ?, ?, ?, current_timestamp())";
+                                if (!db::preparedStmt(query, name, decodedLinkshellName, zoneId, rawMessage))
+                                {
+                                    ShowError("Failed to insert LINKSHELL audit_chat record for player '%s'", name);
+                                }
                             });
+                            // clang-format on
                         }
                     }
                 }
@@ -5638,7 +5651,7 @@ void SmallPacket0x0B5(map_session_data_t* const PSession, CCharEntity* const PCh
                     if (PChar->PParty != nullptr)
                     {
                         int8 packetData[8]{};
-                        if(PChar->PParty->m_PAlliance)
+                        if (PChar->PParty->m_PAlliance)
                         {
                             ref<uint32>(packetData, 0) = PChar->PParty->m_PAlliance->m_AllianceID;
                             ref<uint32>(packetData, 4) = PChar->id;
@@ -5656,11 +5669,13 @@ void SmallPacket0x0B5(map_session_data_t* const PSession, CCharEntity* const PCh
                             // clang-format off
                             // NOTE: We capture rawMessage as a std::string because if we cast data[6] into a const char*, the underlying data might
                             //     : be gone by the time we action this lambda on the worker thread.
-                            Async::getInstance()->query([name = PChar->getName(), rawMessage = std::string((const char*)data[6])](SqlConnection* _sql)
+                            Async::getInstance()->submit([name = PChar->getName(), zoneId = PChar->getZone(), rawMessage = std::string((const char*)data[6])]()
                             {
-                                auto message = _sql->EscapeString(rawMessage);
-                                std::ignore  = _sql->Query("INSERT INTO audit_chat (speaker,type,message,datetime) VALUES('%s','PARTY','%s',current_timestamp())",
-                                    name.c_str(), message.c_str());
+                                const auto query = "INSERT INTO audit_chat (speaker, type, zoneid, message, datetime) VALUES(?, 'PARTY', ?, ?, current_timestamp())";
+                                if (!db::preparedStmt(query, name, zoneId, rawMessage))
+                                {
+                                    ShowError("Failed to insert PARTY audit_chat record for player '%s'", name);
+                                }
                             });
                             // clang-format on
                         }
@@ -5689,11 +5704,13 @@ void SmallPacket0x0B5(map_session_data_t* const PSession, CCharEntity* const PCh
                                 // clang-format off
                                 // NOTE: We capture rawMessage as a std::string because if we cast data[6] into a const char*, the underlying data might
                                 //     : be gone by the time we action this lambda on the worker thread.
-                                Async::getInstance()->query([name = PChar->getName(), zoneid = PChar->getZone(), rawMessage = std::string((const char*)data[6])](SqlConnection* _sql)
+                                Async::getInstance()->submit([name = PChar->getName(), zoneId = PChar->getZone(), rawMessage = std::string((const char*)data[6])]()
                                 {
-                                    auto message = _sql->EscapeString(rawMessage);
-                                    std::ignore  = _sql->Query("INSERT INTO audit_chat (speaker,type,zoneid,message,datetime) VALUES('%s','YELL','%d','%s',current_timestamp())",
-                                        name.c_str(), zoneid, message.c_str());
+                                    const auto query = "INSERT INTO audit_chat (speaker, type, zoneid, message, datetime) VALUES(?, 'YELL', ?, ?, current_timestamp())";
+                                    if (!db::preparedStmt(query, name, zoneId, rawMessage))
+                                    {
+                                        ShowError("Failed to insert YELL audit_chat record for player '%s'", name);
+                                    }
                                 });
                                 // clang-format on
                             }
@@ -5726,11 +5743,13 @@ void SmallPacket0x0B5(map_session_data_t* const PSession, CCharEntity* const PCh
                             // clang-format off
                             // NOTE: We capture rawMessage as a std::string because if we cast data[6] into a const char*, the underlying data might
                             //     : be gone by the time we action this lambda on the worker thread.
-                            Async::getInstance()->query([name = PChar->getName(), unityLeader = PChar->PUnityChat->getLeader(), rawMessage = std::string((const char*)data[6])](SqlConnection* _sql)
+                            Async::getInstance()->submit([name = PChar->getName(), zoneId = PChar->getZone(), unityLeader = PChar->PUnityChat->getLeader(), rawMessage = std::string((const char*)data[6])]()
                             {
-                                auto message = _sql->EscapeString(rawMessage);
-                                std::ignore  = _sql->Query("INSERT INTO audit_chat (speaker,type,unity,message,datetime) VALUES('%s','UNITY','%d','%s',current_timestamp())",
-                                    name.c_str(), unityLeader, message.c_str());
+                                const auto query = "INSERT INTO audit_chat (speaker, type, zoneid, unity, message, datetime) VALUES(?, 'UNITY', ?, ?, ?, current_timestamp())";
+                                if (!db::preparedStmt(query, name, zoneId, unityLeader, rawMessage))
+                                {
+                                    ShowError("Failed to insert UNITY audit_chat record for player '%s'", name);
+                                }
                             });
                             // clang-format on
                         }
@@ -5759,14 +5778,14 @@ void SmallPacket0x0B6(map_session_data_t* const PSession, CCharEntity* const PCh
         return;
     }
 
-    std::string RecipientName = std::string((const char*)data[6], 15);
+    std::string recipientName = std::string((const char*)data[6], 15);
 
     char  message[256]    = {}; // /t messages using "<t>" with a long named NPC targeted caps out at 138 bytes, increasing to the nearest power of 2
     uint8 messagePosition = 0x15;
 
-    memcpy(&message, data[messagePosition], std::min(data.getSize() - messagePosition, sizeof(message)));
+    std::memcpy(&message, data[messagePosition], std::min(data.getSize() - messagePosition, sizeof(message)));
 
-    if (strcmp(RecipientName.c_str(), "_CUSTOM_MENU") == 0 &&
+    if (strcmp(recipientName.c_str(), "_CUSTOM_MENU") == 0 &&
         luautils::HasCustomMenuContext(PChar))
     {
         luautils::HandleCustomMenu(PChar, message);
@@ -5774,28 +5793,25 @@ void SmallPacket0x0B6(map_session_data_t* const PSession, CCharEntity* const PCh
     }
 
     int8 packetData[64]{};
-    strncpy((char*)packetData + 4, RecipientName.c_str(), RecipientName.length() + 1);
+    strncpy((char*)packetData + 4, recipientName.c_str(), recipientName.length() + 1);
     ref<uint32>(packetData, 0) = PChar->id;
 
-    message::send(MSG_CHAT_TELL, packetData, RecipientName.length() + 5, new CChatMessagePacket(PChar, MESSAGE_TELL, message));
+    message::send(MSG_CHAT_TELL, packetData, recipientName.length() + 5, new CChatMessagePacket(PChar, MESSAGE_TELL, message));
 
     if (settings::get<bool>("map.AUDIT_CHAT") && settings::get<bool>("map.AUDIT_TELL"))
     {
-        char escaped_speaker[16 * 2 + 1];
-        _sql->EscapeString(escaped_speaker, PChar->getName().c_str());
-
-        char escaped_recipient[16 * 2 + 1];
-        _sql->EscapeString(escaped_recipient, &RecipientName[0]);
-
-        std::string escaped_full_string;
-        escaped_full_string.reserve(strlen((const char*)data[21]) * 2 + 1);
-        _sql->EscapeString(escaped_full_string.data(), (const char*)data[21]);
-
-        const char* fmtQuery = "INSERT into audit_chat (speaker,type,recipient,message,datetime) VALUES('%s','TELL','%s','%s',current_timestamp())";
-        if (_sql->Query(fmtQuery, escaped_speaker, escaped_recipient, escaped_full_string.data()) == SQL_ERROR)
+        // clang-format off
+        // NOTE: We capture rawMessage as a std::string because if we cast data[6] into a const char*, the underlying data might
+        //     : be gone by the time we action this lambda on the worker thread.
+        Async::getInstance()->submit([name = PChar->getName(), zoneId = PChar->getZone(), recipient = recipientName, message]()
         {
-            ShowError("packet_system::call: Failed to log MESSAGE_TELL.");
-        }
+            const auto query = "INSERT INTO audit_chat (speaker, type, zoneid, recipient, message, datetime) VALUES(?, 'TELL', ?, ?, ?, current_timestamp())";
+            if (!db::preparedStmt(query, name, zoneId, recipient, message))
+            {
+                ShowError("Failed to insert TELL audit_chat record for player '%s'", name);
+            }
+        });
+        // clang-format on
     }
 }
 
