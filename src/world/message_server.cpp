@@ -269,7 +269,7 @@ void message_server_parse(MSGSERVTYPE type, zmq::message_t* extra, zmq::message_
         case MSG_KILL_SESSION:
         {
             uint32      charid = ref<uint32>((uint8*)extra->data(), 0);
-            const char* query  = "SELECT pos_prevzone, pos_zone from chars where charid = '%d' LIMIT 1;";
+            const char* query  = "SELECT pos_prevzone, pos_zone from chars where charid = '%d' LIMIT 1";
             auto        rset   = db::query(query, charid);
 
             // Get zone ID from query and try to send to _just_ the previous zone

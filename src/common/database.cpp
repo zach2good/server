@@ -309,7 +309,7 @@ bool db::transactionStart()
 {
     TracyZoneScoped;
 
-    if (!query("START TRANSACTION;"))
+    if (!query("START TRANSACTION"))
     {
         // TODO: Logging
         return false;
@@ -322,7 +322,7 @@ bool db::transactionCommit()
 {
     TracyZoneScoped;
 
-    if (!query("COMMIT;"))
+    if (!query("COMMIT"))
     {
         // TODO: Logging
         return false;
@@ -335,7 +335,7 @@ bool db::transactionRollback()
 {
     TracyZoneScoped;
 
-    if (!query("ROLLBACK;"))
+    if (!query("ROLLBACK"))
     {
         // TODO: Logging
         return false;

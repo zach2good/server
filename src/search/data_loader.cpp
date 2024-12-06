@@ -713,7 +713,7 @@ void CDataLoader::ExpireAHItems(uint16 expireAgeInDays)
     std::vector<ListingToExpire> listingsToExpire;
 
     std::string query0 = "SELECT T0.id,T0.itemid,T1.stacksize, T0.stack, T0.seller FROM auction_house T0 INNER JOIN item_basic T1 ON \
-                            T0.itemid = T1.itemid WHERE datediff(now(),from_unixtime(date)) >= %u AND buyer_name IS NULL;";
+                            T0.itemid = T1.itemid WHERE datediff(now(),from_unixtime(date)) >= %u AND buyer_name IS NULL";
 
     const auto rset0           = db::query(query0, expireAgeInDays);
     const auto expiredAuctions = rset0->rowsCount();
@@ -744,7 +744,7 @@ void CDataLoader::ExpireAHItems(uint16 expireAgeInDays)
             }
 
             const auto query2 = fmt::format("INSERT INTO delivery_box (charid, charname, box, itemid, itemsubid, quantity, senderid, sender) VALUES "
-                                            "({}, '{}', 1, {}, 0, {}, 0, 'AH-Jeuno');",
+                                            "({}, '{}', 1, {}, 0, {}, 0, 'AH-Jeuno')",
                                             listing.sellerID, listing.sellerName, listing.itemID, listing.ahStack == 1 ? listing.itemStack : 1);
 
             const auto [rset2, affectedRows] = db::preparedStmtWithAffectedRows(query2);

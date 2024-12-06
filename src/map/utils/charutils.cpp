@@ -5484,7 +5484,7 @@ namespace charutils
     void SavePlayerSettings(CCharEntity* PChar)
     {
         TracyZoneScoped;
-        const char* Query = "UPDATE %s SET %s %llu WHERE charid = %u;";
+        const char* Query = "UPDATE %s SET %s %llu WHERE charid = %u";
 
         uint32_t playerSettings = {};
 
@@ -5495,7 +5495,7 @@ namespace charutils
     void SaveJobMasterDisplay(CCharEntity* PChar)
     {
         TracyZoneScoped;
-        const char* Query = "UPDATE %s SET %s %u WHERE charid = %u;";
+        const char* Query = "UPDATE %s SET %s %u WHERE charid = %u";
 
         _sql->Query(Query, "chars", "job_master =", PChar->m_jobMasterDisplay, PChar->id);
     }
@@ -5504,12 +5504,12 @@ namespace charutils
     {
         TracyZoneScoped;
         uint32_t    filters = {};
-        const char* Query   = "UPDATE chars SET chatfilters_1 = %llu WHERE charid = %u;";
+        const char* Query   = "UPDATE chars SET chatfilters_1 = %llu WHERE charid = %u";
 
         std::memcpy(&filters, &PChar->playerConfig.MassageFilter, sizeof(uint32_t));
 
         _sql->Query(Query, filters, PChar->id);
-        Query = "UPDATE chars SET chatfilters_2 = %llu WHERE charid = %u;";
+        Query = "UPDATE chars SET chatfilters_2 = %llu WHERE charid = %u";
 
         std::memcpy(&filters, &PChar->playerConfig.MassageFilter2, sizeof(uint32_t));
         _sql->Query(Query, filters, PChar->id);

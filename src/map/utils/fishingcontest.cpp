@@ -202,7 +202,7 @@ namespace fishingcontest
                 if (rankGroup > 0)
                 {
                     std::string Query = "INSERT INTO char_fishing_contest_history (charid, contest_rank_{}) "
-                                        "VALUES ({}, 1) ON DUPLICATE KEY UPDATE contest_rank_{} = contest_rank_{} + 1;";
+                                        "VALUES ({}, 1) ON DUPLICATE KEY UPDATE contest_rank_{} = contest_rank_{} + 1";
                     auto        rset  = db::query(fmt::format(Query, rankGroup, charID, rankGroup, rankGroup));
 
                     if (!rset)
@@ -345,12 +345,12 @@ namespace fishingcontest
 
         // Update the DB with the current contest data (in case the contest is changed)
         const char* Query = "UPDATE `fishing_contest` SET "
-                            "status = (?), "        // Status
-                            "criteria = (?), "      // Criteria
-                            "measure = (?), "       // Measure
-                            "fishid = (?), "        // Fish ID
-                            "starttime = (?), "     // Start Time
-                            "nextstagetime = (?);"; // Stage Change Time
+                            "status = (?), "       // Status
+                            "criteria = (?), "     // Criteria
+                            "measure = (?), "      // Measure
+                            "fishid = (?), "       // Fish ID
+                            "starttime = (?), "    // Start Time
+                            "nextstagetime = (?)"; // Stage Change Time
 
         auto rset = db::preparedStmt(Query, static_cast<uint8>(CurrentFishingContest.status),
                                      static_cast<uint8>(CurrentFishingContest.criteria),
@@ -379,12 +379,12 @@ namespace fishingcontest
 
         // Update the DB with the current contest data (in case the contest is changed)
         std::string Query = "INSERT INTO `fishing_contest` VALUES ("
-                            "(?), "  // Status
-                            "(?), "  // Criteria
-                            "(?), "  // Measure
-                            "(?), "  // Fish ID
-                            "(?), "  // Start Time
-                            "(?));"; // Stage Change Time
+                            "(?), " // Status
+                            "(?), " // Criteria
+                            "(?), " // Measure
+                            "(?), " // Fish ID
+                            "(?), " // Start Time
+                            "(?))"; // Stage Change Time
 
         auto rset = db::preparedStmt(Query, static_cast<uint8>(CurrentFishingContest.status),
                                      static_cast<uint8>(CurrentFishingContest.criteria),
@@ -421,7 +421,7 @@ namespace fishingcontest
         std::string Query = "REPLACE INTO `fishing_contest_entries` "
                             "(charid, mjob, sjob, mlevel, slevel, race, allegiance, fishRank, score, submitTime, contestRank, share) "
                             "SELECT charid, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {} "
-                            "FROM chars WHERE charname = '{}';";
+                            "FROM chars WHERE charname = '{}'";
 
         auto rset = db::query(fmt::format(Query,
                                           entry->mjob,
@@ -494,7 +494,7 @@ namespace fishingcontest
         {
             // Remove from the database
             const char* Query = "DELETE FROM `fishing_contest_entries` \
-                                 WHERE `charid` = {};";
+                                 WHERE `charid` = {}";
             auto        rset  = db::query(fmt::format(Query, PChar->id));
 
             if (!rset)
@@ -538,7 +538,7 @@ namespace fishingcontest
 
         std::string Query = "UPDATE fishing_contest_entries "
                             "SET claimed = 1 "
-                            "WHERE charid = (?);";
+                            "WHERE charid = (?)";
 
         auto rset = db::preparedStmt(Query, PChar->id);
         if (!rset)
@@ -563,7 +563,7 @@ namespace fishingcontest
 
         std::string Query = "SELECT contest_rank_1, contest_rank_2, contest_rank_3, contest_rank_4 "
                             "FROM char_fishing_contest_history "
-                            "WHERE charid = (?);";
+                            "WHERE charid = (?)";
         auto        rset  = db::preparedStmt(Query, PChar->id);
 
         if (rset && rset->rowsCount() > 0 && rset->next())
@@ -610,7 +610,7 @@ namespace fishingcontest
     {
         // Clear any table data involving this contest
         {
-            const auto rset = db::query("DELETE FROM `fishing_contest`;");
+            const auto rset = db::query("DELETE FROM `fishing_contest`");
             if (!rset)
             {
                 ShowDebug("Error removing contest data.");
@@ -621,7 +621,7 @@ namespace fishingcontest
         // Clear the fishing contest entries from cache and database
         {
             FishingContestEntries.clear();
-            const auto rset = db::query("DELETE FROM `fishing_contest_entries`;");
+            const auto rset = db::query("DELETE FROM `fishing_contest_entries`");
             if (!rset)
             {
                 ShowDebug("Error removing contest entry data.");
@@ -649,7 +649,7 @@ namespace fishingcontest
     {
         // load the overhead contest parameters
         std::string Query = "SELECT status, criteria, measure, fishid, starttime, nextstagetime "
-                            "FROM fishing_contest;";
+                            "FROM fishing_contest";
 
         auto rset = db::preparedStmt(Query);
 
@@ -689,7 +689,7 @@ namespace fishingcontest
                             "FROM fishing_contest_entries e "
                             "LEFT JOIN chars c "
                             "ON c.charid = e.charid "
-                            "ORDER BY contestRank;";
+                            "ORDER BY contestRank";
 
         auto rset = db::preparedStmt(Query);
 
