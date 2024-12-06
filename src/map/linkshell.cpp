@@ -347,12 +347,13 @@ void CLinkshell::PushPacket(uint32 senderID, CBasicPacket* packet)
 
 void CLinkshell::PushLinkshellMessage(CCharEntity* PChar, bool ls1)
 {
-    auto ret = _sql->Query("SELECT poster, message, messagetime FROM linkshells WHERE linkshellid = %u", m_id);
-
-    if (ret != SQL_ERROR && _sql->NumRows() != 0 && _sql->NextRow() == SQL_SUCCESS)
+    const auto rset = db::preparedStmt("SELECT poster, message, messagetime FROM linkshells WHERE linkshellid = ?", m_id);
+    if (rset && rset->rowsCount() && rset->next())
     {
-        PChar->pushPacket(
-            new CLinkshellMessagePacket(_sql->GetStringData(0), _sql->GetStringData(1), m_name, _sql->GetUIntData(2), ls1));
+        const auto poster      = rset->get<std::string>("poster");
+        const auto message     = rset->get<std::string>("message");
+        const auto messageTime = rset->get<uint32>("messagetime");
+        PChar->pushPacket(new CLinkshellMessagePacket(poster, message, m_name, messageTime, ls1));
     }
 }
 

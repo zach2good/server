@@ -17993,8 +17993,8 @@ auto CLuaBaseEntity::getContestRewardStatus() -> sol::table
         auto ret = db::preparedStmt(Query, PChar->id);
         if (ret && ret->rowsCount() > 0 && ret->next())
         {
-            reward["rank"]  = ret->getInt("contestrank");
-            reward["share"] = ret->getInt("share");
+            reward["rank"]  = ret->get<uint8>("contestrank");
+            reward["share"] = ret->get<uint8>("share");
         }
     }
 

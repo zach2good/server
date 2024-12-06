@@ -5546,7 +5546,7 @@ namespace luautils
         {
             while (rset->next())
             {
-                id = rset->getUInt("itemid");
+                id = rset->get<uint16>("itemid");
             }
         }
         else if (rset && rowCount > 1)

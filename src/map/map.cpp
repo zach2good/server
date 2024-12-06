@@ -386,7 +386,7 @@ int32 do_init(int32 argc, char** argv)
         // our own SQL connection.
         {
             auto otherSql  = std::make_unique<SqlConnection>();
-            auto query = "UPDATE %s SET %s %u WHERE charid = %u;";
+            auto query = "UPDATE %s SET %s %u WHERE charid = %u";
             otherSql->Query(query, "chars", "gmlevel =", PChar->m_GMlevel, PChar->id);
         }
 

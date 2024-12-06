@@ -2299,12 +2299,10 @@ void SmallPacket0x04B(map_session_data_t* const PSession, CCharEntity* const PCh
         PChar->pushPacket(new CCharSyncPacket(PChar));
 
         // TODO: kill player til theyre dead and bsod
-        std::string Query = "SELECT version_mismatch FROM accounts_sessions WHERE charid = (?)";
-        auto        ret   = db::preparedStmt(Query, PChar->id);
-
-        if (ret && ret->rowsCount() > 0 && ret->next())
+        const auto rset = db::preparedStmt("SELECT version_mismatch FROM accounts_sessions WHERE charid = (?)", PChar->id);
+        if (rset && rset->rowsCount() > 0 && rset->next())
         {
-            if (ret->getBoolean("version_mismatch"))
+            if (rset->get<bool>("version_mismatch"))
             {
                 PChar->pushPacket(new CChatMessagePacket(PChar, CHAT_MESSAGE_TYPE::MESSAGE_SYSTEM_1, "Server does not support this client version."));
             }
@@ -2579,7 +2577,7 @@ void SmallPacket0x04D(map_session_data_t* const PSession, CCharEntity* const PCh
                 auto rset = db::query(fmt::format("SELECT charid, accid FROM chars WHERE charname = '{}' LIMIT 1", senderName));
                 if (rset && rset->rowsCount() && rset->next())
                 {
-                    uint32 charid = rset->getUInt("charid");
+                    uint32 charid = rset->get<uint32>("charid");
 
                     if (PItem->getFlag() & ITEM_FLAG_NODELIVERY)
                     {
@@ -2588,13 +2586,13 @@ void SmallPacket0x04D(map_session_data_t* const PSession, CCharEntity* const PCh
                             return;
                         }
 
-                        uint32 accid = rset->getUInt("accid");
+                        uint32 accid = rset->get<uint32>("accid");
 
                         // clang-format off
                         auto exists = [&]() -> bool
                         {
                             auto rset2 = db::query(fmt::format("SELECT COUNT(*) FROM chars WHERE charid = '{}' AND accid = '{}' LIMIT 1", PChar->id, accid));
-                            return rset2 && rset2->next() && rset2->getUInt("COUNT(*)") > 0;
+                            return rset2 && rset2->next() && rset2->get<uint32>("COUNT(*)") > 0;
                         }();
                         if (!exists)
                         {

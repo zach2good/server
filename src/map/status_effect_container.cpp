@@ -1581,13 +1581,13 @@ void CStatusEffectContainer::LoadStatusEffects()
     {
         while (rset->next())
         {
-            auto flags    = rset->getUInt("flags");
-            auto duration = rset->getUInt("duration");
-            auto effectID = (EFFECT)rset->getUInt("effectid");
+            auto flags    = rset->get<uint32>("flags");
+            auto duration = rset->get<uint32>("duration");
+            auto effectID = static_cast<EFFECT>(rset->get<uint32>("effectid"));
 
             if (flags & EFFECTFLAG_OFFLINE_TICK)
             {
-                auto timestamp = rset->getUInt("timestamp");
+                auto timestamp = rset->get<uint32>("timestamp");
                 if (server_clock::now() < time_point() + std::chrono::seconds(timestamp) + std::chrono::seconds(duration))
                 {
                     duration = (uint32)std::chrono::duration_cast<std::chrono::seconds>(time_point() + std::chrono::seconds(timestamp) +
@@ -1608,13 +1608,13 @@ void CStatusEffectContainer::LoadStatusEffects()
             }
             CStatusEffect* PStatusEffect =
                 new CStatusEffect(effectID,
-                                  (uint16)rset->getUInt("icon"),
-                                  (uint16)rset->getUInt("power"),
-                                  (uint16)rset->getUInt("tick"),
+                                  rset->get<uint16>("icon"),
+                                  rset->get<uint16>("power"),
+                                  rset->get<uint16>("tick"),
                                   duration,
-                                  (uint16)rset->getUInt("subid"),
-                                  (uint16)rset->getUInt("subpower"),
-                                  (uint16)rset->getUInt("tier"),
+                                  rset->get<uint16>("subid"),
+                                  rset->get<uint16>("subpower"),
+                                  rset->get<uint16>("tier"),
                                   flags);
 
             PEffectList.emplace_back(PStatusEffect);
