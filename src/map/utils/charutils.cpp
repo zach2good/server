@@ -6904,6 +6904,13 @@ namespace charutils
             traverserClaimed = _sql->GetUIntData(1);
         }
 
+        if (traverserEpoch == 0)
+        {
+            // Players cannot accrue Traverser Stones until the epoch has been set.  This is not possible
+            // in quests, but is always displayed in player currencies.
+            return 0;
+        }
+
         // Handle reduction for Celerity Key Items
         uint8 stoneWaitHours = 20;
         for (int keyItem = 1385; keyItem <= 1387; ++keyItem)
