@@ -28,7 +28,7 @@
 CCurrencyPacket2::CCurrencyPacket2(CCharEntity* PChar)
 {
     this->setType(0x118);
-    this->setSize(132);
+    this->setSize(150);
 
     const char* query = "SELECT bayld, kinetic_unit, imprimaturs, mystical_canteen, obsidian_fragment, lebondopt_wing, \
                          pulchridopt_wing, mweya_plasm, ghastly_stone, ghastly_stone_1, ghastly_stone_2, verdigris_stone, \
@@ -46,7 +46,7 @@ CCurrencyPacket2::CCurrencyPacket2(CCharEntity* PChar)
                          detonation_spheres_set, scission_spheres_set, impaction_spheres_set, reverberation_spheres_set, \
                          transfixion_spheres_set, compression_spheres_set, fusion_spheres_set, distortion_spheres_set, \
                          fragmentation_spheres_set, gravitation_spheres_set, light_spheres_set, darkness_spheres_set, \
-                         silver_aman_voucher \
+                         silver_aman_voucher, domain_points, domain_points_daily, mog_segments, gallimaufry, is_accolades \
                          FROM char_points WHERE charid = % d ";
 
     int ret = _sql->Query(query, PChar->id);
@@ -150,5 +150,11 @@ CCurrencyPacket2::CCurrencyPacket2(CCharEntity* PChar)
         ref<uint8>(0x7C) = _sql->GetUIntData(87); // darkness_spheres_set
 
         ref<uint32>(0x80) = _sql->GetUIntData(88); // silver_aman_voucher
+
+        ref<uint32>(0x84) = _sql->GetUIntData(89); // domain_points
+        ref<uint32>(0x88) = _sql->GetUIntData(90); // domain_points_daily
+        ref<uint32>(0x8C) = _sql->GetUIntData(91); // mog_segments
+        ref<uint32>(0x90) = _sql->GetUIntData(92); // gallimaufry
+        ref<uint16>(0x94) = _sql->GetUIntData(93); // is_accolades
     }
 }
