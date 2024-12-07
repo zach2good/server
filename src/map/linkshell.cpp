@@ -84,17 +84,19 @@ void CLinkshell::setName(const std::string& name)
 
 void CLinkshell::setMessage(const std::string& message, const std::string& poster)
 {
-    char sqlMessage[256];
-    _sql->EscapeString(sqlMessage, message.c_str());
-    _sql->Query("UPDATE linkshells SET poster = '%s', message = '%s', messagetime = %u WHERE linkshellid = %d", poster, sqlMessage,
-                static_cast<uint32>(time(nullptr)), m_id);
+    const auto query = "UPDATE linkshells SET poster = ?, message = ?, messagetime = ? WHERE linkshellid = ?";
+    if (!db::preparedStmt(query, poster, message, static_cast<uint32>(time(nullptr)), m_id))
+    {
+        ShowError("Failed to update linkshell message for linkshell %u", m_id);
+        return;
+    }
 
     int8 packetData[8]{};
     ref<uint32>(packetData, 0) = m_id;
     ref<uint32>(packetData, 4) = 0;
     if (message.size() != 0)
     {
-        message::send(MSG_CHAT_LINKSHELL, packetData, sizeof packetData,
+        message::send(MSG_CHAT_LINKSHELL, packetData, sizeof(packetData),
                       new CLinkshellMessagePacket(poster, message, m_name, std::numeric_limits<uint32>::min(), true));
     }
 }
@@ -350,10 +352,13 @@ void CLinkshell::PushLinkshellMessage(CCharEntity* PChar, bool ls1)
     const auto rset = db::preparedStmt("SELECT poster, message, messagetime FROM linkshells WHERE linkshellid = ?", m_id);
     if (rset && rset->rowsCount() && rset->next())
     {
-        const auto poster      = rset->get<std::string>("poster");
-        const auto message     = rset->get<std::string>("message");
-        const auto messageTime = rset->get<uint32>("messagetime");
-        PChar->pushPacket(new CLinkshellMessagePacket(poster, message, m_name, messageTime, ls1));
+        const auto poster      = rset->getOrDefault<std::string>("poster", "");
+        const auto message     = rset->getOrDefault<std::string>("message", "");
+        const auto messageTime = rset->getOrDefault<uint32>("messagetime", 0);
+        if (!message.empty())
+        {
+            PChar->pushPacket(new CLinkshellMessagePacket(poster, message, m_name, messageTime, ls1));
+        }
     }
 }
 
