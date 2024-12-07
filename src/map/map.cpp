@@ -801,7 +801,7 @@ int32 recv_parse(int8* buff, size_t* buffsize, sockaddr_in* from, map_session_da
                 uint8 data[4]{};
                 ref<uint32>(data, 0) = CharID;
 
-                message::send(MSG_KILL_SESSION, data, sizeof data, nullptr);
+                message::send(MSG_KILL_SESSION, data, sizeof(data), nullptr);
             }
         }
 

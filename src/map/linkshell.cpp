@@ -94,7 +94,7 @@ void CLinkshell::setMessage(const std::string& message, const std::string& poste
     ref<uint32>(packetData, 4) = 0;
     if (message.size() != 0)
     {
-        message::send(MSG_CHAT_LINKSHELL, packetData, sizeof packetData,
+        message::send(MSG_CHAT_LINKSHELL, packetData, sizeof(packetData),
                       new CLinkshellMessagePacket(poster, message, m_name, std::numeric_limits<uint32>::min(), true));
     }
 }

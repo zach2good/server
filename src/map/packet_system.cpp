@@ -4356,7 +4356,7 @@ void SmallPacket0x06E(map_session_data_t* const PSession, CCharEntity* const PCh
                     ref<uint16>(packetData, 4)  = targid;
                     ref<uint32>(packetData, 6)  = PChar->id;
                     ref<uint16>(packetData, 10) = PChar->targid;
-                    message::send(MSG_PT_INVITE, packetData, sizeof packetData, new CPartyInvitePacket(charid, targid, PChar, INVITE_PARTY));
+                    message::send(MSG_PT_INVITE, packetData, sizeof(packetData), new CPartyInvitePacket(charid, targid, PChar, INVITE_PARTY));
 
                     ShowDebug("Sent invite packet to lobby server from %s to (%d)", PChar->getName(), charid);
                 }
@@ -4431,7 +4431,7 @@ void SmallPacket0x06E(map_session_data_t* const PSession, CCharEntity* const PCh
                     ref<uint16>(packetData, 4)  = targid;
                     ref<uint32>(packetData, 6)  = PChar->id;
                     ref<uint16>(packetData, 10) = PChar->targid;
-                    message::send(MSG_PT_INVITE, packetData, sizeof packetData, new CPartyInvitePacket(charid, targid, PChar, INVITE_ALLIANCE));
+                    message::send(MSG_PT_INVITE, packetData, sizeof(packetData), new CPartyInvitePacket(charid, targid, PChar, INVITE_ALLIANCE));
 
                     ShowDebug("(Alliance)Sent invite packet to lobby server from %s to (%d)", PChar->getName(), charid);
                 }
@@ -4605,17 +4605,17 @@ void SmallPacket0x071(map_session_data_t* const PSession, CCharEntity* const PCh
                             if (PChar->PParty && PChar->PParty->m_PAlliance)
                             {
                                 ref<uint32>(reloadData, 0) = PChar->PParty->m_PAlliance->m_AllianceID;
-                                message::send(MSG_ALLIANCE_RELOAD, reloadData, sizeof reloadData, nullptr);
+                                message::send(MSG_ALLIANCE_RELOAD, reloadData, sizeof(reloadData), nullptr);
                             }
                             else // No alliance, notify party.
                             {
                                 ref<uint32>(reloadData, 0) = PChar->PParty->GetPartyID();
-                                message::send(MSG_PT_RELOAD, reloadData, sizeof reloadData, nullptr);
+                                message::send(MSG_PT_RELOAD, reloadData, sizeof(reloadData), nullptr);
                             }
 
                             // Notify the player they were just kicked -- they are no longer in the DB and party/alliance reloads won't notify them.
                             ref<uint32>(reloadData, 0) = id;
-                            message::send(MSG_PLAYER_KICK, reloadData, sizeof reloadData, nullptr);
+                            message::send(MSG_PLAYER_KICK, reloadData, sizeof(reloadData), nullptr);
                         }
                     }
                 }
@@ -4632,7 +4632,7 @@ void SmallPacket0x071(map_session_data_t* const PSession, CCharEntity* const PCh
                 memcpy(packetData + 0x04, data[0x0C], 20);
                 ref<uint32>(packetData, 24) = PChar->PLinkshell1->getID();
                 ref<uint8>(packetData, 28)  = PItemLinkshell->GetLSType();
-                message::send(MSG_LINKSHELL_REMOVE, packetData, sizeof packetData, nullptr);
+                message::send(MSG_LINKSHELL_REMOVE, packetData, sizeof(packetData), nullptr);
             }
         }
         break;
@@ -4647,7 +4647,7 @@ void SmallPacket0x071(map_session_data_t* const PSession, CCharEntity* const PCh
                 memcpy(packetData + 0x04, data[0x0C], 20);
                 ref<uint32>(packetData, 24) = PChar->PLinkshell2->getID();
                 ref<uint8>(packetData, 28)  = PItemLinkshell->GetLSType();
-                message::send(MSG_LINKSHELL_REMOVE, packetData, sizeof packetData, nullptr);
+                message::send(MSG_LINKSHELL_REMOVE, packetData, sizeof(packetData), nullptr);
             }
         }
         break;
@@ -4707,11 +4707,11 @@ void SmallPacket0x071(map_session_data_t* const PSession, CCharEntity* const PCh
                                 // notify party they were removed
                                 uint8 removeData[4]{};
                                 ref<uint32>(removeData, 0) = partyid;
-                                message::send(MSG_PT_RELOAD, removeData, sizeof removeData, nullptr);
+                                message::send(MSG_PT_RELOAD, removeData, sizeof(removeData), nullptr);
 
                                 // notify alliance a party was removed
                                 ref<uint32>(removeData, 0) = allianceID;
-                                message::send(MSG_ALLIANCE_RELOAD, removeData, sizeof removeData, nullptr);
+                                message::send(MSG_ALLIANCE_RELOAD, removeData, sizeof(removeData), nullptr);
                             }
                         }
                     }
@@ -4835,7 +4835,7 @@ void SmallPacket0x074(map_session_data_t* const PSession, CCharEntity* const PCh
         ref<uint16>(packetData, 10) = PChar->targid;
         ref<uint8>(packetData, 12)  = InviteAnswer;
         PChar->InvitePending.clean();
-        message::send(MSG_PT_INV_RES, packetData, sizeof packetData, nullptr);
+        message::send(MSG_PT_INV_RES, packetData, sizeof(packetData), nullptr);
         ShowDebug("(Party)Sent invite packet to send to lobby server for %s", PChar->getName());
     }
     PChar->InvitePending.clean();
@@ -4893,7 +4893,7 @@ void SmallPacket0x077(map_session_data_t* const PSession, CCharEntity* const PCh
                 memcpy(packetData + 0x04, data[0x04], 20);
                 ref<uint32>(packetData, 24) = PChar->PLinkshell1->getID();
                 ref<uint8>(packetData, 28)  = data.ref<uint8>(0x15);
-                message::send(MSG_LINKSHELL_RANK_CHANGE, packetData, sizeof packetData, nullptr);
+                message::send(MSG_LINKSHELL_RANK_CHANGE, packetData, sizeof(packetData), nullptr);
             }
         }
         break;
@@ -4906,7 +4906,7 @@ void SmallPacket0x077(map_session_data_t* const PSession, CCharEntity* const PCh
                 memcpy(packetData + 0x04, data[0x04], 20);
                 ref<uint32>(packetData, 24) = PChar->PLinkshell2->getID();
                 ref<uint8>(packetData, 28)  = data.ref<uint8>(0x15);
-                message::send(MSG_LINKSHELL_RANK_CHANGE, packetData, sizeof packetData, nullptr);
+                message::send(MSG_LINKSHELL_RANK_CHANGE, packetData, sizeof(packetData), nullptr);
             }
         }
         break;
@@ -4923,7 +4923,7 @@ void SmallPacket0x077(map_session_data_t* const PSession, CCharEntity* const PCh
 
                 uint8 allianceData[4]{};
                 ref<uint32>(allianceData, 0) = PChar->PParty->m_PAlliance->m_AllianceID;
-                message::send(MSG_ALLIANCE_RELOAD, allianceData, sizeof allianceData, nullptr);
+                message::send(MSG_ALLIANCE_RELOAD, allianceData, sizeof(allianceData), nullptr);
             }
         }
         break;
@@ -5591,7 +5591,7 @@ void SmallPacket0x0B5(map_session_data_t* const PSession, CCharEntity* const PCh
                         int8 packetData[8]{};
                         ref<uint32>(packetData, 0) = PChar->PLinkshell1->getID();
                         ref<uint32>(packetData, 4) = PChar->id;
-                        message::send(MSG_CHAT_LINKSHELL, packetData, sizeof packetData,
+                        message::send(MSG_CHAT_LINKSHELL, packetData, sizeof(packetData),
                                       new CChatMessagePacket(PChar, MESSAGE_LINKSHELL, (const char*)data[6]));
 
                         if (settings::get<bool>("map.AUDIT_CHAT") && settings::get<uint8>("map.AUDIT_LINKSHELL"))
@@ -5622,7 +5622,7 @@ void SmallPacket0x0B5(map_session_data_t* const PSession, CCharEntity* const PCh
                         int8 packetData[8]{};
                         ref<uint32>(packetData, 0) = PChar->PLinkshell2->getID();
                         ref<uint32>(packetData, 4) = PChar->id;
-                        message::send(MSG_CHAT_LINKSHELL, packetData, sizeof packetData,
+                        message::send(MSG_CHAT_LINKSHELL, packetData, sizeof(packetData),
                                       new CChatMessagePacket(PChar, MESSAGE_LINKSHELL, (const char*)data[6]));
 
                         if (settings::get<bool>("map.AUDIT_CHAT") && settings::get<uint8>("map.AUDIT_LINKSHELL"))
@@ -5655,13 +5655,13 @@ void SmallPacket0x0B5(map_session_data_t* const PSession, CCharEntity* const PCh
                         {
                             ref<uint32>(packetData, 0) = PChar->PParty->m_PAlliance->m_AllianceID;
                             ref<uint32>(packetData, 4) = PChar->id;
-                            message::send(MSG_CHAT_ALLIANCE, packetData, sizeof packetData, new CChatMessagePacket(PChar, MESSAGE_PARTY, (const char*)data[6]));
+                            message::send(MSG_CHAT_ALLIANCE, packetData, sizeof(packetData), new CChatMessagePacket(PChar, MESSAGE_PARTY, (const char*)data[6]));
                         }
                         else
                         {
                             ref<uint32>(packetData, 0) = PChar->PParty->GetPartyID();
                             ref<uint32>(packetData, 4) = PChar->id;
-                            message::send(MSG_CHAT_PARTY, packetData, sizeof packetData, new CChatMessagePacket(PChar, MESSAGE_PARTY, (const char*)data[6]));
+                            message::send(MSG_CHAT_PARTY, packetData, sizeof(packetData), new CChatMessagePacket(PChar, MESSAGE_PARTY, (const char*)data[6]));
                         }
 
                         if (settings::get<bool>("map.AUDIT_CHAT") && settings::get<uint8>("map.AUDIT_PARTY"))
@@ -5697,7 +5697,7 @@ void SmallPacket0x0B5(map_session_data_t* const PSession, CCharEntity* const PCh
                             int8 packetData[4]{};
                             ref<uint32>(packetData, 0) = PChar->id;
 
-                            message::send(MSG_CHAT_YELL, packetData, sizeof packetData, new CChatMessagePacket(PChar, MESSAGE_YELL, (const char*)data[6]));
+                            message::send(MSG_CHAT_YELL, packetData, sizeof(packetData), new CChatMessagePacket(PChar, MESSAGE_YELL, (const char*)data[6]));
 
                             if (settings::get<bool>("map.AUDIT_CHAT") && settings::get<uint8>("map.AUDIT_YELL"))
                             {
@@ -5733,7 +5733,7 @@ void SmallPacket0x0B5(map_session_data_t* const PSession, CCharEntity* const PCh
                         int8 packetData[8]{};
                         ref<uint32>(packetData, 0) = PChar->PUnityChat->getLeader();
                         ref<uint32>(packetData, 4) = PChar->id;
-                        message::send(MSG_CHAT_UNITY, packetData, sizeof packetData,
+                        message::send(MSG_CHAT_UNITY, packetData, sizeof(packetData),
                                       new CChatMessagePacket(PChar, MESSAGE_UNITY, (const char*)data[6]));
 
                         roeutils::event(ROE_EVENT::ROE_UNITY_CHAT, PChar, RoeDatagram("unityMessage", (const char*)data[6]));
