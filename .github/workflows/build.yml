@@ -33,6 +33,7 @@ jobs:
       name: Get Changed Files
       uses: Ana06/get-changed-files@v2.3.0
       with:
+        format: "json"
         filter: |
           modules/**
           src/**
@@ -42,8 +43,9 @@ jobs:
     - name: List Changed Files
       if: always()
       run: |
-        for changed_file in ${{ steps.changed-files.outputs.all }}; do
-          echo "${changed_file}"
+        readarray -t removed_files <<<"$(jq -r '.[]' <<<'${{ steps.changed-files.outputs.all }}')"
+        for removed_file in ${removed_files[@]}; do
+            echo "${removed_file}"
         done
     - name: Git Formatting Checks
       if: github.event_name == 'pull_request'
