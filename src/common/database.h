@@ -332,9 +332,9 @@ namespace db
     // @return A unique pointer to the result set of the query.
     // @note Everything in database-land is 1-indexed, not 0-indexed.
     template <typename... Args>
-    auto query(std::string const& query, Args... args)
+    auto query(std::string const& query, Args&&... args)
     {
-        return queryStr(fmt::sprintf(query, args...));
+        return queryStr(fmt::sprintf(query, std::forward<Args>(args)...));
     }
 
     // @brief Execute a prepared statement with the given query string and arguments.
