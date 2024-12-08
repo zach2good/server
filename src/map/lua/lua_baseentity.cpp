@@ -10886,6 +10886,12 @@ sol::table CLuaBaseEntity::getAlliance()
 
 uint8 CLuaBaseEntity::getAllianceSize()
 {
+    if (m_PBaseEntity->objtype == TYPE_NPC)
+    {
+        ShowWarning("CLuaBaseEntity::getAllianceSize() - NPC passed to function.");
+        return 1;
+    }
+
     auto* PBattle      = static_cast<CBattleEntity*>(m_PBaseEntity);
     uint8 alliancesize = 1;
 
@@ -10893,7 +10899,16 @@ uint8 CLuaBaseEntity::getAllianceSize()
     {
         if (PBattle->PParty->m_PAlliance != nullptr)
         {
-            alliancesize = static_cast<uint8>(PBattle->PParty->m_PAlliance->partyList.size());
+            // Reset to use as counter..
+            alliancesize = 0;
+            for (const CParty* PParty : PBattle->PParty->m_PAlliance->partyList)
+            {
+                alliancesize += static_cast<uint8>(PParty->members.size());
+            }
+        }
+        else
+        {
+            return static_cast<uint8>(PBattle->PParty->members.size());
         }
     }
 
