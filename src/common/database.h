@@ -332,9 +332,21 @@ namespace db
     // @return A unique pointer to the result set of the query.
     // @note Everything in database-land is 1-indexed, not 0-indexed.
     template <typename... Args>
-    auto query(std::string const& query, Args&&... args)
+    auto query(std::string const& query, Args&&... args) -> std::unique_ptr<db::detail::ResultSetWrapper>
     {
-        return queryStr(fmt::sprintf(query, std::forward<Args>(args)...));
+        TracyZoneScoped;
+        try
+        {
+            const auto formattedQuery = fmt::sprintf(query, std::forward<Args>(args)...);
+            return queryStr(formattedQuery);
+        }
+        catch (const std::exception& e)
+        {
+            ShowError("Query Failed: %s", e.what());
+            ShowError("Query Failed: %s", str(query.c_str()));
+        }
+
+        return nullptr;
     }
 
     // @brief Execute a prepared statement with the given query string and arguments.
@@ -527,6 +539,9 @@ namespace db
                     break;
                 case '\\': // Backslash
                     result += "\\\\";
+                    break;
+                case '%': // Percent (reserved by sprintf, etc.)
+                    result += "%%";
                     break;
                 default:
                     result += ch;
