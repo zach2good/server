@@ -1,4 +1,4 @@
-﻿/*
+/*
 ===========================================================================
 
   Copyright (c) 2010-2015 Darkstar Dev Teams
@@ -299,7 +299,7 @@ public:
     void   SetModelId(uint16 modelId); // Set new modelid
     uint16 GetModelId() const;         // Get the modelid
 
-    virtual void HandleErrorMessage(std::unique_ptr<CBasicPacket>&){};
+    virtual void HandleErrorMessage(std::unique_ptr<CBasicPacket>&) {};
 
     bool IsDynamicEntity() const;
 
@@ -316,7 +316,7 @@ public:
     uint8           animation;    // animation
     uint8           animationsub; // Additional animation parameter
     uint8           speed;        // speed of movement
-    uint8           speedsub;     // Additional movement speed parameter
+    uint8           speedsub;     // base movement speed
     uint8           namevis;
     ALLEGIANCE_TYPE allegiance;     // what types of targets the entity can fight
     uint8           updatemask;     // what to update next server tick to players nearby
