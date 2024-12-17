@@ -193,11 +193,13 @@ auto db::escapeString(std::string const& str) -> std::string
 
     for (size_t i = 0; i < str.size(); ++i)
     {
-        char c = str[i];
+        const char c = str[i];
 
-        // Emulate SqlConnection::EscapeString using strlen
+        // Emulate original strlen-based SqlConnection::EscapeString
         if (c == '\0')
+        {
             break;
+        }
 
         auto it = replacements.find(c);
         if (it != replacements.end())
