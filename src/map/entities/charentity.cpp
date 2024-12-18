@@ -969,6 +969,23 @@ void CCharEntity::PostTick()
         pushPacket(new CCharAppearancePacket(this));
     }
 
+    // notify client containers are dirty and then no longer dirty
+    if (!dirtyInventoryContainers.empty())
+    {
+
+        // Notify client containers were dirty
+        // Note: Retail sends this in the same chunk as the inventory equip packets, but it doesnt seem to matter as long as it arrives
+        for (const auto& [container, dirty]: dirtyInventoryContainers)
+        {
+            pushPacket(new CInventoryFinishPacket(container));
+        }
+
+        dirtyInventoryContainers.clear();
+
+        // Notify client containers are now ok
+        pushPacket(new CInventoryFinishPacket());
+    }
+
     if (ReloadParty())
     {
         charutils::ReloadParty(this);
