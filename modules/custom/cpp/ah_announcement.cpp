@@ -8,7 +8,9 @@
 
 #include "map/utils/moduleutils.h"
 
+#include "common/database.h"
 #include "common/timer.h"
+
 #include "map/item_container.h"
 #include "map/message.h"
 #include "map/packets/auction_house.h"
@@ -18,11 +20,30 @@
 #include "map/utils/itemutils.h"
 #include "map/zone.h"
 
+#include <functional>
 #include <numeric>
 
 extern uint8 PacketSize[512];
 
 extern std::function<void(map_session_data_t* const, CCharEntity* const, CBasicPacket&)> PacketParser[512];
+
+struct TransactionWrapper
+{
+    TransactionWrapper(std::function<void()> commitFn)
+    {
+        db::transactionStart();
+        try
+        {
+            commitFn();
+            db::transactionCommit();
+        }
+        catch (std::exception& e)
+        {
+            db::transactionRollback();
+            ShowError("Transaction failed: %s", e.what());
+        }
+    }
+};
 
 class AHAnnouncementModule : public CPPModule
 {
@@ -56,7 +77,6 @@ class AHAnnouncementModule : public CPPModule
                 else
                 {
                     CItem* PItem = itemutils::GetItemPointer(itemid);
-
                     if (PItem != nullptr)
                     {
                         if (PItem->getFlag() & ITEM_FLAG_RARE)
@@ -75,79 +95,97 @@ class AHAnnouncementModule : public CPPModule
 
                         if (gil != nullptr && gil->isType(ITEM_CURRENCY) && gil->getQuantity() >= price && gil->getReserve() == 0)
                         {
-                            // NOTE: Query is different to original
                             // clang-format off
-                            const auto [rset, affectedRows] = db::preparedStmtWithAffectedRows(R"""(
-                                UPDATE auction_house
-                                SET buyer_name = ?, sale = ?, sell_date = ?
-                                WHERE itemid = ?
-                                AND buyer_name IS NULL
-                                AND stack = ?
-                                AND price <= ?
-                                # LAST_INSERT_ID:
-                                # The ID that was generated is maintained in the server on a per-connection basis.
-                                # Always evaluates to a positive integer, therefore true
-                                AND LAST_INSERT_ID(seller)
-                                ORDER BY price
-                                LIMIT 1;
-                                )""",
-                                PChar->getName(), price, (uint32)time(nullptr), itemid, quantity == 0, price);
-                            // clang-format on
-
-                            if (rset && affectedRows)
+                            TransactionWrapper wrapper([&]() -> void
                             {
-                                uint8 SlotID = charutils::AddItem(PChar, LOC_INVENTORY, itemid, (quantity == 0 ? PItem->getStackSize() : 1));
-
-                                if (SlotID != ERROR_SLOTID)
+                                // Get the row id of the item we're buying
+                                const auto rowId = [&]() -> uint32
                                 {
-                                    charutils::UpdateItem(PChar, LOC_INVENTORY, 0, -(int32)(price));
+                                    const auto rset = db::preparedStmt(R"(
+                                        SELECT id
+                                        FROM auction_house
+                                        WHERE itemid = ?
+                                        AND buyer_name IS NULL
+                                        AND stack = ?
+                                        AND price <= ?
+                                        ORDER BY price
+                                        LIMIT 1;
+                                        )",
+                                        itemid, quantity == 0, price);
 
-                                    PChar->pushPacket<CAuctionHousePacket>(action, 0x01, itemid, price, quantity, PItem->getStackSize());
-                                    PChar->pushPacket<CInventoryFinishPacket>();
-
-                                    // NOTE: From here on is new logic
-
-                                    const auto sellerId = []() -> uint32
+                                    if (rset && rset->rowsCount() && rset->next())
                                     {
-                                        uint32 sellerId = 0;
+                                        return rset->get<uint32>("id");
+                                    }
+                                    return 0;
+                                }();
 
-                                        // TODO: In a multi-process environment, could this be contested?
-                                        const auto rset = db::preparedStmt(R"(
-                                            SELECT seller
-                                            FROM auction_house
-                                            WHERE id = LAST_INSERT_ID();
-                                        )");
+                                // Now that we have the row id, we can use it to update the purchase information
+                                const auto successfulUpdate = [&]() -> bool
+                                {
+                                    const auto [rset, affectedRows] = db::preparedStmtWithAffectedRows(R"""(
+                                        UPDATE auction_house
+                                        SET buyer_name = ?, sale = ?, sell_date = ?
+                                        WHERE id = ?
+                                        LIMIT 1;
+                                        )""",
+                                        PChar->getName(), price, (uint32)time(nullptr), rowId);
 
-                                        if (rset && rset->rowsCount() && rset->next())
+                                    return rset && affectedRows;
+                                }();
+
+                                // If the update was successful we can now add the item to the buyer's inventory
+                                if (successfulUpdate)
+                                {
+                                    uint8 SlotID = charutils::AddItem(PChar, LOC_INVENTORY, itemid, (quantity == 0 ? PItem->getStackSize() : 1));
+                                    if (SlotID != ERROR_SLOTID)
+                                    {
+                                        charutils::UpdateItem(PChar, LOC_INVENTORY, 0, -(int32)(price));
+
+                                        PChar->pushPacket<CAuctionHousePacket>(action, 0x01, itemid, price, quantity, PItem->getStackSize());
+                                        PChar->pushPacket<CInventoryFinishPacket>();
+
+                                        // Now that the item is in the buyer's inventory we can send the message to the seller
+                                        const auto sellerId = [&]() -> uint32
                                         {
-                                            sellerId = rset->get<uint32>("seller");
+                                            uint32 sellerId = 0;
+
+                                            const auto rset = db::preparedStmt(R"(
+                                                SELECT seller
+                                                FROM auction_house
+                                                WHERE id = ?;
+                                                )",
+                                                rowId);
+
+                                            if (rset && rset->rowsCount() && rset->next())
+                                            {
+                                                sellerId = rset->get<uint32>("seller");
+                                            }
+
+                                            return sellerId;
+                                        }();
+
+                                        if (sellerId)
+                                        {
+                                            // Sanitize name
+                                            std::string name  = PItem->getName();
+                                            auto        parts = split(name, "_");
+                                            name              = "";
+                                            name += std::accumulate(std::begin(parts), std::end(parts), std::string(),
+                                            [](std::string const& ss, std::string const& s)
+                                            {
+                                                return ss.empty() ? s : ss + " " + s;
+                                            });
+                                            name[0] = std::toupper(name[0]);
+
+                                            // Send message to seller!
+                                            message::send(sellerId, new CChatMessagePacket(PChar, MESSAGE_SYSTEM_3,
+                                                fmt::format("Your '{}' has sold to {} for {} gil!", name, PChar->name, price).c_str(), ""));
                                         }
-
-                                        return sellerId;
-                                    }();
-
-                                    if (sellerId)
-                                    {
-                                        // clang-format off
-                                        // Sanitize name
-                                        std::string name  = PItem->getName();
-                                        auto        parts = split(name, "_");
-                                        name              = "";
-                                        name += std::accumulate(std::begin(parts), std::end(parts), std::string(),
-                                        [](std::string const& ss, std::string const& s)
-                                        {
-                                            return ss.empty() ? s : ss + " " + s;
-                                        });
-                                        name[0] = std::toupper(name[0]);
-
-                                        // Send message to seller!
-                                        message::send(sellerId, new CChatMessagePacket(PChar, MESSAGE_SYSTEM_3,
-                                            fmt::format("Your '{}' has sold to {} for {} gil!", name, PChar->name, price).c_str(), ""));
-                                        // clang-format on
                                     }
                                 }
-                                return;
-                            }
+                            }); // TransactionWrapper
+                            // clang-format on
                         }
                     }
 
