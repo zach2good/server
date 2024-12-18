@@ -1205,8 +1205,6 @@ namespace charutils
                     PChar->pushPacket(new CInventoryItemPacket(PItem, LocationID, slotID));
                 }
             }
-
-            PChar->pushPacket(new CInventoryFinishPacket(LocationID));
         };
 
         // Send important items first
@@ -1859,6 +1857,9 @@ namespace charutils
                 PChar->UpdateHealth();
                 PChar->m_EquipSwap = true;
                 PChar->updatemask |= UPDATE_LOOK;
+
+                // Mark container dirty
+                PChar->dirtyInventoryContainers[static_cast<CONTAINER_ID>(PItem->getLocationID())] = true;
             }
         }
     }
@@ -2657,9 +2658,10 @@ namespace charutils
             return;
         }
 
-        CItemEquipment* PItem = dynamic_cast<CItemEquipment*>(PChar->getStorage(containerID)->GetItem(slotID));
+        CItemEquipment* PItem    = dynamic_cast<CItemEquipment*>(PChar->getStorage(containerID)->GetItem(slotID));
+        CItem*          POldItem = PChar->getEquip(static_cast<SLOTTYPE>(equipSlotID));
 
-        if (PItem && PItem == PChar->getEquip((SLOTTYPE)equipSlotID))
+        if (PItem && PItem == PChar->getEquip(static_cast<SLOTTYPE>(equipSlotID)))
         {
             return;
         }
@@ -2725,7 +2727,6 @@ namespace charutils
                         // Do not forget to update the timer when equipping the subject
 
                         PChar->pushPacket(new CInventoryItemPacket(PItem, containerID, slotID));
-                        PChar->pushPacket(new CInventoryFinishPacket());
                     }
                     PItem->setSubType(ITEM_LOCKED);
 
@@ -2776,6 +2777,17 @@ namespace charutils
         PChar->UpdateHealth();
         PChar->m_EquipSwap = true;
         PChar->updatemask |= UPDATE_LOOK;
+
+        // PItem can be null if item id is 0 (unequip)
+        if (PItem)
+        {
+            PChar->dirtyInventoryContainers[static_cast<CONTAINER_ID>(PItem->getLocationID())] = true;
+        }
+
+        if (POldItem)
+        {
+            PChar->dirtyInventoryContainers[static_cast<CONTAINER_ID>(POldItem->getLocationID())] = true;
+        }
     }
 
     /************************************************************************

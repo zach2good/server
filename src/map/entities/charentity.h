@@ -23,6 +23,7 @@
 #define _CHARENTITY_H
 
 #include "event_info.h"
+#include "item_container.h"
 #include "monstrosity.h"
 #include "packets/char.h"
 #include "packets/entity_update.h"
@@ -510,6 +511,9 @@ public:
     void setStyleLocked(bool isStyleLocked);
     bool getBlockingAid() const;
     void setBlockingAid(bool isBlockingAid);
+
+    // Send updates about dirty containers in post tick
+    std::map<CONTAINER_ID, bool> dirtyInventoryContainers;
 
     bool       m_EquipSwap; // true if equipment was recently changed
     bool       m_EffectsChanged;
