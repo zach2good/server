@@ -73,27 +73,28 @@ class AHAnnouncementModule : public CPPModule
 
                         CItem* gil = PChar->getStorage(LOC_INVENTORY)->GetItem(0);
 
-                        if (gil != nullptr && gil->isType(ITEM_CURRENCY) && gil->getQuantity() >= price)
+                        if (gil != nullptr && gil->isType(ITEM_CURRENCY) && gil->getQuantity() >= price && gil->getReserve() == 0)
                         {
+                            // NOTE: Query is different to original
                             // clang-format off
-                            auto ret = sql->Query(fmt::format(R"(
+                            const auto [rset, affectedRows] = db::preparedStmtWithAffectedRows(R"""(
                                 UPDATE auction_house
-                                SET buyer_name = '{}', sale = {}, sell_date = {}
-                                WHERE itemid = {}
+                                SET buyer_name = ?, sale = ?, sell_date = ?
+                                WHERE itemid = ?
                                 AND buyer_name IS NULL
-                                AND stack = {}
-                                AND price <= {}
+                                AND stack = ?
+                                AND price <= ?
                                 # LAST_INSERT_ID:
                                 # The ID that was generated is maintained in the server on a per-connection basis.
                                 # Always evaluates to a positive integer, therefore true
                                 AND LAST_INSERT_ID(seller)
                                 ORDER BY price
                                 LIMIT 1;
-                                )",
-                                PChar->getName(), price, (uint32)time(nullptr), itemid, quantity == 0, price).c_str());
+                                )""",
+                                PChar->getName(), price, (uint32)time(nullptr), itemid, quantity == 0, price);
                             // clang-format on
 
-                            if (ret != SQL_ERROR && sql->AffectedRows() != 0)
+                            if (rset && affectedRows)
                             {
                                 uint8 SlotID = charutils::AddItem(PChar, LOC_INVENTORY, itemid, (quantity == 0 ? PItem->getStackSize() : 1));
 
@@ -101,23 +102,31 @@ class AHAnnouncementModule : public CPPModule
                                 {
                                     charutils::UpdateItem(PChar, LOC_INVENTORY, 0, -(int32)(price));
 
-                                    PChar->pushPacket(new CAuctionHousePacket(action, 0x01, itemid, price, quantity, PItem->getStackSize()));
-                                    PChar->pushPacket(new CInventoryFinishPacket());
+                                    PChar->pushPacket<CAuctionHousePacket>(action, 0x01, itemid, price, quantity, PItem->getStackSize());
+                                    PChar->pushPacket<CInventoryFinishPacket>();
 
-                                    ret = sql->Query(R"(
-                                        SELECT seller
-                                        FROM auction_house
-                                        WHERE id = LAST_INSERT_ID();
-                                    )");
+                                    // NOTE: From here on is new logic
 
-                                    uint32 sellerId = 0;
-
-                                    if (ret != SQL_ERROR && sql->NumRows() != 0 && sql->NextRow() == SQL_SUCCESS)
+                                    const auto sellerId = []() -> uint32
                                     {
-                                        sellerId = sql->GetUIntData(0);
-                                    }
+                                        uint32 sellerId = 0;
 
-                                    if (sellerId > 0)
+                                        // TODO: In a multi-process environment, could this be contested?
+                                        const auto rset = db::preparedStmt(R"(
+                                            SELECT seller
+                                            FROM auction_house
+                                            WHERE id = LAST_INSERT_ID();
+                                        )");
+
+                                        if (rset && rset->rowsCount() && rset->next())
+                                        {
+                                            sellerId = rset->get<uint32>("seller");
+                                        }
+
+                                        return sellerId;
+                                    }();
+
+                                    if (sellerId)
                                     {
                                         // clang-format off
                                         // Sanitize name
@@ -141,13 +150,15 @@ class AHAnnouncementModule : public CPPModule
                             }
                         }
                     }
+
+                    // You were unable to buy the {qty} {item}
                     if (PItem)
                     {
-                        PChar->pushPacket(new CAuctionHousePacket(action, 0xC5, itemid, price, quantity, PItem->getStackSize()));
+                        PChar->pushPacket<CAuctionHousePacket>(action, 0xC5, itemid, price, quantity, PItem->getStackSize());
                     }
                     else
                     {
-                        PChar->pushPacket(new CAuctionHousePacket(action, 0xC5, itemid, price, quantity, 0));
+                        PChar->pushPacket<CAuctionHousePacket>(action, 0xC5, itemid, price, quantity, 0);
                     }
                 }
             }
