@@ -3332,7 +3332,7 @@ void SmallPacket0x04E(map_session_data_t* const PSession, CCharEntity* const PCh
                 }
 
                 // Get the current number of items the player has for sale
-                const auto ah_listings = [&]() -> uint32
+                const auto ahListings = [&]() -> uint32
                 {
                     const auto rset = db::preparedStmt("SELECT COUNT(*) FROM auction_house WHERE seller = ? AND sale = 0", PChar->id);
                     if (rset && rset->rowsCount() && rset->next())
@@ -3342,8 +3342,10 @@ void SmallPacket0x04E(map_session_data_t* const PSession, CCharEntity* const PCh
                     return 0;
                 }();
 
-                if (settings::get<uint8>("map.AH_LIST_LIMIT") && ah_listings >= settings::get<uint8>("map.AH_LIST_LIMIT"))
+                const auto ahListLimit = settings::get<uint8>("map.AH_LIST_LIMIT");
+                if (ahListLimit && ahListings >= ahListLimit)
                 {
+                    ShowDebug("Player %s has reached the AH listing limit of %u", PChar->getName(), ahListLimit);
                     PChar->pushPacket<CAuctionHousePacket>(action, 197, 0, 0, 0, 0); // Failed to place up
                     return;
                 }
@@ -3359,8 +3361,8 @@ void SmallPacket0x04E(map_session_data_t* const PSession, CCharEntity* const PCh
                 charutils::UpdateItem(PChar, LOC_INVENTORY, slot, -(int32)(quantity != 0 ? 1 : PItem->getStackSize()));
                 charutils::UpdateItem(PChar, LOC_INVENTORY, 0, -(int32)auctionFee); // Deduct AH fee
 
-                PChar->pushPacket<CAuctionHousePacket>(action, 1, 0, 0, 0, 0);           // Merchandise put up on auction msg
-                PChar->pushPacket<CAuctionHousePacket>(0x0C, (uint8)ah_listings, PChar); // Inform history of slot
+                PChar->pushPacket<CAuctionHousePacket>(action, 1, 0, 0, 0, 0);          // Merchandise put up on auction msg
+                PChar->pushPacket<CAuctionHousePacket>(0x0C, (uint8)ahListings, PChar); // Inform history of slot
             }
         }
         break;

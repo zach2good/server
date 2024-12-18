@@ -23,11 +23,17 @@ class AHPaginationModule : public CPPModule
         TracyZoneScoped;
 
         // If this is set to 7, the client won't let you put up more than 7 items. So, 6.
-        auto ITEMS_PER_PAGE = 6U;
-        auto TOTAL_PAGES    = 6;
+        const auto ITEMS_PER_PAGE = 6U;
+        const auto TOTAL_PAGES    = 6U;
+        const auto AH_LIST_LIMIT  = ITEMS_PER_PAGE * TOTAL_PAGES;
 
-        ShowInfo("[AH PAGES] Setting AH_LIST_LIMIT to %i.", ITEMS_PER_PAGE * TOTAL_PAGES);
-        lua["xi"]["settings"]["search"]["AH_LIST_LIMIT"] = ITEMS_PER_PAGE * TOTAL_PAGES;
+        ShowInfo("[AH PAGES] Setting AH_LIST_LIMIT to %i.", AH_LIST_LIMIT);
+
+        settings::set("map.AH_LIST_LIMIT", static_cast<double>(AH_LIST_LIMIT));
+        if (settings::get<uint32>("map.AH_LIST_LIMIT") != AH_LIST_LIMIT)
+        {
+            ShowError("Failed to set AH_LIST_LIMIT to %i.", AH_LIST_LIMIT);
+        }
 
         auto originalHandler = PacketParser[0x04E];
 
@@ -50,19 +56,42 @@ class AHPaginationModule : public CPPModule
                 {
                     // This will get wiped on zoning
                     auto currentAHPage = PChar->GetLocalVar("AH_PAGE");
+
+                    // Will only show the first time you access the AH until you zone again.
+                    // Since we do rollover of pages inline below.
+                    // This is also good for performance to not hammer the db completely.
+                    if (currentAHPage == 0) // Page "1"
+                    {
+                        // Get the current number of items the player has for sale
+                        const auto ahListings = [&]() -> uint32
+                        {
+                            const auto rset = db::preparedStmt("SELECT COUNT(*) FROM auction_house WHERE seller = ? AND sale = 0", PChar->id);
+                            if (rset && rset->rowsCount() && rset->next())
+                            {
+                                return rset->get<uint32>(0);
+                            }
+                            return 0;
+                        }();
+                        PChar->pushPacket<CChatMessagePacket>(PChar, MESSAGE_SYSTEM_3, fmt::format("You have {} items listed for sale.", ahListings).c_str(), "");
+                    }
+
                     PChar->SetLocalVar("AH_PAGE", (currentAHPage + 1) % TOTAL_PAGES);
 
                     PChar->m_ah_history.clear();
                     PChar->m_AHHistoryTimestamp = curTick;
                     PChar->pushPacket<CAuctionHousePacket>(action);
 
+                    // Not const, because we're possibly going to overwrite it later
                     auto rset = db::preparedStmt("SELECT itemid, price, stack FROM auction_house WHERE seller = ? and sale = 0 ORDER BY id ASC LIMIT ? OFFSET ?", PChar->id, ITEMS_PER_PAGE, currentAHPage * ITEMS_PER_PAGE);
+
+                    // If we get back 0 results, we're at the end of the list. We should redo the query and reset to page 1 (OFFSET 0)
                     if (rset && rset->rowsCount() == 0)
                     {
                         PChar->pushPacket<CChatMessagePacket>(PChar, MESSAGE_SYSTEM_3, fmt::format("No results for page: {} of {}.", currentAHPage + 1, TOTAL_PAGES).c_str(), "");
 
                         // Reset to Page 1
-                        auto rset1 = db::preparedStmt("SELECT itemid, price, stack FROM auction_house WHERE seller = ? and sale = 0 ORDER BY id ASC LIMIT ? OFFSET ?", PChar->id, ITEMS_PER_PAGE, 0);
+                        // Overwrite the original rset here
+                        rset = db::preparedStmt("SELECT itemid, price, stack FROM auction_house WHERE seller = ? and sale = 0 ORDER BY id ASC LIMIT ? OFFSET 0", PChar->id, ITEMS_PER_PAGE);
 
                         // Show Page 1 this time
                         currentAHPage = 0;
