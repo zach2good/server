@@ -416,7 +416,15 @@ public:
 
     uint8 GetGender();
 
-    void          clearPacketList();
+    void clearPacketList();
+
+    template <typename T, typename... Args>
+    void pushPacket(Args&&... args)
+    {
+        // TODO: This could hook into pooling of packet objects, etc.
+        pushPacket(std::make_unique<T>(std::forward<Args>(args)...));
+    }
+
     void          pushPacket(CBasicPacket*);                                                     // Adding a copy of a package to the PacketList
     void          pushPacket(std::unique_ptr<CBasicPacket>);                                     // Push packet to packet list
     void          updateCharPacket(CCharEntity* PChar, ENTITYUPDATE type, uint8 updatemask);     // Push or update a char packet
