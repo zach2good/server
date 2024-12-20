@@ -45,46 +45,19 @@ namespace
     };
 } // namespace
 
-int32 ping_connection(time_point tick, CTaskMgr::CTask* task)
-{
-    auto& state = db::detail::getState();
-
-    // clang-format off
-    state.write([&](auto& state)
-    {
-        ShowInfo("(C++) Pinging database to keep connection alive");
-        try
-        {
-            if (!state.connection->isValid())
-            {
-                ShowError("Database connection is invalid, attempting to reconnect...");
-                state.connection->reconnect();
-            }
-        }
-        catch (const std::exception& e)
-        {
-            ShowError(e.what());
-            state.connection = nullptr; // Wipe the connection so that it can't be used if it's broken
-        }
-    });
-    // clang-format on
-
-    return 0;
-};
-
 mutex_guarded<db::detail::State>& db::detail::getState()
 {
     TracyZoneScoped;
 
-    // NOTE: mariadb-connector-cpp doesn't seem to make any guarantees about whether or not isValid() or reconnect()
-    //     : are const. So we're going to have to wrap calls to them as though they aren't.
+    // NOTE: mariadb-connector-cpp doesn't seem to make any guarantees about whether or not isValid()
+    //     : is const. So we're going to have to wrap calls to it as though they aren't.
 
     // clang-format off
     if (state.write([&](auto& state)
     {
-        // If we have a valid and connected connection: return it
-        // TODO: Does this logic make ping_connection redundant?
-        return state.connection != nullptr && (state.connection->isValid() || state.connection->reconnect());
+        // If we have a valid and connected connection: return it.
+        // isValid() calls mysql_ping.
+        return state.connection != nullptr && state.connection->isValid();
     }))
     {
         return state;
@@ -105,10 +78,14 @@ mutex_guarded<db::detail::State>& db::detail::getState()
             auto host   = settings::get<std::string>("network.SQL_HOST");
             auto port   = settings::get<uint16>("network.SQL_PORT");
             auto schema = settings::get<std::string>("network.SQL_DATABASE");
-            auto url    = fmt::format("tcp://{}:{}", host, port);
+            auto url    = fmt::format("tcp://{}:{}/{}", host, port, schema);
+
+            if (state.connection)
+            {
+                ShowInfo("Previous sql::Connection was invalid, replacing with a new one");
+            }
 
             state.connection = std::unique_ptr<sql::Connection>(driver->connect(url.c_str(), login.c_str(), passwd.c_str()));
-            state.connection->setSchema(schema.c_str());
         }
         catch (const std::exception& e)
         {
@@ -117,23 +94,6 @@ mutex_guarded<db::detail::State>& db::detail::getState()
         }
     });
     // clang-format on
-
-    // NOTE: This is mostly the same logic from sql.cpp:
-    // Add periodic task to ping this db connection to keep it alive or to bring it back
-    uint32 timeout = 7200; // 2 hours
-
-    // TODO: Request the timeout value from the mysql server
-    // GetTimeout(&timeout);
-
-    timeout = std::max(timeout, 60u);
-
-    // 30-second reserve
-    uint8 reserve = 30;
-    timeout       = timeout + reserve;
-
-    auto duration = std::chrono::seconds(timeout);
-
-    CTaskMgr::getInstance()->AddTask("ping database connection", server_clock::now() + duration, nullptr, CTaskMgr::TASK_INTERVAL, ping_connection, duration);
 
     return state;
 }
