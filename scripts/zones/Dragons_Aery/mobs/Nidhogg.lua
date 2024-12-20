@@ -11,6 +11,7 @@ local entity = {}
 entity.onMobSpawn = function(mob)
     mob:setLocalVar('[rage]timer', 3600) -- 60 minutes
     mob:setMobMod(xi.mobMod.WEAPON_BONUS, 50) -- Level 90 + 50 = 140 Base Weapon Damage
+    mob:setMobMod(xi.mobMod.NO_MOVE, 0)
 
     -- Despawn the ???
     GetNPCByID(ID.npc.FAFNIR_QM):setStatus(xi.status.DISAPPEAR)
@@ -19,16 +20,6 @@ end
 entity.onMobFight = function(mob, target)
     local battletime = mob:getBattleTime()
     local twohourTime = mob:getLocalVar('twohourTime')
-    local drawInTableNortheast =
-    {
-        condition1 = target:getXPos() > 95 and target:getZPos() > 56,
-        position   = { 94.2809, 6.6438, 54.0863, target:getRotPos() },
-    }
-    local drawInTableWest =
-    {
-        condition1 = target:getXPos() < 60 and target:getZPos() < 23,
-        position   = { 65.5966, 7.7105, 26.2332, target:getRotPos() },
-    }
 
     if twohourTime == 0 then
         mob:setLocalVar('twohourTime', math.random(30, 90))
@@ -39,8 +30,25 @@ entity.onMobFight = function(mob, target)
         mob:setLocalVar('twohourTime', battletime + math.random(60, 120))
     end
 
-    utils.arenaDrawIn(mob, target, drawInTableNortheast)
-    utils.arenaDrawIn(mob, target, drawInTableWest)
+    local drawInTable =
+    {
+        conditions =
+        {
+            target:getXPos() > 95 and target:getZPos() > 56,
+            target:getXPos() < 60 and target:getZPos() < 23,
+        },
+        position = mob:getPos(),
+        wait = 3,
+    }
+    for _, condition in ipairs(drawInTable.conditions) do
+        if condition then
+            mob:setMobMod(xi.mobMod.NO_MOVE, 1)
+            utils.drawIn(target, drawInTable)
+            break
+        else
+            mob:setMobMod(xi.mobMod.NO_MOVE, 0)
+        end
+    end
 end
 
 entity.onMobDeath = function(mob, player, optParams)

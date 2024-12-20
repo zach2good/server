@@ -7,12 +7,32 @@ mixins = { require('scripts/mixins/rage') }
 ---@type TMobEntity
 local entity = {}
 
-entity.onMobInitialize = function(mob)
-    mob:setMobMod(xi.mobMod.DRAW_IN, 2)
-end
-
 entity.onMobSpawn = function(mob)
     mob:setMobMod(xi.mobMod.ALWAYS_AGGRO, 1)
+    mob:setMobMod(xi.mobMod.NO_MOVE, 0)
+end
+
+entity.onMobRoam = function(mob)
+    mob:setMobMod(xi.mobMod.NO_MOVE, 0)
+end
+
+entity.onMobFight = function(mob, target)
+    local spawnPos = mob:getSpawnPos()
+    local drawInTable =
+    {
+        conditions =
+        {
+            target:checkDistance(spawnPos.x, spawnPos.y, spawnPos.z) > 40,
+        },
+        position = mob:getPos(),
+        wait = 3,
+    }
+    if drawInTable.conditions[1] then
+        mob:setMobMod(xi.mobMod.NO_MOVE, 1)
+        utils.drawIn(target, drawInTable)
+    else
+        mob:setMobMod(xi.mobMod.NO_MOVE, 0)
+    end
 end
 
 entity.onMobDeath = function(mob, player, optParams)

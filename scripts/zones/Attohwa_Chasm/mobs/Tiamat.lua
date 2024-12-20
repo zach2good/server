@@ -21,19 +21,35 @@ entity.onMobSpawn = function(mob)
     -- Reset animation so it starts grounded.
     mob:setMobSkillAttack(0)
     mob:setAnimationSub(0)
+    mob:setMobMod(xi.mobMod.NO_MOVE, 0)
+end
+
+entity.onMobRoam = function(mob)
+    mob:setMobMod(xi.mobMod.NO_MOVE, 0)
 end
 
 entity.onMobFight = function(mob, target)
-    local drawInTableNorth =
+    -- Tiamat draws in from set boundaries leaving her spawn area
+    local drawInTable =
     {
-        condition1 = target:getXPos() < -515 and target:getZPos() > 8,
-        position   = { -530.642, -4.013, 6.262, target:getRotPos() },
+        conditions =
+        {
+            target:getZPos() > 28,
+            target:getZPos() > -31 and target:getXPos() > -515,
+            target:getZPos() <= -31 and target:getXPos() > -500,
+        },
+        position = mob:getPos(),
+        wait = 5,
     }
-    local drawInTableEast =
-    {
-        condition1 = target:getXPos() > -480 and target:getZPos() > -50,
-        position   = { -481.179, -4, -41.92, target:getRotPos() },
-    }
+    for _, condition in ipairs(drawInTable.conditions) do
+        if condition then
+            mob:setMobMod(xi.mobMod.NO_MOVE, 1)
+            utils.drawIn(target, drawInTable)
+            break
+        else
+            mob:setMobMod(xi.mobMod.NO_MOVE, 0)
+        end
+    end
 
     -- Gains a large attack boost when health is under 25% which cannot be Dispelled.
     if
@@ -94,9 +110,6 @@ entity.onMobFight = function(mob, target)
         end
     end
 
-    -- Tiamat draws in from set boundaries leaving her spawn area
-    utils.arenaDrawIn(mob, target, drawInTableNorth)
-    utils.arenaDrawIn(mob, target, drawInTableEast)
 end
 
 entity.onMobDeath = function(mob, player, optParams)

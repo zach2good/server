@@ -20,24 +20,14 @@ entity.onMobSpawn = function(mob)
     -- Reset animation so it starts grounded.
     mob:setMobSkillAttack(0)
     mob:setAnimationSub(0)
+    mob:setMobMod(xi.mobMod.NO_MOVE, 0)
+end
+
+entity.onMobRoam = function(mob)
+    mob:setMobMod(xi.mobMod.NO_MOVE, 0)
 end
 
 entity.onMobFight = function(mob, target)
-    local drawInTableNorth =
-    {
-        condition1 = target:getXPos() < -105 and target:getXPos() > -215 and target:getZPos() > 195,
-        position   = { -201.86, -175.66, 189.32, target:getRotPos() },
-    }
-    local drawInTableSouth =
-    {
-        condition1 = target:getXPos() > -250 and target:getXPos() < -212 and target:getZPos() < 55,
-        position   = { -235.62, -175.17, 62.67, target:getRotPos() },
-    }
-    local drawInTableEast =
-    {
-        condition1 = target:getXPos() > -160 and target:getZPos() > 105 and target:getZPos() < 130,
-        position   = { -166.02, -175.89, 119.38, target:getRotPos() },
-    }
 
 -- Animation (Ground or flight mode) logic.
     if
@@ -86,9 +76,26 @@ entity.onMobFight = function(mob, target)
         end
     end
     -- Jorm draws in from set boundaries leaving her spawn area
-    utils.arenaDrawIn(mob, target, drawInTableNorth)
-    utils.arenaDrawIn(mob, target, drawInTableSouth)
-    utils.arenaDrawIn(mob, target, drawInTableEast)
+    local drawInTable =
+    {
+        conditions =
+        {
+            target:getXPos() < -105 and target:getXPos() > -215 and target:getZPos() > 195,
+            target:getXPos() > -250 and target:getXPos() < -212 and target:getZPos() < 55,
+            target:getXPos() > -160 and target:getZPos() > 105 and target:getZPos() < 130,
+        },
+        position = mob:getPos(),
+        wait = 3,
+    }
+    for _, condition in ipairs(drawInTable.conditions) do
+        if condition then
+            mob:setMobMod(xi.mobMod.NO_MOVE, 1)
+            utils.drawIn(target, drawInTable)
+            break
+        else
+            mob:setMobMod(xi.mobMod.NO_MOVE, 0)
+        end
+    end
 end
 
 entity.onMobWeaponSkill = function(target, mob, skill)

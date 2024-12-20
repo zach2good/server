@@ -1262,20 +1262,59 @@ function utils.toWords(value)
     return word0, word1
 end
 
-function utils.arenaDrawIn(mob, target, table)
-    local nextDrawIn = target:getLocalVar("[Draw-In]WaitTime")
-    local condition1 = utils.ternary(table.condition1 ~= nil, table.condition1, false)
-    local condition2 = utils.ternary(table.condition2 ~= nil, table.condition2, false)
-    local condition3 = utils.ternary(table.condition3 ~= nil, table.condition3, false)
-    local condition4 = utils.ternary(table.condition4 ~= nil, table.condition4, false)
-    local position   = utils.ternary(table.position ~= nil, table.position, { mob:getXPos(), mob:getYPos(), mob:getZPos(), mob:getRotPos() })
+-- Draws in target to position if any conditions are met.
+-- Conditions must be met for "wait" seconds.
+-- Can set offset from and degrees around position to place target.
+--[[
+table =
+{
+    conditions = { boolean, ... },
+    position =
+    {
+        x = number,
+        y = number,
+        z = number,
+        rot = integer,
+    },
+    offset = number,
+    degrees = number,
+    wait = integer,
+}
+--]]
+---@param target CBaseEntity
+---@param table table
+---@return boolean
+function utils.drawIn(target, table)
+    if table.position then
+        local nextDrawIn = target:getLocalVar('[Draw-In]WaitTime')
+        local conditions = table.conditions and table.conditions or { true }
+        for _, condition in ipairs(conditions) do
+            if condition then
+                if nextDrawIn > 0 then
+                    if os.time() > nextDrawIn then
+                        local position = {}
+                        if table.position then
+                            position.x   = table.position.x and table.position.x or table.position[1]
+                            position.y   = table.position.y and table.position.y or table.position[2]
+                            position.z   = table.position.z and table.position.z or table.position[3]
+                            position.rot = table.position.rot and table.position.rot or table.position[4]
+                        end
+                        local offset  = table.offset and table.offset or 0
+                        local degrees = table.degrees and table.degrees or 0
 
-    if
-        (condition1 or condition2 or condition3 or condition4) and
-        (os.time() > nextDrawIn)
-    then
-        target:setPos(position[1], position[2], position[3], utils.ternary(position[4] ~= nil, position[4], 0))
-        mob:messageBasic(232, 0, 0, target)
-        target:setLocalVar("[Draw-In]WaitTime", os.time() + 1)
+                        DrawIn(target, position, offset, degrees)
+                        target:setLocalVar('[Draw-In]WaitTime', 0)
+                        return true
+                    end
+                    return false
+                else
+                    local wait = table.wait and table.wait or 1
+                    target:setLocalVar('[Draw-In]WaitTime', os.time() + wait)
+                    return false
+                end
+            end
+        end
     end
+    target:setLocalVar('[Draw-In]WaitTime', 0)
+    return false
 end
