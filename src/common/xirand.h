@@ -138,4 +138,7 @@ inline T xirand::GetRandomElement(std::initializer_list<T> list)
     return GetRandomElement(container);
 }
 
+// Get secure random numbers
+size_t sysrandom(void* dst, size_t dstlen);
+
 #endif // _XIRAND_H_
