@@ -43,7 +43,7 @@ entity.onMobFight = function(mob, target)
 
                 -- Pick a random Prince or Princess
                 local petId = 0
-                local offset = math.random(4)
+                local offset = math.random(1, 4)
                 for i = 0, 3 do
                     local id = bombQueenId + 1 + (offset + i) % 4
                     if GetMobByID(id):getCurrentAction() == xi.action.NONE then
