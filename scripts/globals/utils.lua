@@ -1212,6 +1212,31 @@ function utils.angleToRotation(radians)
     return radians * ffxiAngleToRotationFactor
 end
 
+-- Function to calculate the cross product
+local function crossProduct(x1, y1, x2, y2)
+    return x1 * y2 - y1 * x2
+end
+
+-- Function to check if two points are on the same side of a line
+---@nodiscard
+---@param line table
+---@param pos1 table
+---@param pos2 table
+---@return boolean
+function utils.sameSide(line, pos1, pos2)
+    -- Calculate vectors
+    local v1x, v1y = pos1.x - line[1][1], pos1.z - line[1][2]
+    local v2x, v2y = pos2.x - line[1][1], pos2.z - line[1][2]
+    local lx, ly = line[2][1] - line[1][1], line[2][2] - line[1][2]
+
+    -- Calculate cross products
+    local cross1 = crossProduct(lx, ly, v1x, v1y)
+    local cross2 = crossProduct(lx, ly, v2x, v2y)
+
+    -- Check if cross products have the same sign
+    return cross1 * cross2 >= 0
+end
+
 -- Returns 24h Clock Time (example: 04:30 = 430, 21:30 = 2130)
 ---@nodiscard
 ---@return number?

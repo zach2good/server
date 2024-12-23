@@ -16154,7 +16154,7 @@ bool CLuaBaseEntity::isSpawned()
  *  Notes   : x = spawn.x; y = spawn.y, etc
  ************************************************************************/
 
-auto CLuaBaseEntity::getSpawnPos() -> std::map<std::string, float>
+auto CLuaBaseEntity::getSpawnPos() -> sol::table
 {
     if (m_PBaseEntity->objtype != TYPE_MOB)
     {
@@ -16162,8 +16162,8 @@ auto CLuaBaseEntity::getSpawnPos() -> std::map<std::string, float>
         return {};
     }
 
-    auto*                        PMob = static_cast<CMobEntity*>(m_PBaseEntity);
-    std::map<std::string, float> pos;
+    auto* PMob = static_cast<CMobEntity*>(m_PBaseEntity);
+    auto  pos  = lua.create_table();
 
     pos["x"]   = PMob->m_SpawnPoint.x;
     pos["y"]   = PMob->m_SpawnPoint.y;

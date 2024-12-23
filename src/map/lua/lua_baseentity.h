@@ -814,7 +814,7 @@ public:
 
     void   spawn(sol::object const& despawnSec, sol::object const& respawnSec);
     bool   isSpawned();
-    auto   getSpawnPos() -> std::map<std::string, float>;
+    auto   getSpawnPos() -> sol::table;
     void   setSpawn(float x, float y, float z, sol::object const& rot);
     uint32 getRespawnTime();
     void   setRespawnTime(uint32 seconds);

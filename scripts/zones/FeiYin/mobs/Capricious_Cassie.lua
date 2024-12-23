@@ -17,21 +17,36 @@ entity.onMobRoam = function(mob)
 end
 
 entity.onMobFight = function(mob, target)
+    local targetPos = target:getPos()
     local spawnPos = mob:getSpawnPos()
+    local arenaBoundaries =
+    {
+        { {-87, 142}, {-93,146} }, -- G-7 SW hallway
+        { {-98, 208}, {-94,213} }, -- G-6 NW hallway
+        { {-13, 254}, {-8,257} }, -- H-5 N hallway
+        { {18, 192}, {15,187} }, -- H-6 E hallway
+    }
     local drawInTable =
     {
         conditions =
         {
-            target:checkDistance(spawnPos.x, spawnPos.y, spawnPos.z) > 40,
+            targetPos.z < 130, -- S hallway
+            not utils.sameSide(arenaBoundaries[1], targetPos, spawnPos),
+            not utils.sameSide(arenaBoundaries[2], targetPos, spawnPos),
+            targetPos.z > 250 and not utils.sameSide(arenaBoundaries[3], targetPos, spawnPos),
+            not utils.sameSide(arenaBoundaries[4], targetPos, spawnPos),
         },
         position = mob:getPos(),
         wait = 3,
     }
-    if drawInTable.conditions[1] then
-        mob:setMobMod(xi.mobMod.NO_MOVE, 1)
-        utils.drawIn(target, drawInTable)
-    else
-        mob:setMobMod(xi.mobMod.NO_MOVE, 0)
+    for _, condition in ipairs(drawInTable.conditions) do
+        if condition then
+            mob:setMobMod(xi.mobMod.NO_MOVE, 1)
+            utils.drawIn(target, drawInTable)
+            break
+        else
+            mob:setMobMod(xi.mobMod.NO_MOVE, 0)
+        end
     end
 end
 
