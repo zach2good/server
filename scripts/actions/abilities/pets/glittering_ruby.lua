@@ -21,8 +21,8 @@ abilityObject.onPetAbility = function(target, pet, petskill, summoner, action)
         xi.effect.CHR_BOOST,
     }
 
-    effectId = utils.randomEntry(effects)
-    effectPower = math.random(12, 14)
+    local effectId    = utils.randomEntry(effects)
+    local effectPower = math.random(12, 14)
 
     xi.job_utils.summoner.onUseBloodPact(target, petskill, summoner, action)
 
