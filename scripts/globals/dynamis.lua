@@ -466,7 +466,7 @@ xi.dynamis.zoneOnZoneIn = function(player, prevZone)
                 playerArg:messageBasic(xi.msg.basic.UNABLE_TO_ACCESS_SJ)
             end)
 
-            player:addStatusEffect(xi.effect.SJ_RESTRICTION, 0, 0, 0, 7200)
+            player:addStatusEffect(xi.effect.SJ_RESTRICTION, 0, 0, 0, 0, 0)
         end
 
         player:addStatusEffectEx(xi.effect.DYNAMIS, 0, 0, 3, 3600)
