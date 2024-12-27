@@ -883,6 +883,11 @@ xi.weaponskills.doRangedWeaponskill = function(attacker, target, wsID, wsParams,
         calcParams.bonusAcc = calcParams.bonusAcc - accLost
     end
 
+    -- Split Shot/Piercing Arrow and Empyreal Arrow/Detonator are confirmed for this. Theoretically Last Stand could have a bonus too, and if so it would likely be first hit only.
+    if wsParams.rangedAccuracyBonus then
+        calcParams.firstHitRate = getRangedHitRate(attacker, target, calcParams.bonusAcc + wsParams.rangedAccuracyBonus)
+    end
+
     calcParams.hitRate = getRangedHitRate(attacker, target, calcParams.bonusAcc)
 
     -- Send our params off to calculate our raw WS damage, hits landed, and shadows absorbed
