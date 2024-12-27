@@ -1223,7 +1223,7 @@ end
 ---@param pos1 table
 ---@param pos2 table
 ---@return boolean
-function utils.sameSide(line, pos1, pos2)
+function utils.sameSideOfLine(line, pos1, pos2)
     -- Calculate vectors
     local v1x, v1y = pos1.x - line[1][1], pos1.z - line[1][2]
     local v2x, v2y = pos2.x - line[1][1], pos2.z - line[1][2]

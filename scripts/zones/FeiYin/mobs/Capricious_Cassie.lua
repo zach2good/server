@@ -31,10 +31,10 @@ entity.onMobFight = function(mob, target)
         conditions =
         {
             targetPos.z < 130, -- S hallway
-            not utils.sameSide(arenaBoundaries[1], targetPos, spawnPos),
-            not utils.sameSide(arenaBoundaries[2], targetPos, spawnPos),
-            targetPos.z > 250 and not utils.sameSide(arenaBoundaries[3], targetPos, spawnPos),
-            not utils.sameSide(arenaBoundaries[4], targetPos, spawnPos),
+            not utils.sameSideOfLine(arenaBoundaries[1], targetPos, spawnPos),
+            not utils.sameSideOfLine(arenaBoundaries[2], targetPos, spawnPos),
+            targetPos.z > 250 and not utils.sameSideOfLine(arenaBoundaries[3], targetPos, spawnPos),
+            not utils.sameSideOfLine(arenaBoundaries[4], targetPos, spawnPos),
         },
         position = mob:getPos(),
         wait = 3,

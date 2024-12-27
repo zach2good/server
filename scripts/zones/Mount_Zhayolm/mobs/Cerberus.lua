@@ -37,7 +37,7 @@ entity.onMobFight = function(mob, target)
         {
             target:getZPos() > -70,
             target:getXPos() < 310,
-            not utils.sameSide(arenaBoundaries[1], targetPos, spawnPos),
+            not utils.sameSideOfLine(arenaBoundaries[1], targetPos, spawnPos),
         },
         position = utils.randomEntry(drawInPositions),
         wait = 2,
