@@ -70,6 +70,7 @@
 #include "entities/baseentity.h"
 #include "entities/charentity.h"
 #include "entities/mobentity.h"
+#include "fishingcontest.h"
 #include "instance.h"
 #include "items/item_puppet.h"
 #include "map.h"
@@ -98,7 +99,6 @@
 
 #include "utils/battleutils.h"
 #include "utils/charutils.h"
-#include "utils/fishingcontest.h"
 #include "utils/instanceutils.h"
 #include "utils/itemutils.h"
 #include "utils/mobutils.h"
