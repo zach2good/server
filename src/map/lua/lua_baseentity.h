@@ -111,13 +111,15 @@ public:
     uint16 getTargID();
     auto   getCursorTarget() -> std::optional<CLuaBaseEntity>;
 
-    uint8 getObjType();
-    bool  isPC();
-    bool  isNPC();
-    bool  isMob();
-    bool  isPet();
-    bool  isTrust();
-    bool  isAlly();
+    uint8 getObjType() const;
+
+    bool isPC() const;
+    bool isNPC() const;
+    bool isMob() const;
+    bool isPet() const;
+    bool isTrust() const;
+    bool isFellow() const;
+    bool isAlly() const;
 
     // AI and Control
     void  initNpcAi();
