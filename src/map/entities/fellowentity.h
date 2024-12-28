@@ -19,20 +19,16 @@
 ===========================================================================
 */
 
-#ifndef _CFISHRANKINGPACKET_H
-#define _CFISHRANKINGPACKET_H
+#pragma once
 
-#include "common/cbasetypes.h"
-#include "common/mmo.h"
+#include "charentity.h"
+#include "mobentity.h"
 
-#include "basic.h"
-
-struct FishingContestEntry;
-
-class CFishRankingPacket : public CBasicPacket
+class CFellowEntity : public CMobEntity
 {
 public:
-    CFishRankingPacket(std::vector<FishingContestEntry> entries, int8 language, int32 timestamp, int32 message_offset, uint32 numEntries, uint8 msg_chunk);
-};
+    explicit CFellowEntity(CCharEntity* PChar);
+    ~CFellowEntity() override;
 
-#endif
+    // TODO
+};

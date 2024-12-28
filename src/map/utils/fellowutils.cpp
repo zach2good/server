@@ -19,20 +19,9 @@
 ===========================================================================
 */
 
-#ifndef _CFISHRANKINGPACKET_H
-#define _CFISHRANKINGPACKET_H
+#include "fellowutils.h"
 
-#include "common/cbasetypes.h"
-#include "common/mmo.h"
-
-#include "basic.h"
-
-struct FishingContestEntry;
-
-class CFishRankingPacket : public CBasicPacket
+namespace fellowutils
 {
-public:
-    CFishRankingPacket(std::vector<FishingContestEntry> entries, int8 language, int32 timestamp, int32 message_offset, uint32 numEntries, uint8 msg_chunk);
-};
-
-#endif
+    // TODO
+} // namespace fellowutils

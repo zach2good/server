@@ -1,4 +1,4 @@
-﻿/*
+/*
 ===========================================================================
 
   Copyright (c) 2024 LandSandBoat Dev Teams
@@ -18,21 +18,16 @@
 
 ===========================================================================
 */
-
-#ifndef _CFISHRANKINGPACKET_H
-#define _CFISHRANKINGPACKET_H
+#pragma once
 
 #include "common/cbasetypes.h"
 #include "common/mmo.h"
 
-#include "basic.h"
+class CBattleEntity;
+class CCharEntity;
+class CFellowEntity;
 
-struct FishingContestEntry;
-
-class CFishRankingPacket : public CBasicPacket
+namespace fellowutils
 {
-public:
-    CFishRankingPacket(std::vector<FishingContestEntry> entries, int8 language, int32 timestamp, int32 message_offset, uint32 numEntries, uint8 msg_chunk);
-};
-
-#endif
+    // TODO
+} // namespace fellowutils
