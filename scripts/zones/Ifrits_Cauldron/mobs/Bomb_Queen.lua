@@ -3,13 +3,14 @@
 --   NM: Bomb Queen
 --  Vid: https://www.youtube.com/watch?v=AVsEbYjSAHM
 -----------------------------------
+mixins = { require('scripts/mixins/draw_in') }
+-----------------------------------
 ---@type TMobEntity
 local entity = {}
 
 entity.onMobInitialize = function(mob)
     mob:setMobMod(xi.mobMod.IDLE_DESPAWN, 180)
     mob:setMobMod(xi.mobMod.HP_STANDBACK, -1)
-    mob:setMobMod(xi.mobMod.DRAW_IN, 1)
     mob:setMod(xi.mod.STUN_MEVA, 50)
 end
 

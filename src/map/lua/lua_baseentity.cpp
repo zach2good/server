@@ -15952,6 +15952,20 @@ uint8 CLuaBaseEntity::getModelSize()
 }
 
 /************************************************************************
+ *  Function: getMeleeRange()
+ *  Purpose : Returns the melee range of the entity
+ *  Example : distance(player, mob) > mob:getMeleeRange()
+ *  Notes   :
+ ************************************************************************/
+
+float CLuaBaseEntity::getMeleeRange()
+{
+    auto* PEntity = static_cast<CBattleEntity*>(m_PBaseEntity);
+
+    return PEntity->GetMeleeRange();
+}
+
+/************************************************************************
  *  Function: setMeleeRange()
  *  Purpose : Sets the maximum melee range for a mob
  *  Example : mob:setMeleeRange(12.0)
@@ -16155,7 +16169,7 @@ bool CLuaBaseEntity::isSpawned()
  *  Notes   : x = spawn.x; y = spawn.y, etc
  ************************************************************************/
 
-auto CLuaBaseEntity::getSpawnPos() -> std::map<std::string, float>
+auto CLuaBaseEntity::getSpawnPos() -> sol::table
 {
     if (m_PBaseEntity->objtype != TYPE_MOB)
     {
@@ -16163,8 +16177,8 @@ auto CLuaBaseEntity::getSpawnPos() -> std::map<std::string, float>
         return {};
     }
 
-    auto*                        PMob = static_cast<CMobEntity*>(m_PBaseEntity);
-    std::map<std::string, float> pos;
+    auto* PMob = static_cast<CMobEntity*>(m_PBaseEntity);
+    auto  pos  = lua.create_table();
 
     pos["x"]   = PMob->m_SpawnPoint.x;
     pos["y"]   = PMob->m_SpawnPoint.y;
@@ -17196,11 +17210,13 @@ void CLuaBaseEntity::drawIn(sol::variadic_args va)
         {
             return;
         }
-        battleutils::DrawIn(defaultTarget, mobObj, mobObj->GetMeleeRange() - 0.2f);
+        battleutils::DrawIn(defaultTarget, mobObj->loc.p, 0, 0);
         return;
     }
 
     CLuaBaseEntity* PLuaBaseEntity = va.get<CLuaBaseEntity*>(0);
+    float           offset         = va.get<float>(1);
+    float           degrees        = va.get<float>(2);
 
     if (!PLuaBaseEntity)
     {
@@ -17218,7 +17234,7 @@ void CLuaBaseEntity::drawIn(sol::variadic_args va)
 
     if (PTarget)
     {
-        battleutils::DrawIn(PTarget, mobObj, mobObj->GetMeleeRange() - 0.2f);
+        battleutils::DrawIn(PTarget, mobObj->loc.p, offset, degrees);
     }
 
     return;
@@ -18874,6 +18890,7 @@ void CLuaBaseEntity::Register()
     SOL_REGISTER("isNM", CLuaBaseEntity::isNM);
 
     SOL_REGISTER("getModelSize", CLuaBaseEntity::getModelSize);
+    SOL_REGISTER("getMeleeRange", CLuaBaseEntity::getMeleeRange);
     SOL_REGISTER("setMeleeRange", CLuaBaseEntity::setMeleeRange);
     SOL_REGISTER("setMobFlags", CLuaBaseEntity::setMobFlags);
     SOL_REGISTER("getMobFlags", CLuaBaseEntity::getMobFlags);
