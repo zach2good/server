@@ -1,7 +1,7 @@
 -----------------------------------
 -- Inside the Belly
 -----------------------------------
--- Log ID: 4, Quest ID: 17
+-- Log ID: 4, Quest ID: 26
 -- !addquest 4 26
 -- Zaldon  : !pos -11.810 -7.287 -6.742 248
 -----------------------------------
@@ -101,7 +101,7 @@ local fishRewards =
         gil = 150,
         items =
         {
-            { chance = 10, itemId = xi.item.PINCH_OF_POISON_DUST, min = 1, max = 6 }, -- guessing 10%. Wiki unknown
+            { chance = 50, itemId = xi.item.PINCH_OF_POISON_DUST, min = 1, max = 6 }, -- guessing 10%. Wiki unknown
         }
     },
 
@@ -501,68 +501,119 @@ local fishRewards =
 }
 
 local function tradeFish(player, fishId)
-    player:setCharVar('insideBellyFishId', fishId)
-    player:setCharVar('insideBellyItemIdx', 0)
+    quest:setLocalVar(player, 'fishId', fishId)
+    quest:setLocalVar(player, 'itemIdx', 0)
 
     local rewards = fishRewards[fishId].items
-    local roll    = math.random(1, 1000) / 10
-    local found   = false
+    local roll    = math.random(1, 1000)
     local sum     = 0
 
-    for i = 1, #rewards do
-        sum = sum + rewards[i].chance
-        if roll <= sum then
-            found = true
-            player:setCharVar('insideBellyItemIdx', i)
+    -- NOTE: We confirm the trade now, and not at the end of the cutscene as normal
+    --     : because the cutscene gives away whether or not the trade was successful
+    --     : or not, and it's possible for players to cheese this trade by force-dc-ing.
+    player:confirmTrade()
 
-            -- NOTE: We confirm the trade now, and not at the end of the cutscene as normal
-            --     : because the cutscene gives away whether or not the trade was successful
-            --     : or not, and it's possible for players to cheese this trade by force-dc-ing.
-            player:confirmTrade()
-            player:startEvent(166, 0, rewards[i].itemId)
-            break
+    for idx = 1, #rewards do
+        sum = sum + (rewards[idx].chance * 10)
+
+        if roll <= sum then
+            quest:setLocalVar(player, 'itemIdx', idx)
+
+            return quest:event(166, 0, rewards[idx].itemId)
         end
     end
 
-    if not found then
-        player:confirmTrade()
-        player:startEvent(167)
+    return quest:event(167)
+end
+
+local function giveReward(player)
+    local fishId  = quest:getLocalVar(player, 'fishId')
+    local itemIdx = quest:getLocalVar(player, 'itemIdx')
+    local reward  = fishRewards[fishId]
+
+    if itemIdx > 0 then
+        local rewardItem = reward.items[itemIdx]
+        local itemId = rewardItem.itemId
+        local itemQt = 1
+
+        if rewardItem.min ~= nil and rewardItem.max ~= nil then
+            itemQt = math.random(rewardItem.min, rewardItem.max)
+        end
+    end
+
+    npcUtil.giveCurrency(player, 'gil', reward.gil)
+    quest:setLocalVar(player, 'fishId', 0)
+    quest:setLocalVar(player, 'itemIdx', 0)
+
+    if reward.title ~= nil then
+        player:addTitle(reward.title)
     end
 end
 
-local function giveReward(player, csid)
-    if csid == 166 or csid == 167 then
-        local fishId  = player:getCharVar('insideBellyFishId')
-        local itemIdx = player:getCharVar('insideBellyItemIdx')
-        local reward  = fishRewards[fishId]
-        local traded  = true
-
-        if itemIdx > 0 then
-            local r = reward.items[itemIdx]
-            local itemId = r.itemId
-            local itemQt = 1
-            if r.min ~= nil and r.max ~= nil then
-                itemQt = math.random(r.min, r.max)
-            end
-
-            if not npcUtil.giveItem(player, { { itemId, itemQt } }) then
-                traded = false
-            end
-        end
-
-        if traded then
-            npcUtil.giveCurrency(player, 'gil', reward.gil)
-            player:setCharVar('insideBellyFishId', 0)
-            player:setCharVar('insideBellyItemIdx', 0)
-            if player:getQuestStatus(xi.questLog.OTHER_AREAS, xi.quest.id.otherAreas.INSIDE_THE_BELLY) == xi.questStatus.QUEST_ACCEPTED then
-                player:completeQuest(xi.questLog.OTHER_AREAS, xi.quest.id.otherAreas.INSIDE_THE_BELLY)
-            end
-
-            if reward.title ~= nil then
-                player:addTitle(reward.title)
-            end
+local function zaldonOnTrade(player, npc, trade)
+    for fish, _ in pairs(fishRewards) do
+        if npcUtil.tradeHas(trade, fish) then
+            return tradeFish(player, fish)
         end
     end
+end
+
+local function zaldonOnTrigger(player, npc)
+    local fishingSkill = xi.crafting.getTotalSkill(player, xi.skill.FISHING)
+
+    local tier = 4
+
+    if fishingSkill < 40 then
+        tier = 1
+    elseif fishingSkill < 50 then
+        tier = 2
+    elseif fishingSkill < 75 then
+        tier = 3
+    end
+
+    local csTier =
+    {
+        {
+            162,
+            xi.item.GIANT_CATFISH,
+            xi.item.DARK_BASS,
+            xi.item.OGRE_EEL,
+            xi.item.ZAFMLUG_BASS,
+        },
+
+        {
+            163,
+            xi.item.ZAFMLUG_BASS,
+            xi.item.GIANT_DONKO,
+            xi.item.BHEFHEL_MARLIN,
+            xi.item.BLADEFISH,
+            xi.item.SILVER_SHARK,
+        },
+
+        {
+            164,
+            xi.item.JUNGLE_CATFISH,
+            xi.item.GAVIAL_FISH,
+            xi.item.PIRARUCU,
+            xi.item.EMPEROR_FISH,
+            xi.item.MEGALODON,
+            xi.item.MORINABALIGI,
+        },
+
+        {
+            165,
+            xi.item.PTERYGOTUS,
+            xi.item.KALKANBALIGI,
+            xi.item.TAKITARO,
+            xi.item.SEA_ZOMBIE,
+            xi.item.TITANICTUS,
+            xi.item.TURNABALIGI,
+            xi.item.CAVE_CHERAX,
+            xi.item.TRICORN,
+        },
+    }
+
+    return quest:event(unpack(csTier[tier]))
 end
 
 quest.sections =
@@ -590,8 +641,7 @@ quest.sections =
 
     {
         check = function(player, status, vars)
-            return (status == xi.questStatus.QUEST_ACCEPTED or status == xi.questStatus.QUEST_COMPLETED) and
-                player:getQuestStatus(xi.questLog.OTHER_AREAS, xi.quest.id.otherAreas.THE_REAL_GIFT) == xi.questStatus.QUEST_COMPLETED and
+            return status == xi.questStatus.QUEST_ACCEPTED and
                 xi.crafting.getTotalSkill(player, xi.skill.FISHING) >= 30 and
                 xi.settings.map.FISHING_ENABLE == true
         end,
@@ -601,81 +651,58 @@ quest.sections =
             ['Zaldon'] =
             {
                 onTrade = function(player, npc, trade)
-                    for fish, _ in pairs(fishRewards) do
-                        if npcUtil.tradeHas(trade, fish) then
-                            tradeFish(player, fish)
-                            break
-                        end
-                    end
+                    return zaldonOnTrade(player, npc, trade)
                 end,
 
                 onTrigger = function(player, npc)
-                    local fishingSkill = xi.crafting.getTotalSkill(player, xi.skill.FISHING)
-
-                    local tier = 4
-
-                    if fishingSkill < 40 then
-                        tier = 1
-                    elseif fishingSkill < 50 then
-                        tier = 2
-                    elseif fishingSkill < 75 then
-                        tier = 3
-                    end
-
-                    local csTier =
-                    {
-                        {
-                            162,
-                            xi.item.GIANT_CATFISH,
-                            xi.item.DARK_BASS,
-                            xi.item.OGRE_EEL,
-                            xi.item.ZAFMLUG_BASS,
-                        },
-
-                        {
-                            163,
-                            xi.item.ZAFMLUG_BASS,
-                            xi.item.GIANT_DONKO,
-                            xi.item.BHEFHEL_MARLIN,
-                            xi.item.BLADEFISH,
-                            xi.item.SILVER_SHARK,
-                        },
-
-                        {
-                            164,
-                            xi.item.JUNGLE_CATFISH,
-                            xi.item.GAVIAL_FISH,
-                            xi.item.PIRARUCU,
-                            xi.item.EMPEROR_FISH,
-                            xi.item.MEGALODON,
-                            xi.item.MORINABALIGI,
-                        },
-
-                        {
-                            165,
-                            xi.item.PTERYGOTUS,
-                            xi.item.KALKANBALIGI,
-                            xi.item.TAKITARO,
-                            xi.item.SEA_ZOMBIE,
-                            xi.item.TITANICTUS,
-                            xi.item.TURNABALIGI,
-                            xi.item.CAVE_CHERAX,
-                            xi.item.TRICORN,
-                        },
-                    }
-
-                    return player:startEvent(unpack(csTier[tier]))
+                    return zaldonOnTrigger(player, npc)
                 end,
             },
 
             onEventFinish =
             {
                 [166] = function(player, csid, option, npc)
-                    giveReward(player, csid)
+                    giveReward(player)
+
+                    quest:complete(player)
                 end,
 
                 [167] = function(player, csid, option, npc)
-                    giveReward(player, csid)
+                    giveReward(player)
+
+                    quest:complete(player)
+                end,
+            },
+        },
+    },
+
+    {
+        check = function(player, status, vars)
+            return status == xi.questStatus.QUEST_COMPLETED and
+                xi.settings.map.FISHING_ENABLE == true
+        end,
+
+        [xi.zone.SELBINA] =
+        {
+            ['Zaldon'] =
+            {
+                onTrade = function(player, npc, trade)
+                    return zaldonOnTrade(player, npc, trade)
+                end,
+
+                onTrigger = function(player, npc)
+                    return zaldonOnTrigger(player, npc)
+                end,
+            },
+
+            onEventFinish =
+            {
+                [166] = function(player, csid, option, npc)
+                    giveReward(player)
+                end,
+
+                [167] = function(player, csid, option, npc)
+                    giveReward(player)
                 end,
             },
         },
