@@ -40,7 +40,7 @@
 
 namespace
 {
-    enum TRUST_MOVEMENT_TYPE
+    enum TRUST_MOVEMENT_TYPE : int8
     {
         // NOTE: If you need to add special movement types, add descending into the minus values.
         //     : All of the positive values are taken for the ranged movement range.
