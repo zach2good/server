@@ -49,7 +49,7 @@ Application::Application(std::string const& serverName, int argc, char** argv)
     catch (const std::runtime_error& err)
     {
         std::cerr << err.what() << "\n";
-        std::cerr << *gArgParser << "\n";;
+        std::cerr << *gArgParser << "\n";
         std::exit(1);
     }
 
