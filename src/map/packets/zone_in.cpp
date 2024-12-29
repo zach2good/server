@@ -54,7 +54,7 @@ struct GP_SERV_POS_HEAD
 };
 
 // PS2: SAVE_LOGIN_STATE
-enum class SAVE_LOGIN_STATE : uint32_t
+enum class SAVE_LOGIN_STATE : uint8 // Originally uint32_t, but changed to uint8 to appease Clang
 {
     SAVE_LOGIN_STATE_NONE           = 0,
     SAVE_LOGIN_STATE_MYROOM         = 1,
