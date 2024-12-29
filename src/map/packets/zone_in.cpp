@@ -1,4 +1,4 @@
-﻿/*
+/*
 ===========================================================================
 
   Copyright (c) 2010-2015 Darkstar Dev Teams
@@ -246,7 +246,7 @@ CZoneInPacket::CZoneInPacket(CCharEntity* PChar, const EventInfo* currentEvent)
 
     // 0x1A = Target Index
 
-    ref<uint8>(0x1C) = PChar->GetSpeed();
+    ref<uint8>(0x1C) = PChar->UpdateSpeed();
     ref<uint8>(0x1D) = PChar->speedsub;
     ref<uint8>(0x1E) = PChar->GetHPP();
     ref<uint8>(0x1F) = PChar->animation;
