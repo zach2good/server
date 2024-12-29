@@ -64,4 +64,20 @@ end
 zoneObject.onEventFinish = function(player, csid, option, npc)
 end
 
+zoneObject.onZoneWeatherChange = function(weather)
+    -- NM Bayawak only spawns during fire weather
+    local bayawak = GetMobByID(ID.mob.BAYAWAK)
+
+    if bayawak and (weather == xi.weather.HOT_SPELL or weather == xi.weather.HEAT_WAVE) then
+        DisallowRespawn(bayawak:getID(), false)
+
+        -- Spawn if respawn is up
+        if os.time() > bayawak:getLocalVar("respawn") then
+            SpawnMob(bayawak:getID())
+        end
+    elseif bayawak then
+        DisallowRespawn(bayawak:getID(), true)
+    end
+end
+
 return zoneObject
