@@ -355,7 +355,7 @@ uint8 CBattleEntity::UpdateSpeed(bool run)
     // Set cap if a PC (Default 80).
     if (objtype == TYPE_PC)
     {
-        outputSpeed = std::clamp<int16>(outputSpeed, 0, 80 + settings::get<int8>("map.SPEED_MOD"));
+        outputSpeed = std::clamp<int16>(outputSpeed, 0, 80);
     }
 
     // Speed cap can be bypassed. Ex. Feast of swords. GM speed.
