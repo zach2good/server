@@ -73,7 +73,20 @@ set{
     -- xi.zone.KAMIHR_DRIFTS,
 }
 
-local crystalTable =
+local elementalOreZoneTable =
+set{
+    xi.zone.LA_THEINE_PLATEAU,
+    xi.zone.JUGNER_FOREST,
+    xi.zone.BATALLIA_DOWNS,
+    xi.zone.KONSCHTAT_HIGHLANDS,
+    xi.zone.PASHHOW_MARSHLANDS,
+    xi.zone.ROLANBERRY_FIELDS,
+    xi.zone.TAHRONGI_CANYON,
+    xi.zone.MERIPHATAUD_MOUNTAINS,
+    xi.zone.SAUROMUGUE_CHAMPAIGN,
+}
+
+local diggingWeatherTable =
 {
     -- Single weather by elemental order.
     [xi.weather.HOT_SPELL    ] = { xi.item.FIRE_CRYSTAL      },
@@ -96,29 +109,17 @@ local crystalTable =
     [xi.weather.DARKNESS     ] = { xi.item.DARK_CLUSTER      },
 }
 
--- local elementalOreTable =
--- {
---     [xi.day.FIRESDAY    ] = xi.item.CHUNK_OF_FIRE_ORE,
---     [xi.day.ICEDAY      ] = xi.item.CHUNK_OF_ICE_ORE,
---     [xi.day.WINDSDAY    ] = xi.item.CHUNK_OF_WIND_ORE,
---     [xi.day.EARTHSDAY   ] = xi.item.CHUNK_OF_EARTH_ORE,
---     [xi.day.LIGHTNINGDAY] = xi.item.CHUNK_OF_LIGHTNING_ORE,
---     [xi.day.WATERSDAY   ] = xi.item.CHUNK_OF_WATER_ORE,
---     [xi.day.LIGHTSDAY   ] = xi.item.CHUNK_OF_LIGHT_ORE,
---     [xi.day.DARKSDAY    ] = xi.item.CHUNK_OF_DARK_ORE,
--- }
-
--- local coloredRockTable =
--- {
---     [xi.day.FIRESDAY    ] = xi.item.RED_ROCK,
---     [xi.day.ICEDAY      ] = xi.item.TRANSLUCENT_ROCK,
---     [xi.day.WINDSDAY    ] = xi.item.GREEN_ROCK,
---     [xi.day.EARTHSDAY   ] = xi.item.YELLOW_ROCK,
---     [xi.day.LIGHTNINGDAY] = xi.item.PURPLE_ROCK,
---     [xi.day.WATERSDAY   ] = xi.item.BLUE_ROCK,
---     [xi.day.LIGHTSDAY   ] = xi.item.WHITE_ROCK,
---     [xi.day.DARKSDAY    ] = xi.item.BLACK_ROCK,
--- }
+local diggingDayTable =
+{
+    [xi.day.FIRESDAY    ] = { xi.item.RED_ROCK,         xi.item.CHUNK_OF_FIRE_ORE      },
+    [xi.day.ICEDAY      ] = { xi.item.TRANSLUCENT_ROCK, xi.item.CHUNK_OF_ICE_ORE       },
+    [xi.day.WINDSDAY    ] = { xi.item.GREEN_ROCK,       xi.item.CHUNK_OF_WIND_ORE      },
+    [xi.day.EARTHSDAY   ] = { xi.item.YELLOW_ROCK,      xi.item.CHUNK_OF_EARTH_ORE     },
+    [xi.day.LIGHTNINGDAY] = { xi.item.PURPLE_ROCK,      xi.item.CHUNK_OF_LIGHTNING_ORE },
+    [xi.day.WATERSDAY   ] = { xi.item.BLUE_ROCK,        xi.item.CHUNK_OF_WATER_ORE     },
+    [xi.day.LIGHTSDAY   ] = { xi.item.WHITE_ROCK,       xi.item.CHUNK_OF_LIGHT_ORE     },
+    [xi.day.DARKSDAY    ] = { xi.item.BLACK_ROCK,       xi.item.CHUNK_OF_DARK_ORE      },
+}
 
 -----------------------------------
 -- Table for common items without special conditions. [Zone ID] = { itemId, weight, dig requirement }
@@ -2155,7 +2156,16 @@ local function calculateSkillUp(player)
 end
 
 local function  handleDiggingLayer(player, zoneId, currentLayer)
-    local digTable       = digInfo[zoneId][currentLayer]
+    local digTable = digInfo[zoneId][currentLayer]
+
+    -- Early return.
+    if
+        not digTable or
+        #digTable <= 0
+    then
+        return 0
+    end
+
     local dTableItemIds  = {}
     local rewardItem     = 0
     local rollMultiplier = 1 -- Determined by moon and certain gear. Higher = WORSE
@@ -2170,30 +2180,49 @@ local function  handleDiggingLayer(player, zoneId, currentLayer)
     -- TODO: Implement pants that lower common item chance and raise rare item chance.
 
     -- Add valid items to dynamic table
-    if #digTable > 0 then
-        local playerRank = player:getSkillRank(xi.skill.DIG)
-        local itemEntry  = 0
-        local randomRoll = 1000
+    local playerRank = player:getSkillRank(xi.skill.DIG)
+    local randomRoll = 1000
 
-        for i = 1, #digTable do
-            randomRoll = utils.clamp(math.floor(math.random(1, 1000) * rollMultiplier), 1, 1000)
+    for i = 1, #digTable do
+        randomRoll = utils.clamp(math.floor(math.random(1, 1000) * rollMultiplier), 1, 1000)
 
-            if
-                randomRoll <= digTable[i][2] and -- Roll check
-                playerRank >= digTable[i][3]     -- Rank check
-            then
-                itemEntry = #dTableItemIds + 1 -- Calculate entry in dynamic table
-
-                table.insert(dTableItemIds, itemEntry, digTable[i][1]) -- Insert item ID to table.
-            end
+        if
+            randomRoll <= digTable[i][2] and -- Roll check
+            playerRank >= digTable[i][3]     -- Rank check
+        then
+            table.insert(dTableItemIds, #dTableItemIds + 1, digTable[i][1]) -- Insert item ID to table.
         end
     end
 
     -- Add weather crystals and ores to regular layer only.
     if currentLayer == diggingLayer.REGULAR then
-        -- local weather = player:getWeather()
+        local weather            = player:getWeather()
+        local currentDay         = VanadielDayOfTheWeek()
+        local isElementalOreZone = elementalOreZoneTable[player:getZoneID()] or false
 
-        -- TODO: Add logic for Elemental Ores, Weather crystals and day geodes.
+        -- Crystals and Clusters.
+        if diggingWeatherTable[weather] then
+            table.insert(dTableItemIds, #dTableItemIds + 1, diggingWeatherTable[weather][1]) -- Insert item ID to table.
+        end
+
+        -- Geodes / Colored Rocks.
+        if
+            diggingDayTable[currentDay] and
+            playerRank >= xi.craftRank.NOVICE
+        then
+            table.insert(dTableItemIds, #dTableItemIds + 1, diggingDayTable[currentDay][1]) -- Insert item ID to table.
+        end
+
+        -- Elemenal Ores.
+        if
+            diggingDayTable[currentDay] and
+            playerRank >= xi.craftRank.CRAFTSMAN and
+            isElementalOreZone and
+            weather ~= xi.weather.NONE and
+            moon >= 7 and moon <= 21
+        then
+            table.insert(dTableItemIds, #dTableItemIds + 1, diggingDayTable[currentDay][2]) -- Insert item ID to table.
+        end
     end
 
     -- Choose a random entry from the valid item table.
