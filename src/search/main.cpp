@@ -26,12 +26,5 @@ std::atomic<bool> gRunFlag = true;
 int main(int argc, char** argv)
 {
     auto pSearchServer = std::make_unique<SearchServer>(argc, argv);
-
-    // TODO: We don't need this
-    while (pSearchServer->IsRunning())
-    {
-        pSearchServer->Tick();
-    }
-
     return 0;
 }

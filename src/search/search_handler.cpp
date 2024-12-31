@@ -33,10 +33,10 @@
 #include "packets/search_comment.h"
 #include "packets/search_list.h"
 
-search_handler::search_handler(asio::ip::tcp::socket socket, asio::io_context& io_context, shared_guarded<std::unordered_set<std::string>>& in_IPAddressInUseList, shared_guarded<std::unordered_set<std::string>>& in_IPAddressWhitelist)
+search_handler::search_handler(asio::ip::tcp::socket socket, asio::io_context& io_context, shared_guarded<std::unordered_set<std::string>>& IPAddressInUseList, shared_guarded<std::unordered_set<std::string>>& IPAddressWhitelist)
 : socket_(std::move(socket))
-, IPAddressesInUse_(in_IPAddressInUseList)
-, IPAddressWhitelist_(in_IPAddressWhitelist)
+, IPAddressesInUse_(IPAddressInUseList)
+, IPAddressWhitelist_(IPAddressWhitelist)
 , timer(io_context)
 {
     asio::error_code ec = {};
@@ -267,7 +267,7 @@ void search_handler::read_func(uint16_t length)
     }
 }
 
-void search_handler::handle_error(std::error_code ec, const std::shared_ptr<search_handler>& self)
+void search_handler::handle_error(std::error_code ec, std::shared_ptr<search_handler> self)
 {
     std::ignore = ec;
     std::ignore = self;

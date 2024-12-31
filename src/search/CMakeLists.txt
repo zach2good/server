@@ -6,11 +6,11 @@ set(SOURCES
     data_loader.cpp
     data_loader.h
     handler.h
-        search_handler.h
-        search_handler.cpp
+    main.cpp
+    search_handler.h
+    search_handler.cpp
     search_server.h
     search_server.cpp
-    main.cpp
 )
 
 # Temporarily remove clashing old code

@@ -26,51 +26,36 @@
 
 #include "search_handler.h"
 
-template <typename T>
 class handler
 {
 public:
-    handler(asio::io_context& io_context, unsigned int port, shared_guarded<std::unordered_set<std::string>>& in_IPAddressInUseList, shared_guarded<std::unordered_set<std::string>>& in_IPAddressWhitelist)
+    handler(asio::io_context& io_context, unsigned int port, std::function<void(asio::ip::tcp::socket&&)> acceptFn)
     : acceptor_(io_context, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port))
-    , io_context_(io_context)
-    , IPAddressInUseList_(in_IPAddressInUseList)
-    , IPAddressWhitelist_(in_IPAddressWhitelist)
     {
         acceptor_.set_option(asio::socket_base::reuse_address(true));
-
-        do_accept();
+        do_accept(acceptFn);
     }
 
 private:
-    void do_accept()
+    void do_accept(std::function<void(asio::ip::tcp::socket&&)> acceptFn)
     {
         // clang-format off
         acceptor_.async_accept(
-        [this](std::error_code ec, asio::ip::tcp::socket socket)
+        [this, acceptFn](std::error_code ec, asio::ip::tcp::socket socket)
         {
             if (!ec)
             {
-                if constexpr (std::is_same_v<T, search_handler>)
-                {
-                    auto auth_handler = std::make_shared<T>(std::move(socket), io_context_, IPAddressInUseList_, IPAddressWhitelist_);
-                    auth_handler->start();
-                }
+                acceptFn(std::move(socket));
             }
             else
             {
                 ShowError(ec.message());
             }
 
-            do_accept();
+            do_accept(acceptFn);
         });
         // clang-format on
     }
 
     asio::ip::tcp::acceptor acceptor_;
-
-    asio::io_context& io_context_; // Handed off to the handler for timers
-
-    // Handed off to the handler for shared state
-    shared_guarded<std::unordered_set<std::string>>& IPAddressInUseList_;
-    shared_guarded<std::unordered_set<std::string>>& IPAddressWhitelist_;
 };

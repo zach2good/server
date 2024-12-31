@@ -78,8 +78,10 @@ SearchServer::SearchServer(int argc, char** argv)
     {
         ShowInfo("creating ports");
 
-        // Handler creates session of type T for specific port on connection.
-        handler<search_handler> search(io_context, settings::get<uint32>("network.SEARCH_PORT"), IPAddressWhitelist_, IPAddressesInUse_);
+        const auto search_handler_handler = handler(io_context, settings::get<uint32>("network.SEARCH_PORT"), [&](asio::ip::tcp::socket socket) {
+            const auto handler = std::make_shared<search_handler>(std::move(socket), io_context, IPAddressesInUse_, IPAddressWhitelist_);
+            handler->start();
+        });
 
         // AH cleanup callback. May not be used if settings doesn't enable it.
         asio::steady_timer cleanup_callback(io_context, std::chrono::seconds(settings::get<uint32>("search.EXPIRE_INTERVAL")));
@@ -97,13 +99,14 @@ SearchServer::SearchServer(int argc, char** argv)
         for (auto const& [_, value] : accessWhitelist)
         {
             // clang-format off
-        auto str = value.as<std::string>();
-        IPAddressWhitelist_.write([str](auto& ipWhitelist)
-        {
-            ipWhitelist.insert(str);
-        });
+            auto str = value.as<std::string>();
+            IPAddressWhitelist_.write([str](auto& ipWhitelist)
+            {
+                ipWhitelist.insert(str);
+            });
             // clang-format on
         }
+
         // NOTE: io_context.run() takes over and blocks this thread. Anything after this point will only fire
         // if io_context finishes!
         ShowInfo("starting io_context");
