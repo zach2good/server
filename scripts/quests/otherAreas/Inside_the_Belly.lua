@@ -101,7 +101,7 @@ local fishRewards =
         gil = 150,
         items =
         {
-            { chance = 50, itemId = xi.item.PINCH_OF_POISON_DUST, min = 1, max = 6 }, -- guessing 10%. Wiki unknown
+            { chance = 10, itemId = xi.item.PINCH_OF_POISON_DUST, min = 1, max = 6 }, -- guessing 10%. Wiki unknown
         }
     },
 
@@ -539,6 +539,8 @@ local function giveReward(player)
         if rewardItem.min ~= nil and rewardItem.max ~= nil then
             itemQt = math.random(rewardItem.min, rewardItem.max)
         end
+
+        npcUtil.giveItem(player, { { itemId, itemQt } })
     end
 
     npcUtil.giveCurrency(player, 'gil', reward.gil)
@@ -551,9 +553,14 @@ local function giveReward(player)
 end
 
 local function zaldonOnTrade(player, npc, trade)
-    for fish, _ in pairs(fishRewards) do
-        if npcUtil.tradeHas(trade, fish) then
-            return tradeFish(player, fish)
+    for itemSlot = 0, trade:getSlotCount() - 1 do
+        local itemId = trade:getItemId(itemSlot)
+
+        if
+            fishRewards[itemId] ~= nil and
+            npcUtil.tradeHasExactly(trade, itemId)
+        then
+            return tradeFish(player, itemId)
         end
     end
 end
