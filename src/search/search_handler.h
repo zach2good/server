@@ -54,7 +54,7 @@ public:
 
     void do_read();
 
-    void handle_error(std::error_code ec, const std::shared_ptr<search_handler>& self);
+    void handle_error(std::error_code ec, std::shared_ptr<search_handler> self);
 
     void do_write(uint16_t length);
 
@@ -71,8 +71,13 @@ public:
     uint8_t data_[max_length] = {};
 
     // Blowfish key
-    uint8 key[24] = { 0x30, 0x73, 0x3D, 0x6D, 0x3C, 0x31, 0x49, 0x5A, 0x32, 0x7A, 0x42, 0x43,
-                       0x63, 0x38, 0x7B, 0x7E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+    // clang-format off
+    uint8 key[24] = {
+        0x30, 0x73, 0x3D, 0x6D, 0x3C, 0x31, 0x49, 0x5A, 0x32, 0x7A, 0x42, 0x43,
+        0x63, 0x38, 0x7B, 0x7E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    };
+    // clang-format on
+
 private:
     // A single IP should only have one request in flight at a time, so we are going to
     // be tracking the IP addresses of incoming requests and if we haven't cleared the
@@ -98,7 +103,8 @@ private:
     void HandleSearchComment();
     void HandleAuctionHouseRequest();
     void HandleAuctionHouseHistory();
-    search_req _HandleSearchRequest();
+
+    auto _HandleSearchRequest() -> search_req;
 
     blowfish_t blowfish;
 };
