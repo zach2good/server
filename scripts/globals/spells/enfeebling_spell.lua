@@ -462,6 +462,12 @@ xi.spells.enfeebling.useEnfeeblingSpell = function(caster, target, spell)
     elseif spellEffect == xi.effect.ADDLE then
         subpotency = 20 + utils.clamp(math.floor((caster:getStat(statUsed) - target:getStat(statUsed)) / 5), 0, 20)
 
+    -- Break: Player petrification sucks.
+    elseif spellEffect == xi.effect.PETRIFICATION then
+        if caster:isPC() then
+            subpotency = 1
+        end
+
     -- Dispel: It's special in that it has no real effect.
     elseif spellEffect == xi.effect.NONE then
         spellEffect = target:dispelStatusEffect()
