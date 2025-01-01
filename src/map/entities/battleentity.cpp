@@ -1,4 +1,4 @@
-/*
+﻿/*
 ===========================================================================
 
   Copyright (c) 2010-2015 Darkstar Dev Teams
@@ -940,7 +940,7 @@ uint16 CBattleEntity::RACC(uint8 skill, uint16 bonusSkill)
     return std::max(0, RACC + std::min<int16>(((100 + getMod(Mod::FOOD_RACCP) * RACC) / 100), getMod(Mod::FOOD_RACC_CAP)));
 }
 
-uint16 CBattleEntity::ACC(uint8 attackNumber, uint8 offsetAccuracy)
+uint16 CBattleEntity::ACC(uint8 attackNumber, uint16 offsetAccuracy)
 {
     TracyZoneScoped;
 
@@ -991,7 +991,7 @@ uint16 CBattleEntity::ACC(uint8 attackNumber, uint8 offsetAccuracy)
             }
             skill = SKILL_HAND_TO_HAND;
         }
-        int16 ACC = GetSkill(skill) + iLvlSkill;
+        int32 ACC = GetSkill(skill) + iLvlSkill;
         ACC       = (ACC > 200 ? (int16)(((ACC - 200) * 0.9) + 200) : ACC);
         if (auto* weapon = dynamic_cast<CItemWeapon*>(m_Weapons[SLOT_MAIN]); weapon && weapon->isTwoHanded())
         {
@@ -1020,7 +1020,7 @@ uint16 CBattleEntity::ACC(uint8 attackNumber, uint8 offsetAccuracy)
     }
     else if (this->objtype == TYPE_PET && ((CPetEntity*)this)->getPetType() == PET_TYPE::AUTOMATON)
     {
-        int16 ACC = this->GetSkill(SKILL_AUTOMATON_MELEE);
+        int32 ACC = this->GetSkill(SKILL_AUTOMATON_MELEE);
         ACC       = (ACC > 200 ? (int16)(((ACC - 200) * 0.9) + 200) : ACC);
         ACC += (int16)(DEX() * 0.5);
         ACC += m_modStat[Mod::ACC] + offsetAccuracy;
@@ -1035,7 +1035,7 @@ uint16 CBattleEntity::ACC(uint8 attackNumber, uint8 offsetAccuracy)
     }
     else
     {
-        int16 ACC = m_modStat[Mod::ACC];
+        int32 ACC = m_modStat[Mod::ACC] + offsetAccuracy;
 
         if (this->StatusEffectContainer->HasStatusEffect(EFFECT_ENLIGHT))
         {
