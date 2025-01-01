@@ -187,9 +187,6 @@ void auth_session::read_func()
             }();
             // clang-format on
 
-            // OLD PASSWORD HASH MIGRATION
-            static_assert(currentYear() <= 2024, "Migration period for old password hashes has expired. Please simplify this code after 2024-12-31 or open an issue upstream to do so.");
-
             if (isBcryptHash(passHash))
             {
                 // It's a BCrypt hash, so we can validate it.
@@ -413,9 +410,6 @@ void auth_session::read_func()
                 return "";
             }();
             // clang-format on
-
-            // OLD PASSWORD HASH MIGRATION
-            static_assert(currentYear() <= 2024, "Migration period for old password hashes has expired. Please simplify this code after 2024-12-31 or open an issue upstream to do so.");
 
             if (isBcryptHash(passHash))
             {
