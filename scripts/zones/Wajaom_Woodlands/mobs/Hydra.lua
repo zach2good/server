@@ -20,11 +20,12 @@ entity.onMobFight = function(mob, target)
 
     local drawInPositions =
     {
-        {-279.879, -24, -1.103, targetPos.rot},
-        {-268.899, -23.5, -11.148, targetPos.rot},
-        {-279.844, -23.75, -11.462, targetPos.rot},
-        {-268.952, -23.75, -0.583, targetPos.rot},
+        { -279.879,    -24,  -1.103, targetPos.rot },
+        { -268.899,  -23.5, -11.148, targetPos.rot },
+        { -279.844, -23.75, -11.462, targetPos.rot },
+        { -268.952, -23.75,  -0.583, targetPos.rot },
     }
+
     local drawInTable =
     {
         conditions =
@@ -34,6 +35,7 @@ entity.onMobFight = function(mob, target)
         position = utils.randomEntry(drawInPositions),
         wait = 2,
     }
+
     for _, condition in ipairs(drawInTable.conditions) do
         if condition then
             mob:setMobMod(xi.mobMod.NO_MOVE, 1)
@@ -43,6 +45,7 @@ entity.onMobFight = function(mob, target)
             mob:setMobMod(xi.mobMod.NO_MOVE, 0)
         end
     end
+
     local battletime = mob:getBattleTime()
     local headgrow = mob:getLocalVar('headgrow')
     local broken = mob:getAnimationSub()
