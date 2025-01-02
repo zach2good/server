@@ -13760,7 +13760,7 @@ bool CLuaBaseEntity::addCorsairRoll(uint8 casterJob, uint8 bustDuration, uint16 
 
 bool CLuaBaseEntity::hasCorsairEffect()
 {
-    if (auto* PEntity = static_cast<CBattleEntity*>(m_PBaseEntity))
+    if (auto* PEntity = dynamic_cast<CBattleEntity*>(m_PBaseEntity))
     {
         return PEntity->StatusEffectContainer->HasCorsairEffect(PEntity->id);
     }
