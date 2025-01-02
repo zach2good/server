@@ -11008,7 +11008,8 @@ INSERT INTO `mob_droplist` VALUES (1347,0,0,1000,4105,@COMMON); -- Ice Cluster (
 INSERT INTO `mob_droplist` VALUES (1348,0,0,1000,16511,@ALWAYS); -- Burnite Shell Stone (Always, 100%)
 INSERT INTO `mob_droplist` VALUES (1348,0,0,1000,637,@UNCOMMON); -- Vial Of Slime Oil (Uncommon, 10%)
 
--- 1349: Free to use
+-- ZoneID: 123 - Bayawak
+INSERT INTO `mob_droplist` VALUES (1349,0,0,1000,19237,@VCOMMON); -- Slick Dart (Very Common, 24%)
 
 -- ZoneID:  16 - Idle Wanderer
 -- ZoneID:  20 - Idle Wanderer
@@ -13232,12 +13233,12 @@ INSERT INTO `mob_droplist` VALUES (1664,0,0,1000,17947,@VCOMMON); -- Garde Pick 
 INSERT INTO `mob_droplist` VALUES (1664,2,0,1000,656,0);          -- Beastcoin (Steal)
 
 -- ZoneID:  92 - Meteor Quadav
+-- ZoneID: 155 - Meteor Quadav
 INSERT INTO `mob_droplist` VALUES (1665,0,0,1000,2531,@UNCOMMON); -- Shard Of Obsidian (Uncommon, 10%)
 INSERT INTO `mob_droplist` VALUES (1665,0,0,1000,2564,0);         -- Jar Of Peiste Pellets (0.0%)
 
 -- ZoneID: 123 - Meww The Turtlerider
--- ZoneID: 155 - Meteor Quadav
-INSERT INTO `mob_droplist` VALUES (1666,0,0,1000,17843,400); -- Oliphant (40.0%)
+INSERT INTO `mob_droplist` VALUES (1666,0,0,1000,17843,@VCOMMON); -- Oliphant (Very Common, 24%)
 
 -- ZoneID: 110 - Midnight Wings
 INSERT INTO `mob_droplist` VALUES (1667,0,0,1000,922,390); -- Bat Wing (39.0%)
@@ -13415,16 +13416,16 @@ INSERT INTO `mob_droplist` VALUES (1699,0,0,1000,1025,60);   -- Palborough Chest
 INSERT INTO `mob_droplist` VALUES (1699,0,0,1000,896,20);    -- Scorpion Shell (2.0%)
 
 -- ZoneID: 123 - Mischievous Micholas
-INSERT INTO `mob_droplist` VALUES (1700,0,0,1000,4468,110);        -- Bunch Of Pamamas (11.0%)
-INSERT INTO `mob_droplist` VALUES (1700,0,0,1000,17296,@UNCOMMON); -- Pebble (Uncommon, 10%)
-INSERT INTO `mob_droplist` VALUES (1700,0,0,1000,17618,@UNCOMMON); -- Kidney Dagger (Uncommon, 10%)
-INSERT INTO `mob_droplist` VALUES (1700,0,0,1000,4432,80);         -- Kazham Pineapple (8.0%)
-INSERT INTO `mob_droplist` VALUES (1700,0,0,1000,4468,60);         -- Bunch Of Pamamas (6.0%)
-INSERT INTO `mob_droplist` VALUES (1700,0,0,1000,4432,40);         -- Kazham Pineapple (4.0%)
-INSERT INTO `mob_droplist` VALUES (1700,0,0,1000,4468,40);         -- Bunch Of Pamamas (4.0%)
-INSERT INTO `mob_droplist` VALUES (1700,0,0,1000,4596,30);         -- Bunch Of Wild Pamamas (3.0%)
-INSERT INTO `mob_droplist` VALUES (1700,0,0,1000,4412,20);         -- Thundermelon (2.0%)
-INSERT INTO `mob_droplist` VALUES (1700,2,0,1000,4468,0);          -- Bunch Of Pamamas (Steal)
+INSERT INTO `mob_droplist` VALUES (1700,0,0,1000,4468,@ALWAYS);  -- Bunch Of Pamamas (Always, 100%)
+INSERT INTO `mob_droplist` VALUES (1700,0,0,1000,4412,@VCOMMON); -- Thundermelon (Very Common, 24%)
+INSERT INTO `mob_droplist` VALUES (1700,0,0,1000,4468,@VCOMMON); -- Bunch Of Pamamas (Very Common, 24%)
+INSERT INTO `mob_droplist` VALUES (1700,0,0,1000,4468,@VCOMMON); -- Bunch Of Pamamas (Very Common, 24%)
+INSERT INTO `mob_droplist` VALUES (1700,0,0,1000,4432,@VCOMMON); -- Kazham Pineapple (Very Common, 24%)
+INSERT INTO `mob_droplist` VALUES (1700,0,0,1000,4432,@VCOMMON); -- Kazham Pineapple (Very Common, 24%)
+INSERT INTO `mob_droplist` VALUES (1700,0,0,1000,4596,@COMMON);  -- Bunch Of Wild Pamamas (Common, 15%)
+INSERT INTO `mob_droplist` VALUES (1700,0,0,1000,17296,@COMMON); -- Pebble (Common, 15%)
+INSERT INTO `mob_droplist` VALUES (1700,0,0,1000,17618,@RARE);   -- Kidney Dagger (Rare, 5%)
+INSERT INTO `mob_droplist` VALUES (1700,2,0,1000,4468,0);        -- Bunch Of Pamamas (Steal)
 
 -- ZoneID: 204 - Miser Murphy
 INSERT INTO `mob_droplist` VALUES (1701,0,0,1000,1093,@ALWAYS); -- Antique Coin (Always, 100%)
@@ -16911,10 +16912,11 @@ INSERT INTO `mob_droplist` VALUES (2122,0,0,1000,2640,80); -- Murex Spicule (8.0
 INSERT INTO `mob_droplist` VALUES (2122,0,0,1000,2888,30); -- Sanguinet (3.0%)
 
 -- ZoneID: 123 - Rose Garden
-INSERT INTO `mob_droplist` VALUES (2123,0,0,1000,920,560);   -- Malboro Vine (56.0%)
-INSERT INTO `mob_droplist` VALUES (2123,0,0,1000,15547,120); -- Vilmas Ring (12.0%)
-INSERT INTO `mob_droplist` VALUES (2123,0,0,1000,4598,60);   -- Wild Pineapple (6.0%)
-INSERT INTO `mob_droplist` VALUES (2123,0,0,1000,1446,40);   -- Lacquer Tree Log (4.0%)
+INSERT INTO `mob_droplist` VALUES (2123,0,0,1000,920,@COMMON);     -- Malboro Vine (Common, 15%)
+INSERT INTO `mob_droplist` VALUES (2123,0,0,1000,920,@COMMON);     -- Malboro Vine (Common, 15%)
+INSERT INTO `mob_droplist` VALUES (2123,0,0,1000,15547,@UNCOMMON); -- Vilmas Ring (Uncommon, 10%)
+INSERT INTO `mob_droplist` VALUES (2123,0,0,1000,4598,@RARE);      -- Wild Pineapple (Rare, 5%)
+INSERT INTO `mob_droplist` VALUES (2123,0,0,1000,1446,@RARE);      -- Lacquer Tree Log (Rare, 5%)
 
 -- ZoneID: 169 - Rotten Sod
 INSERT INTO `mob_droplist` VALUES (2124,0,0,1000,940,350); -- Revival Tree Root (35.0%)
@@ -21251,10 +21253,11 @@ INSERT INTO `mob_droplist` VALUES (2588,0,0,1000,4484,80);         -- Shall Shel
 INSERT INTO `mob_droplist` VALUES (2588,2,0,1000,748,0);           -- Gold Beastcoin (Steal)
 
 -- ZoneID: 123 - Voluptuous Vilma
-INSERT INTO `mob_droplist` VALUES (2589,0,0,1000,920,650);   -- Malboro Vine (65.0%)
-INSERT INTO `mob_droplist` VALUES (2589,0,0,1000,15547,450); -- Vilmas Ring (45.0%)
-INSERT INTO `mob_droplist` VALUES (2589,0,0,1000,4598,80);   -- Wild Pineapple (8.0%)
-INSERT INTO `mob_droplist` VALUES (2589,0,0,1000,1446,30);   -- Lacquer Tree Log (3.0%)
+INSERT INTO `mob_droplist` VALUES (2589,0,0,1000,15547,@VCOMMON); -- Vilmas Ring (Very Common, 24%)
+INSERT INTO `mob_droplist` VALUES (2589,0,0,1000,920,@COMMON);    -- Malboro Vine (Common, 15%)
+INSERT INTO `mob_droplist` VALUES (2589,0,0,1000,920,@COMMON);    -- Malboro Vine (Common, 15%)
+INSERT INTO `mob_droplist` VALUES (2589,0,0,1000,4598,@RARE);     -- Wild Pineapple (Rare, 5%)
+INSERT INTO `mob_droplist` VALUES (2589,0,0,1000,1446,@RARE);     -- Lacquer Tree Log (Rare, 5%)
 
 -- ZoneID:  96 - Vorpal Bunny
 INSERT INTO `mob_droplist` VALUES (2590,0,0,1000,4358,@VCOMMON); -- Slice Of Hare Meat (Very Common, 24%)
@@ -24290,7 +24293,7 @@ INSERT INTO `mob_droplist` VALUES (2997,0,0,1000,2851,@VCOMMON); -- Bukktooth (V
 INSERT INTO `mob_droplist` VALUES (2998,0,0,1000,11339,340); -- Channeling Robe (34.0%)
 
 -- ZoneID: 123 - Koropokkur
-INSERT INTO `mob_droplist` VALUES (2999,0,0,1000,11338,111); -- Aegas Doublet (11.1%)
+INSERT INTO `mob_droplist` VALUES (2999,0,0,1000,11338,@UNCOMMON); -- Aegas Doublet (Uncommon, 10%)
 
 -- ZoneID: 115 - Numbing Norman
 INSERT INTO `mob_droplist` VALUES (3000,0,0,1000,19305,@VCOMMON); -- Pike (Very Common, 24%)
