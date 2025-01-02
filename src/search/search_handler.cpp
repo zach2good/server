@@ -39,6 +39,8 @@ search_handler::search_handler(asio::ip::tcp::socket socket, asio::io_context& i
 , IPAddressWhitelist_(IPAddressWhitelist)
 , timer(io_context)
 {
+    DebugSockets(fmt::format("New connection from IP {}", socket_.lowest_layer().remote_endpoint().address().to_string()));
+
     asio::error_code ec = {};
     socket_.lowest_layer().set_option(asio::socket_base::reuse_address(true));
     ipAddress = socket_.lowest_layer().remote_endpoint(ec).address().to_string();
@@ -72,6 +74,7 @@ search_handler::search_handler(asio::ip::tcp::socket socket, asio::io_context& i
 
 search_handler::~search_handler()
 {
+    DebugSockets(fmt::format("Connection from IP {} closed", ipAddress));
     removeFromUsedIPAddresses(ipAddress);
 }
 
@@ -91,6 +94,7 @@ void search_handler::do_read()
     {
         if (!ec)
         {
+            DebugSockets(fmt::format("async_read_some: Received packet from IP {} ({} bytes)", ipAddress, length));
             read_func(length);
         }
         else
@@ -105,6 +109,7 @@ void search_handler::do_read()
 void search_handler::do_write(uint16_t length)
 {
     // clang-format off
+    DebugSockets(fmt::format("async_write: Sending packet to IP {} ({} bytes)", ipAddress, length));
     asio::async_write(socket_, asio::buffer(data_, length),
     [this, self = shared_from_this()](std::error_code ec, std::size_t /*length*/)
     {
@@ -122,6 +127,8 @@ void search_handler::do_write(uint16_t length)
 
 void search_handler::decrypt(uint16_t length)
 {
+    DebugSockets(fmt::format("Decrypting packet from IP {} ({} bytes)", ipAddress, length));
+
     // Get key from packet
     ref<uint32>(key, 16) = ref<uint32>(data_, length - 4);
 
@@ -143,6 +150,8 @@ void search_handler::decrypt(uint16_t length)
 
 void search_handler::encrypt(uint16_t length)
 {
+    DebugSockets(fmt::format("Encrypting packet for IP {} ({} bytes)", ipAddress, length));
+
     ref<uint16>(data_, 0x00) = length;     // packet size
     ref<uint32>(data_, 0x04) = 0x46465849; // "IXFF"
 
@@ -165,6 +174,8 @@ void search_handler::encrypt(uint16_t length)
 
 bool search_handler::validatePacket(uint16_t length)
 {
+    DebugSockets(fmt::format("Validating packet from IP {} ({} bytes)", ipAddress, length));
+
     // Check if packet is valid
     uint8 PacketHash[16]{};
 
@@ -282,7 +293,7 @@ void search_handler::handle_error(std::error_code ec, std::shared_ptr<search_han
 
 void DebugPrintPacket(char* data, uint16_t size)
 {
-    if (!settings::get<bool>("search.DEBUG_OUT_PACKETS"))
+    if (!settings::get<bool>("logging.DEBUG_PACKETS"))
     {
         return;
     }
@@ -802,6 +813,8 @@ search_req search_handler::_HandleSearchRequest()
 
 bool search_handler::isIPAddressInUse(std::string const& ipAddressStr)
 {
+    DebugSockets(fmt::format("Checking if IP is in use: {}", ipAddressStr).c_str());
+
     // clang-format off
     if (IPAddressWhitelist_.read([ipAddressStr](auto const& ipWhitelist)
     {
@@ -823,6 +836,8 @@ bool search_handler::isIPAddressInUse(std::string const& ipAddressStr)
 
 void search_handler::removeFromUsedIPAddresses(std::string const& ipAddressStr)
 {
+    DebugSockets(fmt::format("Removing IP from active set: {}", ipAddressStr).c_str());
+
     // clang-format off
     if (IPAddressWhitelist_.read([ipAddressStr](auto const& ipWhitelist)
     {
@@ -844,6 +859,8 @@ void search_handler::removeFromUsedIPAddresses(std::string const& ipAddressStr)
 
 void search_handler::addToUsedIPAddresses(std::string const& ipAddressStr)
 {
+    DebugSockets(fmt::format("Adding IP to active set: {}", ipAddressStr).c_str());
+
     // clang-format off
     if (IPAddressWhitelist_.read([ipAddressStr](auto const& ipWhitelist)
     {
