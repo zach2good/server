@@ -24,6 +24,7 @@
 #include "common/socket.h" // for ref<T>
 #include "common/utils.h"  // for unpack/pack bits
 #include "data_loader.h"
+#include <map>
 #include <unordered_set>
 
 #include "packets/auction_history.h"
@@ -33,40 +34,31 @@
 #include "packets/search_comment.h"
 #include "packets/search_list.h"
 
-search_handler::search_handler(asio::ip::tcp::socket socket, asio::io_context& io_context, shared_guarded<std::unordered_set<std::string>>& IPAddressInUseList, shared_guarded<std::unordered_set<std::string>>& IPAddressWhitelist)
+search_handler::search_handler(asio::ip::tcp::socket socket, asio::io_context& io_context, shared_guarded<std::map<std::string, uint16_t>>& IPAddressesInUseList, shared_guarded<std::unordered_set<std::string>>& IPAddressWhitelist)
 : socket_(std::move(socket))
-, IPAddressesInUse_(IPAddressInUseList)
+, IPAddressesInUse_(IPAddressesInUseList)
 , IPAddressWhitelist_(IPAddressWhitelist)
-, timer(io_context)
+, deadline_(io_context)
 {
     asio::error_code ec = {};
     socket_.lowest_layer().set_option(asio::socket_base::reuse_address(true));
     ipAddress = socket_.lowest_layer().remote_endpoint(ec).address().to_string();
 
-    // If someone from the same IP is making a request, block for 10 ms in this thread repeatedly until the request is done.
-    // TODO: do we need a better timeout to drop the request if data never comes from a DIFFERENT socket?
-    // Someone doing this maliciously would just lock themselves out...
-    uint32_t numWaits = 0;
-    while (isIPAddressInUse(ipAddress))
-    {
-        timer.expires_after(std::chrono::milliseconds(10));
-        timer.wait();
-        numWaits++;
-
-        if (numWaits > 1000) // 10 seconds
-        {
-            ShowError(fmt::format("Socket '{}' waited more than 10 seconds for IP address to not be in use, closing.", ipAddress));
-            socket_.lowest_layer().close();
-            return;
-        }
-    }
-
-    addToUsedIPAddresses(ipAddress);
-
     if (ec)
     {
         ipAddress = "error";
         socket_.lowest_layer().close();
+    }
+    else
+    {
+        addToUsedIPAddresses(ipAddress);
+
+        if (getNumSessionsInUse(ipAddress) > 5)
+        {
+            ShowError(fmt::format("More than 5 simultaneous connections from {}. Closing socket.", ipAddress));
+            socket_.lowest_layer().close();
+            return;
+        }
     }
 }
 
@@ -80,6 +72,9 @@ void search_handler::start()
     if (socket_.lowest_layer().is_open())
     {
         do_read();
+
+        deadline_.expires_after(std::chrono::milliseconds(2000));
+        deadline_.async_wait(std::bind(&search_handler::checkDeadline, this));
     }
 }
 
@@ -215,6 +210,7 @@ inline std::string searchTypeToString(uint8 type)
 
 void search_handler::read_func(uint16_t length)
 {
+    deadline_.cancel(); // If we read, don't abort the deadline in the future
     if (length != ref<uint16>(data_, 0x00) || length < 28)
     {
         ShowError("Search packetsize wrong. Size %d should be %d.", length, ref<uint16>(data_, 0x00));
@@ -800,7 +796,7 @@ search_req search_handler::_HandleSearchRequest()
     // For example: "/blacklist delete Name" and "/sea all Name"
 }
 
-bool search_handler::isIPAddressInUse(std::string const& ipAddressStr)
+uint16_t search_handler::getNumSessionsInUse(std::string const& ipAddressStr)
 {
     // clang-format off
     if (IPAddressWhitelist_.read([ipAddressStr](auto const& ipWhitelist)
@@ -808,15 +804,20 @@ bool search_handler::isIPAddressInUse(std::string const& ipAddressStr)
         return ipWhitelist.find(ipAddressStr) != ipWhitelist.end();
     }))
     {
-        return false;
+        return 0;
     }
     // clang-format on
 
     // ShowInfo(fmt::format("Checking if IP is in use: {}", ipAddressStr).c_str());
     // clang-format off
-    return IPAddressesInUse_.read([ipAddressStr](auto const& ipAddrsInUse)
+    return IPAddressesInUse_.read([ipAddressStr](auto const& ipAddrsInUse) -> uint16_t
     {
-        return ipAddrsInUse.find(ipAddressStr) != ipAddrsInUse.end();
+        if (ipAddrsInUse.find(ipAddressStr) != ipAddrsInUse.end())
+        {
+            return ipAddrsInUse.at(ipAddressStr);
+        }
+
+        return 0;
     });
     // clang-format on
 }
@@ -837,7 +838,20 @@ void search_handler::removeFromUsedIPAddresses(std::string const& ipAddressStr)
     // clang-format off
     IPAddressesInUse_.write([ipAddressStr](auto& ipAddrsInUse)
     {
-        ipAddrsInUse.erase(ipAddressStr);
+        if (ipAddrsInUse.find(ipAddressStr) != ipAddrsInUse.end())
+        {
+            ipAddrsInUse[ipAddressStr] -= 1;
+        }
+        else // Removing nothing, do nothing.
+        {
+            return;
+        }
+
+        // If we got here, check if we want to remove an IP from the map
+        if (ipAddrsInUse[ipAddressStr] <= 0)
+        {
+            ipAddrsInUse.erase(ipAddressStr);
+        }
     });
     // clang-format on
 }
@@ -858,7 +872,23 @@ void search_handler::addToUsedIPAddresses(std::string const& ipAddressStr)
     // clang-format off
     IPAddressesInUse_.write([ipAddressStr](auto& ipAddrsInUse)
     {
-        ipAddrsInUse.insert(ipAddressStr);
+        if (ipAddrsInUse.find(ipAddressStr) == ipAddrsInUse.end())
+        {
+            ipAddrsInUse[ipAddressStr] = 1;
+        }
+        else
+        {
+            ipAddrsInUse[ipAddressStr] += 1;
+        }
     });
     // clang-format on
+}
+
+void search_handler::checkDeadline()
+{
+    if (std::chrono::steady_clock::now()> deadline_.expiry())
+    {
+        DebugSockets(fmt::format("Socket timed out from {}", ipAddress));
+        socket_.cancel();
+    }
 }
