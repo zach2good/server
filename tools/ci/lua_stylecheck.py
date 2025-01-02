@@ -342,6 +342,13 @@ class LuaStyleCheck:
                     if position < len(parameter_list) and parameter_list[position].strip().isnumeric():
                         self.error(f"Magic Number is not allowed at this location ({position}).")
 
+    def check_random_bounds(self, line):
+        randString = re.search(r'math\.random\(([^()]*)\)', line)
+        if randString:
+            paramList = randString.group(0).split(',')
+            if len(paramList) != 2:
+                self.error(f"math.random() calls should have upper and lower bounds ({randString.group(0)}).")
+
     def run_style_check(self):
         if self.filename is None:
             print("ERROR: No filename provided to LuaStyleCheck class.")
@@ -408,6 +415,7 @@ class LuaStyleCheck:
                 self.check_no_newline_before_end(code_line)
                 self.check_no_function_decl_padding(code_line)
                 self.check_invalid_enum(code_line)
+                self.check_random_bounds(code_line)
 
                 # Keep track of ID variable assignments and if they are referenced.
                 # TODO: Track each unique variable, and expand this to potentially something
@@ -502,7 +510,7 @@ elif target == 'scripts':
         total_errors += LuaStyleCheck(filename).errcount
 elif target == 'test':
     total_errors = LuaStyleCheck('tools/ci/tests/stylecheck.lua', show_errors = False).errcount
-    expected_errors = 82
+    expected_errors = 85
 else:
     total_errors = LuaStyleCheck(target).errcount
 
