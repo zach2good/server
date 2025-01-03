@@ -415,7 +415,9 @@ class LuaStyleCheck:
                 self.check_no_newline_before_end(code_line)
                 self.check_no_function_decl_padding(code_line)
                 self.check_invalid_enum(code_line)
-                self.check_random_bounds(code_line)
+
+                # TODO: Disabled until a solution for float parameters to math.random() is found
+                # self.check_random_bounds(code_line)
 
                 # Keep track of ID variable assignments and if they are referenced.
                 # TODO: Track each unique variable, and expand this to potentially something
@@ -510,7 +512,7 @@ elif target == 'scripts':
         total_errors += LuaStyleCheck(filename).errcount
 elif target == 'test':
     total_errors = LuaStyleCheck('tools/ci/tests/stylecheck.lua', show_errors = False).errcount
-    expected_errors = 85
+    expected_errors = 82
 else:
     total_errors = LuaStyleCheck(target).errcount
 

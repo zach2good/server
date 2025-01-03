@@ -9,7 +9,7 @@ local entity = {}
 local function pickRunPoint(mob)
     mob:setLocalVar('ignore', 1)
     local distance   = math.random(10, 25)
-    local angle      = math.random(0.0, 1.0) * math.pi
+    local angle      = math.random() * math.pi
     local fromTarget = mob:getTarget()
 
     if fromTarget == nil then
