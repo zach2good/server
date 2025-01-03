@@ -24,6 +24,7 @@
 #include "common/socket.h" // for ref<T>
 #include "common/utils.h"  // for unpack/pack bits
 #include "data_loader.h"
+#include <map>
 #include <unordered_set>
 
 #include "packets/auction_history.h"
@@ -33,11 +34,11 @@
 #include "packets/search_comment.h"
 #include "packets/search_list.h"
 
-search_handler::search_handler(asio::ip::tcp::socket socket, asio::io_context& io_context, shared_guarded<std::unordered_set<std::string>>& IPAddressInUseList, shared_guarded<std::unordered_set<std::string>>& IPAddressWhitelist)
+search_handler::search_handler(asio::ip::tcp::socket socket, asio::io_context& io_context, shared_guarded<std::map<std::string, uint16_t>>& IPAddressesInUseList, shared_guarded<std::unordered_set<std::string>>& IPAddressWhitelist)
 : socket_(std::move(socket))
-, IPAddressesInUse_(IPAddressInUseList)
+, IPAddressesInUse_(IPAddressesInUseList)
 , IPAddressWhitelist_(IPAddressWhitelist)
-, timer(io_context)
+, deadline_(io_context)
 {
     DebugSockets(fmt::format("New connection from IP {}", socket_.lowest_layer().remote_endpoint().address().to_string()));
 
@@ -45,30 +46,21 @@ search_handler::search_handler(asio::ip::tcp::socket socket, asio::io_context& i
     socket_.lowest_layer().set_option(asio::socket_base::reuse_address(true));
     ipAddress = socket_.lowest_layer().remote_endpoint(ec).address().to_string();
 
-    // If someone from the same IP is making a request, block for 10 ms in this thread repeatedly until the request is done.
-    // TODO: do we need a better timeout to drop the request if data never comes from a DIFFERENT socket?
-    // Someone doing this maliciously would just lock themselves out...
-    uint32_t numWaits = 0;
-    while (isIPAddressInUse(ipAddress))
-    {
-        timer.expires_after(std::chrono::milliseconds(10));
-        timer.wait();
-        numWaits++;
-
-        if (numWaits > 1000) // 10 seconds
-        {
-            ShowError(fmt::format("Socket '{}' waited more than 10 seconds for IP address to not be in use, closing.", ipAddress));
-            socket_.lowest_layer().close();
-            return;
-        }
-    }
-
-    addToUsedIPAddresses(ipAddress);
-
     if (ec)
     {
         ipAddress = "error";
         socket_.lowest_layer().close();
+    }
+    else
+    {
+        addToUsedIPAddresses(ipAddress);
+
+        if (getNumSessionsInUse(ipAddress) > 5)
+        {
+            ShowError(fmt::format("More than 5 simultaneous connections from {}. Closing socket.", ipAddress));
+            socket_.lowest_layer().close();
+            return;
+        }
     }
 }
 
@@ -82,6 +74,9 @@ void search_handler::start()
 {
     if (socket_.lowest_layer().is_open())
     {
+        deadline_.expires_after(std::chrono::milliseconds(10000)); // AH searches can take quite a while
+        deadline_.async_wait(std::bind(&search_handler::checkDeadline, this));
+
         do_read();
     }
 }
@@ -99,27 +94,42 @@ void search_handler::do_read()
         }
         else
         {
-            DebugSockets(fmt::format("async_read_some error in from IP {} ({}: {})", ipAddress, ec.value(), ec.message()));
-            handle_error(ec, self);
+            // EOF when searchPackets is empty is normal. Any other state is a legitimate error.
+            if (!searchPackets.empty() || (searchPackets.empty() && ec.value() != asio::error::eof))
+            {
+                DebugSockets(fmt::format("async_read_some error in from IP {} ({}: {})", ipAddress, ec.value(), ec.message()));
+                handle_error(ec, self);
+            }
         }
     });
     // clang-format on
 }
 
-void search_handler::do_write(uint16_t length)
+void search_handler::do_write()
 {
+    auto packet = searchPackets.front();
+    auto length = packet.getSize();
+
+    std::memcpy(data_, packet.getData(), packet.getSize());
+
+    searchPackets.pop_front();
+
+    encrypt(length);
+
     // clang-format off
     DebugSockets(fmt::format("async_write: Sending packet to IP {} ({} bytes)", ipAddress, length));
-    asio::async_write(socket_, asio::buffer(data_, length),
+    socket_.async_write_some(asio::buffer(data_, length),
     [this, self = shared_from_this()](std::error_code ec, std::size_t /*length*/)
     {
         if (!ec)
         {
-            socket_.close();
+            // Apparently a reply is expected. Not sure what the reply contains exactly, but bad things happen if we don't wait for it.
+            do_read();
         }
         else
         {
-            ShowError(ec.message());
+            DebugSockets(fmt::format("async_write_some error in from IP {} ({}: {})", ipAddress, ec.value(), ec.message()));
+            handle_error(ec, self);
         }
     });
     // clang-format on
@@ -226,6 +236,14 @@ inline std::string searchTypeToString(uint8 type)
 
 void search_handler::read_func(uint16_t length)
 {
+    // if we already have a query in-flight...
+    if (!searchPackets.empty())
+    {
+        do_write();
+        return;
+    }
+
+    deadline_.cancel(); // If we read, don't abort the deadline in the future
     if (length != ref<uint16>(data_, 0x00) || length < 28)
     {
         ShowError("Search packetsize wrong. Size %d should be %d.", length, ref<uint16>(data_, 0x00));
@@ -274,7 +292,6 @@ void search_handler::read_func(uint16_t length)
                 ShowError("Unknown packet type: %u", packetType);
             }
         }
-        return;
     }
 }
 
@@ -343,10 +360,7 @@ void search_handler::HandleGroupListRequest()
         uint16_t length = PPartyPacket.GetSize();
 
         DebugPrintPacket((char*)PPartyPacket.GetData(), length);
-        std::memcpy(&data_, PPartyPacket.GetData(), length);
-
-        encrypt(length);
-        do_write(length);
+        searchPackets.emplace_back(PPartyPacket.GetData(), length);
     }
     else if (linkshellid1 != 0 || linkshellid2 != 0)
     {
@@ -378,21 +392,14 @@ void search_handler::HandleGroupListRequest()
                 PLinkshellPacket.SetFinal();
 
             uint16_t length = PLinkshellPacket.GetSize();
+
             DebugPrintPacket((char*)PLinkshellPacket.GetData(), length);
+            searchPackets.emplace_back(PLinkshellPacket.GetData(), length);
 
-            std::memcpy(&data_, PLinkshellPacket.GetData(), length);
-            encrypt(length);
-
-            std::error_code ec;
-            auto ret = asio::write(socket_, asio::buffer(data_, length), ec);
-
-            // I assume asio::write returns the number of bytes written... but the docs don't really say.
-            if (ret <= 0 || ec)
-                break;
         } while (currentResult < totalResults);
     }
 
-    socket_.close();
+    do_write();
 }
 
 void search_handler::HandleSearchComment()
@@ -411,10 +418,9 @@ void search_handler::HandleSearchComment()
     uint16_t length = commentPacket.GetSize();
 
     DebugPrintPacket((char*)commentPacket.GetData(), length);
-    std::memcpy(&data_, commentPacket.GetData(), length);
+    searchPackets.emplace_back(commentPacket.GetData(), length);
 
-    encrypt(length);
-    do_write(length);
+    do_write();
 }
 
 void search_handler::HandleSearchRequest()
@@ -453,23 +459,13 @@ void search_handler::HandleSearchRequest()
         }
 
         uint16_t length = PSearchPacket.GetSize();
+
         DebugPrintPacket((char*)PSearchPacket.GetData(), length);
-
-        std::memcpy(&data_, PSearchPacket.GetData(), length);
-        encrypt(length);
-
-        std::error_code ec;
-        auto ret = asio::write(socket_, asio::buffer(data_, length), ec);
-
-        // I assume asio::write returns the number of bytes written... but the docs don't really say.
-        if (ret <= 0 || ec)
-        {
-            break;
-        }
+        searchPackets.emplace_back(PSearchPacket.GetData(), length);
 
     } while (currentResult < totalResults);
 
-    socket_.close();
+    do_write();
 }
 
 void search_handler::HandleAuctionHouseRequest()
@@ -530,20 +526,10 @@ void search_handler::HandleAuctionHouseRequest()
         uint16_t length = PAHPacket.GetSize();
         DebugPrintPacket((char*)PAHPacket.GetData(), length);
 
-        std::memcpy(&data_, PAHPacket.GetData(), length);
-        encrypt(length);
-
-        std::error_code ec;
-        auto ret = asio::write(socket_, asio::buffer(data_, length), ec);
-
-        // I assume asio::write returns the number of bytes written... but the docs don't really say.
-        if (ret <= 0 || ec)
-        {
-            break;
-        }
+        searchPackets.emplace_back(PAHPacket.GetData(), length);
     }
 
-    socket_.close();
+    do_write();
 }
 
 void search_handler::HandleAuctionHouseHistory()
@@ -565,10 +551,9 @@ void search_handler::HandleAuctionHouseHistory()
     uint16_t length = PAHPacket.GetSize();
 
     DebugPrintPacket((char*)PAHPacket.GetData(), length);
-    std::memcpy(&data_, PAHPacket.GetData(), length);
+    searchPackets.emplace_back(PAHPacket.GetData(), length);
 
-    encrypt(length);
-    do_write(length);
+    do_write();
 }
 
 search_req search_handler::_HandleSearchRequest()
@@ -811,7 +796,7 @@ search_req search_handler::_HandleSearchRequest()
     // For example: "/blacklist delete Name" and "/sea all Name"
 }
 
-bool search_handler::isIPAddressInUse(std::string const& ipAddressStr)
+uint16_t search_handler::getNumSessionsInUse(std::string const& ipAddressStr)
 {
     DebugSockets(fmt::format("Checking if IP is in use: {}", ipAddressStr).c_str());
 
@@ -821,15 +806,20 @@ bool search_handler::isIPAddressInUse(std::string const& ipAddressStr)
         return ipWhitelist.find(ipAddressStr) != ipWhitelist.end();
     }))
     {
-        return false;
+        return 0;
     }
     // clang-format on
 
     // ShowInfo(fmt::format("Checking if IP is in use: {}", ipAddressStr).c_str());
     // clang-format off
-    return IPAddressesInUse_.read([ipAddressStr](auto const& ipAddrsInUse)
+    return IPAddressesInUse_.read([ipAddressStr](auto const& ipAddrsInUse) -> uint16_t
     {
-        return ipAddrsInUse.find(ipAddressStr) != ipAddrsInUse.end();
+        if (ipAddrsInUse.find(ipAddressStr) != ipAddrsInUse.end())
+        {
+            return ipAddrsInUse.at(ipAddressStr);
+        }
+
+        return 0;
     });
     // clang-format on
 }
@@ -852,7 +842,20 @@ void search_handler::removeFromUsedIPAddresses(std::string const& ipAddressStr)
     // clang-format off
     IPAddressesInUse_.write([ipAddressStr](auto& ipAddrsInUse)
     {
-        ipAddrsInUse.erase(ipAddressStr);
+        if (ipAddrsInUse.find(ipAddressStr) != ipAddrsInUse.end())
+        {
+            ipAddrsInUse[ipAddressStr] -= 1;
+        }
+        else // Removing nothing, do nothing.
+        {
+            return;
+        }
+
+        // If we got here, check if we want to remove an IP from the map
+        if (ipAddrsInUse[ipAddressStr] <= 0)
+        {
+            ipAddrsInUse.erase(ipAddressStr);
+        }
     });
     // clang-format on
 }
@@ -875,7 +878,23 @@ void search_handler::addToUsedIPAddresses(std::string const& ipAddressStr)
     // clang-format off
     IPAddressesInUse_.write([ipAddressStr](auto& ipAddrsInUse)
     {
-        ipAddrsInUse.insert(ipAddressStr);
+        if (ipAddrsInUse.find(ipAddressStr) == ipAddrsInUse.end())
+        {
+            ipAddrsInUse[ipAddressStr] = 1;
+        }
+        else
+        {
+            ipAddrsInUse[ipAddressStr] += 1;
+        }
     });
     // clang-format on
+}
+
+void search_handler::checkDeadline()
+{
+    if (std::chrono::steady_clock::now() > deadline_.expiry())
+    {
+        DebugSockets(fmt::format("Socket timed out from {}", ipAddress));
+        socket_.cancel();
+    }
 }
