@@ -121,7 +121,7 @@ entity.onEventUpdate = function(player, csid, option, npc)
 
             player:incrementCharVar('ClammingKitWeight', 10000)
         else
-            local dropRate = math.random(0.0, 1.0) -- TODO: Adjust all values to use 0..100 scale as opposed to 0..1
+            local dropRate = math.random() -- TODO: Adjust all values to use 0..100 scale as opposed to 0..1
             local improvedResults = giveImprovedResults(player)
 
             player:updateEvent(player:getCharVar('ClammingKitWeight'), player:getCharVar('ClammingKitSize'))
