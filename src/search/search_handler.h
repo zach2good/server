@@ -57,7 +57,7 @@ public:
 
     void handle_error(std::error_code ec, std::shared_ptr<search_handler> self);
 
-    void do_write(uint16_t length);
+    void do_write();
 
     void read_func(uint16_t length);
 
@@ -110,4 +110,6 @@ private:
     auto _HandleSearchRequest() -> search_req;
 
     blowfish_t blowfish;
+
+    std::deque<searchPacket> searchPackets;
 };
