@@ -1896,12 +1896,11 @@ bool CLuaBaseEntity::pathThrough(sol::table const& pointsTable, sol::object cons
 
 bool CLuaBaseEntity::isFollowingPath()
 {
-    if (auto* PBattle = dynamic_cast<CBattleEntity*>(m_PBaseEntity))
+    if (m_PBaseEntity->PAI && m_PBaseEntity->PAI->PathFind)
     {
-        return PBattle->PAI->PathFind != nullptr && PBattle->PAI->PathFind->IsFollowingPath();
+        return m_PBaseEntity->PAI->PathFind->IsFollowingPath();
     }
 
-    ShowError("Invalid entity type passed to function.");
     return false;
 }
 
