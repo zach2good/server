@@ -108,7 +108,6 @@ namespace battleutils
     uint8 CheckMultiHits(CBattleEntity* PEntity, CItemWeapon* PWeapon);
 
     uint8 getHitCount(uint8 hits);
-    uint8 CheckMobMultiHits(CBattleEntity* PEntity);
 
     int16 GetSnapshotReduction(CBattleEntity* battleEntity, int16 delay);
     int32 GetRangedAttackBonuses(CBattleEntity* battleEntity);
@@ -162,7 +161,7 @@ namespace battleutils
                                 bool primary, float tpMultiplier, uint16 bonusTP, float targetTPMultiplier);
     int32 TakeSkillchainDamage(CBattleEntity* PAttacker, CBattleEntity* PDefender, int32 lastSkillDamage, CBattleEntity* taChar);
     int32 TakeSpellDamage(CBattleEntity* PDefender, CBattleEntity* PAttacker, CSpell* PSpell, int32 damage, ATTACK_TYPE attackType, DAMAGE_TYPE damageType);
-    int32 TakeSwipeLungeDamage(CBattleEntity* PDefender, CCharEntity* PAttacker, int32 damage, ATTACK_TYPE attackType, DAMAGE_TYPE damageType);
+    int32 TakeSwipeLungeDamage(CBattleEntity* PDefender, CBattleEntity* PAttacker, int32 damage, ATTACK_TYPE attackType, DAMAGE_TYPE damageType);
 
     bool  TryInterruptSpell(CBattleEntity* PAttacker, CBattleEntity* PDefender, CSpell* PSpell);
     float GetRangedDamageRatio(CBattleEntity* PAttacker, CBattleEntity* PDefender, bool isCritical, int16 bonusRangedAttack);
@@ -181,7 +180,7 @@ namespace battleutils
     int16 GetEnmityModCure(int16 level);
     bool  isValidSelfTargetWeaponskill(int wsid);
     bool  CanUseWeaponskill(CCharEntity* PChar, CWeaponSkill* PSkill);
-    int16 CalculateBaseTP(int delay);
+    int16 CalculateBaseTP(int32 delay);
     void  GenerateCureEnmity(CBattleEntity* PSource, CBattleEntity* PTarget, int32 amount, int32 fixedCE = 0, int32 fixedVE = 0);
     void  GenerateInRangeEnmity(CBattleEntity* PSource, int16 CE, int16 VE);
 
