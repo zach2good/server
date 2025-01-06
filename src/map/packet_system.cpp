@@ -4090,7 +4090,7 @@ void SmallPacket0x05E(map_session_data_t* const PSession, CCharEntity* const PCh
             {
                 // Ensure the destination exists
                 CZone* PDestination = zoneutils::GetZone(PZoneLine->m_toZone);
-                if (PDestination && PDestination->GetIP() == 0)
+                if (PDestination && (PDestination->GetIP() == 0 || PDestination->GetPort() == 0))
                 {
                     ShowDebug("SmallPacket0x5E: Zone %u closed to chars", PZoneLine->m_toZone);
 
