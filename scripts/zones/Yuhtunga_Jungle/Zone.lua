@@ -73,9 +73,9 @@ zoneObject.onZoneWeatherChange = function(weather)
     if bayawak then
         if weather == xi.weather.HOT_SPELL or weather == xi.weather.HEAT_WAVE then
             DisallowRespawn(bayawak:getID(), false)
-    
+
             -- Spawn if respawn is up
-            if os.time() > bayawak:getLocalVar("respawn") then
+            if os.time() > bayawak:getLocalVar('respawn') then
                 SpawnMob(bayawak:getID())
             end
         else
