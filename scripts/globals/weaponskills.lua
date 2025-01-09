@@ -1436,7 +1436,7 @@ xi.weaponskills.handleWeaponskillEffect = function(actor, target, effectId, acti
         not target:hasStatusEffect(effectId) and
         not xi.combat.statusEffect.isTargetImmune(target, effectId, actionElement) and
         not xi.combat.statusEffect.isTargetResistant(actor, target, effectId) and
-        not xi.combat.statusEffect.isEffectNullified(effectId)
+        not xi.combat.statusEffect.isEffectNullified(target, effectId)
     then
         target:addStatusEffect(effectId, power, 0, duration)
     end

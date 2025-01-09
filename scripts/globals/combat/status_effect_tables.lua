@@ -45,7 +45,7 @@ xi.combat.statusEffect.dataTable =
     [xi.effect.NONE         ] = { 0,               0,                  xi.element.DARK,    xi.immunity.DISPEL,     0,                  0, 0,                    0                           },
     [xi.effect.PARALYSIS    ] = { 0,               0,                  xi.element.ICE,     xi.immunity.PARALYZE,   xi.mod.PARALYZERES, 0, xi.mod.PARALYZE_MEVA, xi.mod.PARALYZE_IMMUNOBREAK },
     [xi.effect.PETRIFICATION] = { 0,               0,                  xi.element.EARTH,   xi.immunity.PETRIFY,    xi.mod.PETRIFYRES,  0, xi.mod.PETRIFY_MEVA,  xi.mod.PETRIFY_IMMUNOBREAK  },
-    [xi.effect.PLAGUE       ] = { 0,               0,                  xi.element.FIRE,    xi.immunity.NONE,       xi.mod.VIRUSRES,    0, xi.mod.VIRUS_MEVA,    0                           },
+    [xi.effect.PLAGUE       ] = { 0,               0,                  xi.element.FIRE,    xi.immunity.PLAGUE,     xi.mod.VIRUSRES,    0, xi.mod.VIRUS_MEVA,    0                           },
     [xi.effect.POISON       ] = { 0,               0,                  xi.element.WATER,   xi.immunity.POISON,     xi.mod.POISONRES,   0, xi.mod.POISON_MEVA,   xi.mod.POISON_IMMUNOBREAK   },
     [xi.effect.RASP         ] = { xi.effect.CHOKE, 0,                  xi.element.EARTH,   0,                      0,                  0, 0,                    0                           },
     [xi.effect.SHOCK        ] = { xi.effect.RASP,  0,                  xi.element.THUNDER, 0,                      0,                  0, 0,                    0                           },
@@ -214,10 +214,10 @@ xi.combat.statusEffect.isTargetResistant = function(actor, target, effectId)
 end
 
 xi.combat.statusEffect.isEffectNullified = function(target, effectId)
-    local effectId = xi.combat.statusEffect.getNullificatingEffect(effectId)
+    local nullificatingEffect = xi.combat.statusEffect.getNullificatingEffect(effectId)
     if
-        effectId > 0 and
-        target:hasStatusEffect(effectId)
+        nullificatingEffect > 0 and
+        target:hasStatusEffect(nullificatingEffect)
     then
         return true
     end

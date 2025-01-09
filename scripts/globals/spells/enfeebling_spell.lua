@@ -330,7 +330,7 @@ xi.spells.enfeebling.handleEffectNullification = function(caster, target, spell,
     end
 
     -- Target already has an status effect that nullifies current.
-    if xi.combat.statusEffect.isEffectNullified(spellEffect) then
+    if xi.combat.statusEffect.isEffectNullified(target, spellEffect) then
         spell:setMsg(xi.msg.basic.MAGIC_NO_EFFECT)
 
         return true
