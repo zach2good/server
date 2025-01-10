@@ -32,27 +32,28 @@ local column =
 -- Table associating an status effect with their corresponding immunobreak, MEVA and resistance modifiers and immunities.
 xi.combat.statusEffect.dataTable =
 {
-    [xi.effect.ADDLE        ] = { 0,               0, xi.element.FIRE,    xi.immunity.ADDLE,      xi.mod.SLOWRES,     0, 0,                    xi.mod.ADDLE_IMMUNOBREAK    },
-    [xi.effect.BIND         ] = { 0,               0, xi.element.ICE,     xi.immunity.BIND,       xi.mod.BINDRES,     0, xi.mod.BIND_MEVA,     xi.mod.BIND_IMMUNOBREAK     },
-    [xi.effect.BLINDNESS    ] = { 0,               0, xi.element.DARK,    xi.immunity.BLIND,      xi.mod.BLINDRES,    0, xi.mod.BLIND_MEVA,    xi.mod.BLIND_IMMUNOBREAK    },
-    [xi.effect.BURN         ] = { xi.effect.DROWN, 0, xi.element.FIRE,    0,                      0,                  0, 0,                    0                           },
-    [xi.effect.CHOKE        ] = { xi.effect.FROST, 0, xi.element.WIND,    0,                      0,                  0, 0,                    0                           },
-    [xi.effect.CURSE_I      ] = { 0,               0, xi.element.DARK,    xi.immunity.NONE,       xi.mod.CURSERES,    0, xi.mod.CURSE_MEVA,    0                           },
-    [xi.effect.DROWN        ] = { xi.effect.SHOCK, 0, xi.element.WATER,   0,                      0,                  0, 0,                    0                           },
-    [xi.effect.FLASH        ] = { 0,               0, xi.element.LIGHT,   xi.immunity.BLIND,      xi.mod.BLINDRES,    0, xi.mod.BLIND_MEVA,    xi.mod.BLIND_IMMUNOBREAK    },
-    [xi.effect.FROST        ] = { xi.effect.BURN,  0, xi.element.ICE,     0,                      0,                  0, 0,                    0                           },
-    [xi.effect.NONE         ] = { 0,               0, xi.element.DARK,    xi.immunity.DISPEL,     0,                  0, 0,                    0                           },
-    [xi.effect.PARALYSIS    ] = { 0,               0, xi.element.ICE,     xi.immunity.PARALYZE,   xi.mod.PARALYZERES, 0, xi.mod.PARALYZE_MEVA, xi.mod.PARALYZE_IMMUNOBREAK },
-    [xi.effect.PETRIFICATION] = { 0,               0, xi.element.EARTH,   xi.immunity.PETRIFY,    xi.mod.PETRIFYRES,  0, xi.mod.PETRIFY_MEVA,  xi.mod.PETRIFY_IMMUNOBREAK  },
-    [xi.effect.PLAGUE       ] = { 0,               0, xi.element.FIRE,    xi.immunity.NONE,       xi.mod.VIRUSRES,    0, xi.mod.VIRUS_MEVA,    0                           },
-    [xi.effect.POISON       ] = { 0,               0, xi.element.WATER,   xi.immunity.POISON,     xi.mod.POISONRES,   0, xi.mod.POISON_MEVA,   xi.mod.POISON_IMMUNOBREAK   },
-    [xi.effect.RASP         ] = { xi.effect.CHOKE, 0, xi.element.EARTH,   0,                      0,                  0, 0,                    0                           },
-    [xi.effect.SHOCK        ] = { xi.effect.RASP,  0, xi.element.THUNDER, 0,                      0,                  0, 0,                    0                           },
-    [xi.effect.SILENCE      ] = { 0,               0, xi.element.WIND,    xi.immunity.SILENCE,    xi.mod.SILENCERES,  0, xi.mod.SILENCE_MEVA,  xi.mod.SILENCE_IMMUNOBREAK  },
-    [xi.effect.SLEEP_I      ] = { 0,               0, xi.element.DARK,    xi.immunity.DARK_SLEEP, xi.mod.SLEEPRES,    0, xi.mod.SLEEP_MEVA,    xi.mod.SLEEP_IMMUNOBREAK    },
-    [xi.effect.SLOW         ] = { 0,               0, xi.element.EARTH,   xi.immunity.SLOW,       xi.mod.SLOWRES,     0, xi.mod.SLOW_MEVA,     xi.mod.SLOW_IMMUNOBREAK     },
-    [xi.effect.STUN         ] = { 0,               0, xi.element.THUNDER, xi.immunity.STUN,       xi.mod.STUNRES,     0, xi.mod.STUN_MEVA,     0                           },
-    [xi.effect.WEIGHT       ] = { 0,               0, xi.element.WIND,    xi.immunity.GRAVITY,    xi.mod.GRAVITYRES,  0, xi.mod.GRAVITY_MEVA,  xi.mod.GRAVITY_IMMUNOBREAK  },
+    [xi.effect.ADDLE        ] = { 0,               xi.effect.NOCTURNE, xi.element.FIRE,    xi.immunity.ADDLE,      xi.mod.SLOWRES,     0, 0,                    xi.mod.ADDLE_IMMUNOBREAK    }, -- Addle cant be immunobroken?
+    [xi.effect.BIND         ] = { 0,               0,                  xi.element.ICE,     xi.immunity.BIND,       xi.mod.BINDRES,     0, xi.mod.BIND_MEVA,     xi.mod.BIND_IMMUNOBREAK     },
+    [xi.effect.BLINDNESS    ] = { 0,               0,                  xi.element.DARK,    xi.immunity.BLIND,      xi.mod.BLINDRES,    0, xi.mod.BLIND_MEVA,    xi.mod.BLIND_IMMUNOBREAK    },
+    [xi.effect.BURN         ] = { xi.effect.DROWN, 0,                  xi.element.FIRE,    0,                      0,                  0, 0,                    0                           },
+    [xi.effect.CHOKE        ] = { xi.effect.FROST, 0,                  xi.element.WIND,    0,                      0,                  0, 0,                    0                           },
+    [xi.effect.CURSE_I      ] = { 0,               0,                  xi.element.DARK,    xi.immunity.NONE,       xi.mod.CURSERES,    0, xi.mod.CURSE_MEVA,    0                           },
+    [xi.effect.DROWN        ] = { xi.effect.SHOCK, 0,                  xi.element.WATER,   0,                      0,                  0, 0,                    0                           },
+    [xi.effect.FLASH        ] = { 0,               0,                  xi.element.LIGHT,   xi.immunity.BLIND,      xi.mod.BLINDRES,    0, xi.mod.BLIND_MEVA,    xi.mod.BLIND_IMMUNOBREAK    },
+    [xi.effect.FROST        ] = { xi.effect.BURN,  0,                  xi.element.ICE,     0,                      0,                  0, 0,                    0                           },
+    [xi.effect.NOCTURNE     ] = { xi.effect.ADDLE, 0,                  xi.element.FIRE,    xi.immunity.ADDLE,      xi.mod.SLOWRES,     0, 0,                    0                           },
+    [xi.effect.NONE         ] = { 0,               0,                  xi.element.DARK,    xi.immunity.DISPEL,     0,                  0, 0,                    0                           },
+    [xi.effect.PARALYSIS    ] = { 0,               0,                  xi.element.ICE,     xi.immunity.PARALYZE,   xi.mod.PARALYZERES, 0, xi.mod.PARALYZE_MEVA, xi.mod.PARALYZE_IMMUNOBREAK },
+    [xi.effect.PETRIFICATION] = { 0,               0,                  xi.element.EARTH,   xi.immunity.PETRIFY,    xi.mod.PETRIFYRES,  0, xi.mod.PETRIFY_MEVA,  xi.mod.PETRIFY_IMMUNOBREAK  },
+    [xi.effect.PLAGUE       ] = { 0,               0,                  xi.element.FIRE,    xi.immunity.PLAGUE,     xi.mod.VIRUSRES,    0, xi.mod.VIRUS_MEVA,    0                           },
+    [xi.effect.POISON       ] = { 0,               0,                  xi.element.WATER,   xi.immunity.POISON,     xi.mod.POISONRES,   0, xi.mod.POISON_MEVA,   xi.mod.POISON_IMMUNOBREAK   },
+    [xi.effect.RASP         ] = { xi.effect.CHOKE, 0,                  xi.element.EARTH,   0,                      0,                  0, 0,                    0                           },
+    [xi.effect.SHOCK        ] = { xi.effect.RASP,  0,                  xi.element.THUNDER, 0,                      0,                  0, 0,                    0                           },
+    [xi.effect.SILENCE      ] = { 0,               0,                  xi.element.WIND,    xi.immunity.SILENCE,    xi.mod.SILENCERES,  0, xi.mod.SILENCE_MEVA,  xi.mod.SILENCE_IMMUNOBREAK  },
+    [xi.effect.SLEEP_I      ] = { 0,               0,                  xi.element.DARK,    xi.immunity.DARK_SLEEP, xi.mod.SLEEPRES,    0, xi.mod.SLEEP_MEVA,    xi.mod.SLEEP_IMMUNOBREAK    },
+    [xi.effect.SLOW         ] = { 0,               0,                  xi.element.EARTH,   xi.immunity.SLOW,       xi.mod.SLOWRES,     0, xi.mod.SLOW_MEVA,     xi.mod.SLOW_IMMUNOBREAK     },
+    [xi.effect.STUN         ] = { 0,               0,                  xi.element.THUNDER, xi.immunity.STUN,       xi.mod.STUNRES,     0, xi.mod.STUN_MEVA,     0                           },
+    [xi.effect.WEIGHT       ] = { 0,               0,                  xi.element.WIND,    xi.immunity.GRAVITY,    xi.mod.GRAVITYRES,  0, xi.mod.GRAVITY_MEVA,  xi.mod.GRAVITY_IMMUNOBREAK  },
 }
 
 -----------------------------------
@@ -213,10 +214,10 @@ xi.combat.statusEffect.isTargetResistant = function(actor, target, effectId)
 end
 
 xi.combat.statusEffect.isEffectNullified = function(target, effectId)
-    local effectId = xi.combat.statusEffect.getNullificatingEffect(effectId)
+    local nullificatingEffect = xi.combat.statusEffect.getNullificatingEffect(effectId)
     if
-        effectId > 0 and
-        target:hasStatusEffect(effectId)
+        nullificatingEffect > 0 and
+        target:hasStatusEffect(nullificatingEffect)
     then
         return true
     end
