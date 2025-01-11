@@ -1,15 +1,12 @@
 -----------------------------------
--- Area: Apollyon CS
---  Mob: Grognard Grappler
------------------------------------
-mixins = { require('scripts/mixins/job_special') }
+-- Area: Castle Zvahl Baileys [S]
+--  Mob: Yagudo Knight Templar
 -----------------------------------
 ---@type TMobEntity
 local entity = {}
 
 entity.onMobSpawn = function(mob)
     mob:addImmunity(xi.immunity.GRAVITY)
-    mob:addImmunity(xi.immunity.BIND)
 end
 
 entity.onMobDeath = function(mob, player, optParams)
