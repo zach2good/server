@@ -19,13 +19,22 @@ xi.spells.damage = xi.spells.damage or {}
 -----------------------------------
 -- Tables
 -----------------------------------
--- Table variables.
-local stat            = 1
-local bonusSpellMacc  = 2
-local vNPC            = 3
-local mNPC            = 4
-local vPC             = 5
-local inflectionPoint = 6
+local column =
+{
+    STAT_USED       =  1,
+    BONUS_MACC      =  2,
+    NPC_POWER       =  3,
+    NPC_MULTIPLIER  =  4,
+    PC_POWER        =  5,
+    INFLEXION_POINT =  6,
+    MULTIPLIER_0    =  7,
+    MULTIPLIER_50   =  8,
+    MULTIPLIER_100  =  9,
+    MULTIPLIER_200  = 10,
+    MULTIPLIER_300  = 11,
+    MULTIPLIER_400  = 12,
+    MULTIPLIER_500  = 13,
+}
 
 local pTable =
 {
@@ -214,14 +223,14 @@ local pTable =
 -- Basic Functions
 -----------------------------------
 xi.spells.damage.calculateBaseDamage = function(caster, target, spellId, spellGroup, skillType, statUsed)
-    local spellDamage     = 0 -- The variable we want to calculate
-    local useNewSystem    = false -- Default to old.
+    local spellDamage  = 0 -- The variable we want to calculate
+    local useNewSystem = false -- Default to old.
 
     -- Choose system to use.
     if
-        pTable[spellId][7] > 0 and                -- We actually have new system values.
-        caster:isPC() and                         -- Only players use new system.
-        not xi.settings.main.USE_OLD_MAGIC_DAMAGE -- New system is allowed in settings.
+        pTable[spellId][column.MULTIPLIER_0] > 0 and -- We actually have new system values.
+        caster:isPC() and                            -- Only players use new system.
+        not xi.settings.main.USE_OLD_MAGIC_DAMAGE    -- New system is allowed in settings.
     then
         useNewSystem = true -- Use new system.
     end
@@ -229,10 +238,10 @@ xi.spells.damage.calculateBaseDamage = function(caster, target, spellId, spellGr
     -----------------------------------
     -- STEP 1: baseSpellDamage (V)
     -----------------------------------
-    local baseSpellDamage = pTable[spellId][vNPC] -- (V) In Wiki.
+    local baseSpellDamage = pTable[spellId][column.NPC_POWER] -- (V) In Wiki.
 
     if useNewSystem then
-        baseSpellDamage = pTable[spellId][vPC] -- vPC
+        baseSpellDamage = pTable[spellId][column.PC_POWER] -- vPC
     end
 
     -----------------------------------
@@ -255,13 +264,13 @@ xi.spells.damage.calculateBaseDamage = function(caster, target, spellId, spellGr
         }
 
         for i = 1, 7 do
-            statDiffBonus = statDiffBonus + math.floor(utils.clamp(statDiff - mTable[i][1], 0, mTable[i][2]) * pTable[spellId][6 + i])
+            statDiffBonus = statDiffBonus + math.floor(utils.clamp(statDiff - mTable[i][1], 0, mTable[i][2]) * pTable[spellId][column.INFLEXION_POINT + i])
         end
 
     -- Old system
     else
-        local spellMultiplier = pTable[spellId][mNPC]            -- M
-        local inflexionPoint  = pTable[spellId][inflectionPoint] -- I
+        local spellMultiplier = pTable[spellId][column.NPC_MULTIPLIER]  -- M
+        local inflexionPoint  = pTable[spellId][column.INFLEXION_POINT] -- I
 
         -- Cap stat difference. In the old system, in 99% of cases, the stat difference capped at 3 times the infexion point, from which point, stat would stop taking effect.
         local statCap = 3 * inflexionPoint
@@ -921,8 +930,8 @@ xi.spells.damage.useDamageSpell = function(caster, target, spell)
     local skillType    = spell:getSkillType()
     local spellGroup   = spell:getSpellGroup()
     local spellElement = spell:getElement()
-    local statUsed     = pTable[spellId][stat]
-    local bonusMacc    = pTable[spellId][bonusSpellMacc]
+    local statUsed     = pTable[spellId][column.STAT_USED]
+    local bonusMacc    = pTable[spellId][column.BONUS_MACC]
 
     -- Calculate damage absobtion or nullification.
     local nukeAbsorbOrNullify = xi.spells.damage.calculateNukeAbsorbOrNullify(target, spellElement)
