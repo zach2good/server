@@ -3,6 +3,7 @@
 -----------------------------------
 require('scripts/globals/combat/element_tables')
 require('scripts/globals/combat/level_correction')
+require('scripts/globals/combat/skill_ranks')
 require('scripts/globals/combat/status_effect_tables')
 -----------------------------------
 xi = xi or {}
@@ -21,7 +22,7 @@ local function magicAccuracyFromSkill(actor, skillType)
         magicAcc = actor:getSkillLevel(skillType)
     else
         -- For mob skills / additional effects which don't have a skill.
-        magicAcc = utils.getSkillLvl(1, actor:getMainLvl())
+        magicAcc = xi.combat.skillLevel.getSkillCap(actor:getMainLvl(), xi.skillRank.A_PLUS)
     end
 
     return magicAcc
