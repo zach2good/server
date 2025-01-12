@@ -1,5 +1,5 @@
 -----------------------------------
--- Area: Apollyon CS
+-- Area: Temenos
 --  Mob: Grognard Grappler
 -----------------------------------
 mixins = { require('scripts/mixins/job_special') }

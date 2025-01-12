@@ -1,6 +1,6 @@
 -----------------------------------
--- Area: Apollyon CS
---  Mob: Grognard Grappler
+-- Area: Temenos
+--  Mob: Yagudo Prelatess
 -----------------------------------
 mixins = { require('scripts/mixins/job_special') }
 -----------------------------------
