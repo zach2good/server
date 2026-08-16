@@ -109,6 +109,13 @@ const std::string& CBaseEntity::getPacketName()
     return packetName;
 }
 
+auto CBaseEntity::isInConflict() const -> bool
+{
+    // The nation allegiances are contiguous, so this is a range check. Adding a value between
+    // SanDoria and Griffons in allegiance.yaml would silently change what counts as a match.
+    return allegiance >= xi::Allegiance::SanDoria && allegiance <= xi::Allegiance::Griffons;
+}
+
 auto CBaseEntity::getZone() const -> xi::ZoneId
 {
     return loc.zone != nullptr ? loc.zone->GetID() : loc.destination;

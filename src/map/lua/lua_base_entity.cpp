@@ -37,6 +37,8 @@
 #include "alliance.h"
 #include "aman.h"
 #include "battlefield.h"
+#include "conflict_instance.h"
+#include "conflict_player.h"
 #include "conquest_system.h"
 #include "data/enums/mob_mod.h"
 #include "enmity_container.h"
@@ -12451,6 +12453,53 @@ auto CLuaBaseEntity::getBattlefield() const -> CBattlefield*
 }
 
 /************************************************************************
+ *  Function: isInConflict()
+ *  Purpose : Returns true if the entity is fighting for a nation in a Ballista match
+ *  Example : if target:isInConflict() then
+ *  Notes   :
+ ************************************************************************/
+
+auto CLuaBaseEntity::isInConflict() const -> bool
+{
+    return m_PBaseEntity->isInConflict();
+}
+
+/************************************************************************
+ *  Function: getConflict()
+ *  Purpose : Returns the Ballista match in the entity's zone, or nil
+ *  Example : local conflict = player:getConflict()
+ *  Notes   :
+ ************************************************************************/
+
+auto CLuaBaseEntity::getConflict() const -> ConflictInstance*
+{
+    if (m_PBaseEntity->loc.zone == nullptr)
+    {
+        return nullptr;
+    }
+
+    return m_PBaseEntity->loc.zone->conflict.get();
+}
+
+/************************************************************************
+ *  Function: getConflictEntry()
+ *  Purpose : Returns the player's entry in a Ballista match, or nil
+ *  Example : local entry = player:getConflictEntry()
+ *  Notes   : Only players hold an entry
+ ************************************************************************/
+
+auto CLuaBaseEntity::getConflictEntry() const -> ConflictEntry*
+{
+    const auto* PChar = dynamic_cast<CCharEntity*>(m_PBaseEntity);
+    if (PChar == nullptr)
+    {
+        return nullptr;
+    }
+
+    return PChar->conflictEntry;
+}
+
+/************************************************************************
  *  Function: getBattlefieldID()
  *  Purpose : Returns the integer ID for the battlefield, -1 if not found
  *  Example : local battlefieldId = player:getBattlefieldID()
@@ -21006,6 +21055,10 @@ void CLuaBaseEntity::Register()
     SOL_REGISTER("copyConfrontationEffect", CLuaBaseEntity::copyConfrontationEffect);
 
     // Battlefields
+    SOL_REGISTER("isInConflict", CLuaBaseEntity::isInConflict);
+    SOL_REGISTER("getConflict", CLuaBaseEntity::getConflict);
+    SOL_REGISTER("getConflictEntry", CLuaBaseEntity::getConflictEntry);
+
     SOL_REGISTER("getBattlefield", CLuaBaseEntity::getBattlefield);
     SOL_REGISTER("getBattlefieldID", CLuaBaseEntity::getBattlefieldID);
     SOL_REGISTER("registerBattlefield", CLuaBaseEntity::registerBattlefield);

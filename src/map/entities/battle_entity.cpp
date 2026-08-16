@@ -43,7 +43,9 @@
 #include "attack.h"
 #include "attackround.h"
 #include "data/enums/mob_mod.h"
+#include "enmity_container.h"
 #include "entities/char_entity.h"
+#include "entities/mob_entity.h"
 #include "items/item_weapon.h"
 #include "job_points.h"
 #include "lua/luautils.h"
@@ -62,6 +64,7 @@
 #include "utils/puppetutils.h"
 #include "utils/zoneutils.h"
 #include "weapon_skill.h"
+#include "zone.h"
 
 CBattleEntity::CBattleEntity()
 {
@@ -560,7 +563,19 @@ auto CBattleEntity::GetWeaponDelay(bool tp) -> uint32
 
 float CBattleEntity::GetMeleeRange(const CBattleEntity* target) const
 {
-    return modelHitboxSize + 2.0f + target->modelHitboxSize;
+    // A Conflict (Ballista) match widens the attacker's reach, because players are far harder to
+    // stay in range of than mobs.
+    const auto conflictBonus = [&]
+    {
+        if (isInConflict())
+        {
+            return 3.0f;
+        }
+
+        return 0.0f;
+    }();
+
+    return modelHitboxSize + 2.0f + target->modelHitboxSize + conflictBonus;
 }
 
 float CBattleEntity::GetRangedAttackRange()
@@ -1666,6 +1681,37 @@ uint16 CBattleEntity::EVA()
 auto CBattleEntity::GetMJob() const -> xi::Job
 {
     return m_mjob;
+}
+
+void CBattleEntity::changeAllegiance(const xi::Allegiance newAllegiance)
+{
+    if (allegiance == newAllegiance)
+    {
+        return;
+    }
+
+    allegiance = newAllegiance;
+
+    // Allegiance drives the name colour other players see, so the name has to be resent.
+    updatemask |= UPDATE_HP | UPDATE_NAME;
+
+    // Joining or leaving a match makes this entity an invalid PvE target, so nearby mobs must
+    // forget it rather than keep chasing something they can no longer hit.
+    if (loc.zone != nullptr)
+    {
+        loc.zone->ForEachMob([this](CMobEntity* PMob)
+                             {
+                                 if (PMob->PEnmityContainer != nullptr)
+                                 {
+                                     PMob->PEnmityContainer->Clear(id);
+                                 }
+                             });
+    }
+
+    if (PPet != nullptr)
+    {
+        PPet->changeAllegiance(newAllegiance);
+    }
 }
 
 uint8 CBattleEntity::GetMLevel() const

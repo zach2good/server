@@ -24,9 +24,12 @@
 #include "common/logging.h"
 #include "common/timer.h"
 
+#include "conflict_instance.h"
 #include "entities/npc_entity.h"
 #include "lua_base_entity.h"
 #include "trigger_area.h"
+#include "utils/conflictutils.h"
+#include "utils/timeutils.h"
 #include "zone.h"
 
 CLuaZone::CLuaZone(CZone* PZone)
@@ -178,6 +181,51 @@ REGION_TYPE CLuaZone::getRegionID()
 xi::ZoneType CLuaZone::getTypeMask()
 {
     return m_pLuaZone->GetTypeMask();
+}
+
+auto CLuaZone::getConflict() -> ConflictInstance*
+{
+    return m_pLuaZone->conflict.get();
+}
+
+void CLuaZone::initializeConflict(const sol::table& data)
+{
+    auto settings = ConflictSettings();
+
+    settings.zoneId = m_pLuaZone->GetID();
+
+    // A match started from a script is ad-hoc: it skips the Herald sign-up flow entirely.
+    settings.isScheduled = false;
+
+    settings.team1 = static_cast<xi::Allegiance>(data.get<sol::optional<uint8>>("team1")
+                                                     .value_or(std::to_underlying(xi::Allegiance::SanDoria)));
+
+    const auto defaultTeam2 = [&]
+    {
+        if (settings.team1 == xi::Allegiance::SanDoria)
+        {
+            return xi::Allegiance::Bastok;
+        }
+
+        return xi::Allegiance::SanDoria;
+    }();
+
+    settings.team2 = static_cast<xi::Allegiance>(data.get<sol::optional<uint8>>("team2")
+                                                     .value_or(std::to_underlying(defaultTeam2)));
+
+    settings.type = static_cast<xi::ConflictType>(data.get<sol::optional<uint8>>("type")
+                                                      .value_or(std::to_underlying(xi::ConflictType::AllOrNothing)));
+
+    settings.levelCap            = data.get<sol::optional<uint8>>("levelCap").value_or(0);
+    settings.restrictNormalItems = data.get<sol::optional<bool>>("restrictItems").value_or(true);
+    settings.initialTempItems    = data.get<sol::optional<bool>>("initialTempItems").value_or(false);
+    settings.signupFee           = data.get<sol::optional<uint16>>("signupFee").value_or(0);
+
+    // Default to a match that has just started, so an ad-hoc match is immediately playable.
+    settings.matchStart  = data.get<sol::optional<uint32>>("startTime").value_or(timeutils::GetCurrentVanaTimestamp());
+    settings.matchLength = data.get<sol::optional<uint32>>("length").value_or(60 * 24);
+
+    conflictutils::CreateConflictInstance(settings);
 }
 
 auto CLuaZone::getBattlefieldByInitiator(uint32 charID) -> CBattlefield*
@@ -409,6 +457,8 @@ void CLuaZone::Register()
     SOL_REGISTER("getName", CLuaZone::getName);
     SOL_REGISTER("getRegionID", CLuaZone::getRegionID);
     SOL_REGISTER("getTypeMask", CLuaZone::getTypeMask);
+    SOL_REGISTER("getConflict", CLuaZone::getConflict);
+    SOL_REGISTER("initializeConflict", CLuaZone::initializeConflict);
     SOL_REGISTER("getBattlefieldByInitiator", CLuaZone::getBattlefieldByInitiator);
     SOL_REGISTER("getWeather", CLuaZone::getWeather);
     SOL_REGISTER("getUptime", CLuaZone::getUptime);

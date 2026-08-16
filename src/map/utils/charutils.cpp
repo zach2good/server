@@ -53,6 +53,7 @@
 #include "packets/s2c/0x009_message.h"
 #include "packets/s2c/0x00b_logout.h"
 #include "packets/s2c/0x01b_job_info.h"
+#include "packets/s2c/0x01c_item_max.h"
 #include "packets/s2c/0x01d_item_same.h"
 #include "packets/s2c/0x01e_item_num.h"
 #include "packets/s2c/0x01f_item_list.h"
@@ -5297,6 +5298,26 @@ void AddExperiencePoints(bool expFromRaise, bool awardRegionPoints, bool fromScr
 
 void SetLevelRestriction(CCharEntity* PChar, uint8 lvl)
 {
+    TracyZoneScoped;
+
+    if (PChar == nullptr)
+    {
+        return;
+    }
+
+    if (lvl == 0)
+    {
+        PChar->StatusEffectContainer->DelStatusEffect(xi::StatusEffect::LevelRestriction);
+        return;
+    }
+
+    // The effect script does the actual recapping, the same way level-capped zones and
+    // battlefields do it. A zero duration keeps it until it is explicitly removed.
+    PChar->StatusEffectContainer->AddStatusEffect(xi::StatusEffect::LevelRestriction,
+                                                  std::to_underlying(xi::StatusEffect::LevelRestriction),
+                                                  lvl,
+                                                  0s,
+                                                  0s);
 }
 
 void SaveCharPosition(CCharEntity* PChar)
@@ -6543,7 +6564,7 @@ void ApplyAllEquipMods(CCharEntity* PChar)
     }
 }
 
-void ClearTempItems(CCharEntity* PChar)
+void ClearTempItems(CCharEntity* PChar, bool sendUpdate)
 {
     TracyZoneScoped;
 
@@ -6551,6 +6572,58 @@ void ClearTempItems(CCharEntity* PChar)
 
     db::preparedStmt("DELETE FROM char_inventory WHERE charid = ? AND location = 3", PChar->id);
     Temp->Clear();
+
+    // A player clearing temp items mid-session, rather than on a zone change, needs to be told.
+    if (sendUpdate)
+    {
+        PChar->pushPacket<GP_SERV_COMMAND_ITEM_MAX>(PChar);
+    }
+}
+
+bool UpdateGil(CCharEntity* PChar, int32 amount)
+{
+    TracyZoneScoped;
+
+    // Item mutation lives behind a transaction now. pay() claims the stack and refuses an amount
+    // the player cannot cover, including gil reserved by a trade, and earn() reports a credit that
+    // the stack limit clamped, so both of the checks this used to make by hand are covered.
+    auto transaction = ItemClaimTransaction::start(PChar);
+    if (transaction == nullptr)
+    {
+        return false;
+    }
+
+    const auto adjusted = [&]
+    {
+        if (amount >= 0)
+        {
+            return transaction->earn(static_cast<uint32>(amount));
+        }
+
+        return transaction->pay(static_cast<uint32>(-amount));
+    }();
+
+    return adjusted && transaction->commit();
+}
+
+void SetTempInventorySize(CCharEntity* PChar, uint8 tempItemSize, bool sendUpdate)
+{
+    TracyZoneScoped;
+
+    PChar->getStorage(LOC_TEMPITEMS)->SetSize(tempItemSize);
+
+    if (sendUpdate)
+    {
+        PChar->pushPacket<GP_SERV_COMMAND_ITEM_MAX>(PChar);
+    }
+}
+
+void UnequipLinkshells(CCharEntity* PChar)
+{
+    TracyZoneScoped;
+
+    UnequipItem(PChar, SLOT_LINK1);
+    UnequipItem(PChar, SLOT_LINK2);
 }
 
 void ReloadParty(CCharEntity* PChar)

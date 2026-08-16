@@ -200,7 +200,11 @@ public:
     auto isMounted() const -> bool;
     bool isSitting();
 
-    auto  GetMJob() const -> xi::Job;
+    auto GetMJob() const -> xi::Job;
+
+    // Switches sides, clearing the enmity this entity is holding and taking its pet along.
+    void changeAllegiance(xi::Allegiance newAllegiance);
+
     auto  GetSJob(bool ignoreRestriction = false) const -> xi::Job;
     uint8 GetMLevel() const;
     uint8 GetSLevel() const;

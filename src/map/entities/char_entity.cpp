@@ -69,6 +69,7 @@
 #include "action/action.h"
 #include "action/interrupts.h"
 #include "blue_spell.h"
+#include "conflict_player.h"
 #include "conquest_system.h"
 #include "data/enums/claim_type.h"
 #include "data/enums/mob_mod.h"
@@ -278,6 +279,14 @@ CCharEntity::~CCharEntity()
     TracyZoneScoped;
 
     clearPacketList();
+
+    // A Conflict match outlives its players, so it has to be told this one is gone. Without
+    // this, the next match tick dereferences a freed CCharEntity.
+    if (conflictEntry != nullptr)
+    {
+        conflictEntry->ZoneOut();
+        conflictEntry = nullptr;
+    }
 
     if (PTreasurePool != nullptr)
     {

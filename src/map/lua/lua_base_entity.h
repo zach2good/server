@@ -40,6 +40,8 @@ enum class ChocoboColor : uint8_t;
 enum class TerrainType : uint8;
 class CBaseEntity;
 class CCharEntity;
+class ConflictEntry;
+class ConflictInstance;
 class CLuaBattlefield;
 class CLuaInstance;
 class CLuaItem;
@@ -615,6 +617,11 @@ public:
 
     uint16 getConfrontationEffect();
     uint16 copyConfrontationEffect(uint16 targetID); // copy confrontation effect, param = targetEntity:getTargID()
+
+    // Conflict (Ballista)
+    auto isInConflict() const -> bool;               // fighting for a nation in a Conflict match
+    auto getConflict() const -> ConflictInstance*;   // the match this entity is in, or nullptr
+    auto getConflictEntry() const -> ConflictEntry*; // this player's entry in a match, or nullptr
 
     // Battlefields
     auto getBattlefield() const -> CBattlefield*;                                                                                                // returns CBattlefield* or nullptr if not available

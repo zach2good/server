@@ -291,6 +291,7 @@ class CMeritPoints;
 class CCharRecastContainer;
 class CLatentEffectContainer;
 class CTradeContainer;
+class ConflictEntry;
 class CItemContainer;
 class CUContainer;
 class CItemEquipment;
@@ -509,6 +510,8 @@ public:
     CTradeContainer* TradeContainer; // Container used specifically for trading.
     CTradeContainer* Container;      // Universal container for exchange, synthesis, store, etc.
     CUContainer*     UContainer;     // Container used for universal actions -- used for trading at least despite the dedicated trading container above
+
+    ConflictEntry* conflictEntry = nullptr; // This player's entry in a Conflict (Ballista) match, owned by the match
 
     auto craftState() -> CCraftState&
     {

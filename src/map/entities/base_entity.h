@@ -154,6 +154,8 @@ public:
     virtual const std::string& getName() const; // Internal name of entity
     virtual const std::string& getPacketName(); // Name of entity sent to the client
 
+    [[nodiscard]] auto isInConflict() const -> bool; // Fighting for a nation in a Conflict (Ballista) match
+
     auto          getZone() const -> xi::ZoneId; // Current zone
     float         GetXPos() const;               // Position of co-ordinate X
     float         GetYPos() const;               // Position of co-ordinate Y

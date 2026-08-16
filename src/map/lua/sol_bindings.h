@@ -134,6 +134,14 @@ class CLuaBattlefield;
 class CBattlefield;
 SOL_BIND_DEC(CLuaBattlefield, CBattlefield);
 
+class CLuaConflict;
+class ConflictInstance;
+SOL_BIND_DEC(CLuaConflict, ConflictInstance);
+
+class CLuaConflictEntry;
+class ConflictEntry;
+SOL_BIND_DEC(CLuaConflictEntry, ConflictEntry);
+
 class CLuaInstance;
 class CInstance;
 SOL_BIND_DEC(CLuaInstance, CInstance);

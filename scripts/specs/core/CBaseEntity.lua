@@ -2603,6 +2603,21 @@ function CBaseEntity:copyConfrontationEffect(targetID)
 end
 
 ---@nodiscard
+---@return boolean
+function CBaseEntity:isInConflict()
+end
+
+---@nodiscard
+---@return CConflict?
+function CBaseEntity:getConflict()
+end
+
+---@nodiscard
+---@return CConflictEntry?
+function CBaseEntity:getConflictEntry()
+end
+
+---@nodiscard
 ---@return CBattlefield?
 function CBaseEntity:getBattlefield()
 end

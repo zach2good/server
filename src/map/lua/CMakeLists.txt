@@ -11,6 +11,10 @@ set(LUA_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/lua_battlefield.h
     ${CMAKE_CURRENT_SOURCE_DIR}/lua_cache.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/lua_cache.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/lua_conflict.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/lua_conflict.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/lua_conflictentry.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/lua_conflictentry.h
     ${CMAKE_CURRENT_SOURCE_DIR}/lua_instance.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/lua_instance.h
     ${CMAKE_CURRENT_SOURCE_DIR}/lua_item.cpp
@@ -27,6 +31,8 @@ set(LUA_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/lua_spell.h
     ${CMAKE_CURRENT_SOURCE_DIR}/lua_statuseffect.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/lua_statuseffect.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/lua_timeline.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/lua_timeline.h
     ${CMAKE_CURRENT_SOURCE_DIR}/lua_trade_container.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/lua_trade_container.h
     ${CMAKE_CURRENT_SOURCE_DIR}/lua_trait.cpp

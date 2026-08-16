@@ -122,6 +122,16 @@ class CLuaStatusEffect;
 class CLuaTradeContainer;
 class CLuaZone;
 
+class ConflictInstance;
+class ConflictEntry;
+
+namespace timeutils
+{
+
+class Timeline;
+
+}
+
 struct action_t;
 struct action_target_t;
 struct action_result_t;
@@ -373,6 +383,18 @@ void OnZoneOut(CCharEntity* PChar);
 void AfterZoneIn(CBaseEntity* PChar);
 void OnZoneInitialize(xi::ZoneId ZoneID);
 void OnZoneTick(CZone* PZone);
+
+// Conflict (Ballista) calls into the xi.conflict script table. Each is a no-op until the matching
+// Lua function exists, so the engine can run a match before the scripts for a zone are written.
+void ConflictSetup(ConflictInstance* instance);
+void ConflictCleanup(ConflictInstance* instance);
+void ConflictUpdateRookState(ConflictInstance* instance);
+auto ConflictGetRookIds(ConflictInstance* instance) -> std::vector<uint32>;
+auto ConflictDistributeInitialItems(CCharEntity* PChar) -> bool;
+void ConflictGameHint(CCharEntity* PChar);
+void ConflictReraise(CCharEntity* PChar);
+void OnConflictGateBreach(ConflictEntry* entry, timeutils::Timeline* timeline, bool shortGateBreach, bool alreadyHad);
+void OnConflictQuarry(CCharEntity* PChar);
 
 void OnTriggerAreaEnter(CCharEntity* PChar, const std::unique_ptr<ITriggerArea>& PTriggerArea); // when player enters a trigger area in a zone
 void OnTriggerAreaLeave(CCharEntity* PChar, const std::unique_ptr<ITriggerArea>& PTriggerArea); // when player leaves a trigger area in a zone

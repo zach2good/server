@@ -249,8 +249,13 @@ void RemoveStratagems(CCharEntity* PChar, CSpell* PSpell);
 void RemoveAllEquipMods(CCharEntity* PChar);
 void ApplyAllEquipMods(CCharEntity* PChar);
 
-void ClearTempItems(CCharEntity* PChar);
+void ClearTempItems(CCharEntity* PChar, bool sendUpdate = false);
 void ReloadParty(CCharEntity* PChar);
+
+// Conflict (Ballista) helpers
+bool UpdateGil(CCharEntity* PChar, int32 amount); // False when the player cannot afford a negative amount
+void SetTempInventorySize(CCharEntity* PChar, uint8 tempItemSize, bool sendUpdate);
+void UnequipLinkshells(CCharEntity* PChar);
 
 bool IsAidBlocked(CCharEntity* PInitiator, CCharEntity* PTarget);
 

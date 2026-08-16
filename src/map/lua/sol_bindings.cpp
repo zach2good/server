@@ -102,6 +102,12 @@ SOL_BIND_DEF(CLuaSpell, CSpell);
 #include "lua_statuseffect.h"
 SOL_BIND_DEF(CLuaStatusEffect, CStatusEffect);
 
+#include "lua_conflict.h"
+SOL_BIND_DEF(CLuaConflict, ConflictInstance);
+
+#include "lua_conflictentry.h"
+SOL_BIND_DEF(CLuaConflictEntry, ConflictEntry);
+
 #include "lua_trait.h"
 SOL_BIND_DEF(CLuaTrait, CTrait);
 

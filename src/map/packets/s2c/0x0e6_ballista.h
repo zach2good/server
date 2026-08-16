@@ -23,6 +23,8 @@
 
 #include "base.h"
 
+class CCharEntity;
+
 // https://github.com/atom0s/XiPackets/tree/main/world/server/0x00E6
 // This packet is sent by the server to inform the client of information related to PvP content. (ie. Ballista)
 namespace GP_SERV_COMMAND_BALLISTA
@@ -46,8 +48,9 @@ public:
         int32_t  FlammeFlg;      // PS2: (New; did not exist.)
     };
 
-    // TODO: Unimplemented
-    SCOREBOARD() = default;
+    // The scoreboard as one player sees it. Pass enabled = false to send a cleared board, which
+    // hides the client UI when the player leaves a match or combat is switched off.
+    explicit SCOREBOARD(const CCharEntity* PChar, bool enabled = true);
 };
 
 // Mode=3 Scout Response

@@ -77,6 +77,16 @@ function CZone:getTypeMask()
 end
 
 ---@nodiscard
+---@return CConflict?
+function CZone:getConflict()
+end
+
+-- Starts an ad-hoc Conflict (Ballista) match in this zone, skipping the Herald sign-up flow.
+---@param data table
+function CZone:initializeConflict(data)
+end
+
+---@nodiscard
 ---@param charID integer
 ---@return CBattlefield?
 function CZone:getBattlefieldByInitiator(charID) -- Unused

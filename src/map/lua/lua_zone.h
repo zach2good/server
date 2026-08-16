@@ -28,6 +28,7 @@
 #include "zone.h"
 
 class CZone;
+class ConflictInstance;
 
 class CLuaZone
 {
@@ -61,6 +62,8 @@ public:
     REGION_TYPE  getRegionID();
     xi::ZoneType getTypeMask();
     auto         getBattlefieldByInitiator(uint32 charID) -> CBattlefield*;
+    auto         getConflict() -> ConflictInstance*;
+    void         initializeConflict(const sol::table& data);
     auto         getWeather() const -> xi::Weather;
     uint32       getUptime();
     void         reloadNavmesh();

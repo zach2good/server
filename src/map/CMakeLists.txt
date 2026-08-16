@@ -44,6 +44,12 @@ set(MAP_CORE_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/char_recast_container.h
     ${CMAKE_CURRENT_SOURCE_DIR}/command_handler.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/command_handler.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/conflict_instance.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/conflict_instance.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/conflict_player.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/conflict_player.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/conflict_team.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/conflict_team.h
     ${CMAKE_CURRENT_SOURCE_DIR}/conquest_data.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/conquest_data.h
     ${CMAKE_CURRENT_SOURCE_DIR}/conquest_system.cpp

@@ -26,6 +26,7 @@
 #include <common/mmo.h>
 #include <common/scheduler.h>
 #include <common/timer.h>
+#include <common/types/box.h>
 #include <common/types/maybe.h>
 #include <common/vana_time.h>
 
@@ -214,6 +215,7 @@ class CNpcEntity;
 class CPetEntity;
 class CBattleEntity;
 class CTrustEntity;
+class ConflictInstance;
 class CTreasurePool;
 class CZoneEntities;
 class NominateManager;
@@ -336,6 +338,8 @@ public:
     auto nominateManager() const -> NominateManager&;
     auto campaignHandler() const -> CCampaignHandler*;
     auto battlefieldHandler() const -> CBattlefieldHandler*;
+
+    Box<ConflictInstance> conflict; // The Conflict (Ballista) match running in this zone, if any
 
     auto navMesh() const -> NavMesh*;
     auto xiMesh() const -> XiMesh*;

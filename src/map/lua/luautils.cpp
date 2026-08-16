@@ -37,6 +37,8 @@
 #include <map/lua/lua_action.h>
 #include <map/lua/lua_battlefield.h>
 #include <map/lua/lua_cache.h>
+#include <map/lua/lua_conflict.h>
+#include <map/lua/lua_conflictentry.h>
 #include <map/lua/lua_instance.h>
 #include <map/lua/lua_item.h>
 #include <map/lua/lua_item_puppet.h>
@@ -45,6 +47,7 @@
 #include <map/lua/lua_petskill.h>
 #include <map/lua/lua_spell.h>
 #include <map/lua/lua_statuseffect.h>
+#include <map/lua/lua_timeline.h>
 #include <map/lua/lua_trade_container.h>
 #include <map/lua/lua_trait.h>
 #include <map/lua/lua_treasure_pool.h>
@@ -74,6 +77,7 @@
 #include "utils/serverutils.h"
 #include "utils/synergyutils.h"
 #include "utils/synthutils.h"
+#include "utils/timeutils.h"
 #include "utils/zoneutils.h"
 
 #include "ability.h"
@@ -424,6 +428,9 @@ void init(IPP mapIPP, bool isRunningInCI)
     CLuaAttack::Register();
     CLuaBaseEntity::Register();
     CLuaBattlefield::Register();
+    CLuaConflict::Register();
+    CLuaConflictEntry::Register();
+    CLuaTimeline::Register();
     CLuaInstance::Register();
     CLuaLootContainer::Register();
     CLuaMobSkill::Register();
@@ -2427,6 +2434,134 @@ void OnZoneTick(CZone* PZone)
         sol::error err = result;
         ShowError("luautils::onZoneTick: %s", err.what());
     }
+}
+
+namespace
+{
+
+// The Conflict scripts hang off one global table rather than a per-zone file, so the bridge
+// resolves against it directly. A test double installs a callable userdata rather than a Lua
+// function, which is why this returns an object and calls it as a protected_function.
+auto getConflictLuaFunction(const std::string& name) -> sol::object
+{
+    const auto conflict = lua["xi"]["conflict"];
+    if (!conflict.valid() || !conflict.is<sol::table>())
+    {
+        return sol::lua_nil;
+    }
+
+    return conflict.get<sol::table>()[name];
+}
+
+template <typename... Args>
+auto callConflictLuaFunction(const std::string& name, Args&&... args) -> sol::protected_function_result
+{
+    const auto func = getConflictLuaFunction(name);
+    if (!func.valid())
+    {
+        return {};
+    }
+
+    auto result = func.as<sol::protected_function>()(std::forward<Args>(args)...);
+    if (!result.valid())
+    {
+        const sol::error err = result;
+        ShowErrorFmt("luautils::{}: {}", name, err.what());
+
+        return {};
+    }
+
+    return result;
+}
+
+} // namespace
+
+void ConflictSetup(ConflictInstance* instance)
+{
+    TracyZoneScoped;
+
+    callConflictLuaFunction("setupConflict", CLuaConflict(instance));
+}
+
+void ConflictCleanup(ConflictInstance* instance)
+{
+    TracyZoneScoped;
+
+    callConflictLuaFunction("cleanupConflict", CLuaConflict(instance));
+}
+
+void ConflictUpdateRookState(ConflictInstance* instance)
+{
+    TracyZoneScoped;
+
+    callConflictLuaFunction("updateRookState", CLuaConflict(instance));
+}
+
+auto ConflictGetRookIds(ConflictInstance* instance) -> std::vector<uint32>
+{
+    TracyZoneScoped;
+
+    const auto result = callConflictLuaFunction("getRookIds", CLuaConflict(instance));
+    if (!result.valid())
+    {
+        return {};
+    }
+
+    const auto rookIds = result.get<sol::optional<sol::table>>();
+    if (!rookIds)
+    {
+        return {};
+    }
+
+    std::vector<uint32> ids;
+    ids.reserve(rookIds->size());
+
+    for (const auto& [key, value] : *rookIds)
+    {
+        if (value.is<uint32>())
+        {
+            ids.emplace_back(value.as<uint32>());
+        }
+    }
+
+    return ids;
+}
+
+auto ConflictDistributeInitialItems(CCharEntity* PChar) -> bool
+{
+    TracyZoneScoped;
+
+    const auto result = callConflictLuaFunction("distributeInitialItems", CLuaBaseEntity(PChar));
+
+    return result.valid() && result.get<sol::optional<bool>>().value_or(false);
+}
+
+void ConflictGameHint(CCharEntity* PChar)
+{
+    TracyZoneScoped;
+
+    callConflictLuaFunction("showGameHint", CLuaBaseEntity(PChar));
+}
+
+void ConflictReraise(CCharEntity* PChar)
+{
+    TracyZoneScoped;
+
+    callConflictLuaFunction("onReraise", CLuaBaseEntity(PChar));
+}
+
+void OnConflictGateBreach(ConflictEntry* entry, timeutils::Timeline* timeline, const bool shortGateBreach, const bool alreadyHad)
+{
+    TracyZoneScoped;
+
+    callConflictLuaFunction("onConflictGateBreach", CLuaConflictEntry(entry), CLuaTimeline(timeline, timeutils::GetCurrentVanaTimestamp()), shortGateBreach, alreadyHad);
+}
+
+void OnConflictQuarry(CCharEntity* PChar)
+{
+    TracyZoneScoped;
+
+    callConflictLuaFunction("onConflictQuarry", CLuaBaseEntity(PChar));
 }
 
 void OnGameIn(CCharEntity* PChar, bool zoning)

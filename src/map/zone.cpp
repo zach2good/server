@@ -51,6 +51,7 @@ using ZoneSettingsDataset = xi::data::datasets::zones::settings::Dataset;
 #include <filesystem>
 
 #include "battlefield.h"
+#include "conflict_instance.h"
 #include "enums/loot_recast.h"
 #include "ipc_client.h"
 #include "latent_effect_container.h"
@@ -995,6 +996,11 @@ auto CZone::ZoneServer(timer::time_point tick) -> Task<void>
     if (m_BattlefieldHandler != nullptr)
     {
         m_BattlefieldHandler->HandleBattlefields(tick);
+    }
+
+    if (conflict)
+    {
+        conflict->Tick(tick);
     }
 
     co_return;

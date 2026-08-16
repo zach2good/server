@@ -250,6 +250,7 @@ set(PACKET_S2C_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/0x0e1_group_checkid.h
     ${CMAKE_CURRENT_SOURCE_DIR}/0x0e1_group_checkid.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/0x0e2_group_list2.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/0x0e6_ballista.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/0x0e6_ballista.h
     ${CMAKE_CURRENT_SOURCE_DIR}/0x0f4_tracking_list.h
     ${CMAKE_CURRENT_SOURCE_DIR}/0x0f4_tracking_list.cpp
