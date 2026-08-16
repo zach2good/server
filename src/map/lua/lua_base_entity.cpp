@@ -12453,6 +12453,46 @@ auto CLuaBaseEntity::getBattlefield() const -> CBattlefield*
 }
 
 /************************************************************************
+ *  Function: useItem()
+ *  Purpose : Uses an item the player is holding, by item id
+ *  Example : player:useItem(xi.item.HI_POTION)
+ *  Notes   : Searches temporary storage first, since that is where a Ballista
+ *          : match keeps the items it hands out
+ ************************************************************************/
+
+auto CLuaBaseEntity::useItem(const uint16 itemId) const -> bool
+{
+    auto* PChar = dynamic_cast<CCharEntity*>(m_PBaseEntity);
+    if (PChar == nullptr)
+    {
+        ShowWarning("CLuaBaseEntity::useItem() - Entity is not a player.");
+        return false;
+    }
+
+    for (const auto location : { LOC_TEMPITEMS, LOC_INVENTORY })
+    {
+        auto* PContainer = PChar->getStorage(location);
+        if (PContainer == nullptr)
+        {
+            continue;
+        }
+
+        for (uint8 slotId = 0; slotId <= PContainer->GetSize(); ++slotId)
+        {
+            const auto* PItem = PContainer->GetItem(slotId);
+            if (PItem == nullptr || PItem->getID() != itemId)
+            {
+                continue;
+            }
+
+            return PChar->PAI->UseItem(EntityId(PChar), location, slotId);
+        }
+    }
+
+    return false;
+}
+
+/************************************************************************
  *  Function: isInConflict()
  *  Purpose : Returns true if the entity is fighting for a nation in a Ballista match
  *  Example : if target:isInConflict() then
@@ -21055,6 +21095,7 @@ void CLuaBaseEntity::Register()
     SOL_REGISTER("copyConfrontationEffect", CLuaBaseEntity::copyConfrontationEffect);
 
     // Battlefields
+    SOL_REGISTER("useItem", CLuaBaseEntity::useItem);
     SOL_REGISTER("isInConflict", CLuaBaseEntity::isInConflict);
     SOL_REGISTER("getConflict", CLuaBaseEntity::getConflict);
     SOL_REGISTER("getConflictEntry", CLuaBaseEntity::getConflictEntry);

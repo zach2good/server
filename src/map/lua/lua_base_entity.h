@@ -619,6 +619,7 @@ public:
     uint16 copyConfrontationEffect(uint16 targetID); // copy confrontation effect, param = targetEntity:getTargID()
 
     // Conflict (Ballista)
+    auto useItem(uint16 itemId) const -> bool;       // use an item held in temporary storage or inventory
     auto isInConflict() const -> bool;               // fighting for a nation in a Conflict match
     auto getConflict() const -> ConflictInstance*;   // the match this entity is in, or nullptr
     auto getConflictEntry() const -> ConflictEntry*; // this player's entry in a match, or nullptr

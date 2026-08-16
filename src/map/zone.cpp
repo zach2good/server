@@ -112,6 +112,10 @@ CZone::~CZone()
 {
     TracyZoneScoped;
 
+    // Tearing a match down runs its Lua cleanup, which looks up the zone's NPCs, so it has to
+    // happen while the entity lists are still alive. Member destruction would run it after.
+    conflict.reset();
+
     destroy(m_TreasurePool);
     destroy(m_zoneEntities);
     destroy(m_BattlefieldHandler);

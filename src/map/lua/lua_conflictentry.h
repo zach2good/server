@@ -69,6 +69,9 @@ public:
     [[nodiscard]] auto isTempEntry() const -> bool;
     [[nodiscard]] auto canScore() const -> bool;
 
+    // Nil when the player is out of the zone, or no rooks are placed yet.
+    [[nodiscard]] auto closestRookDistance() const -> Maybe<float>;
+
     void changeTeam(sol::optional<uint8> teamIdx);
 
     // Normally driven by the incoming action packet, exposed here for scripts and tests.

@@ -163,6 +163,11 @@ auto CLuaConflictEntry::canScore() const -> bool
     return m_PEntry->hasGateBreach || m_PEntry->instance->HasOpenRooks();
 }
 
+auto CLuaConflictEntry::closestRookDistance() const -> Maybe<float>
+{
+    return m_PEntry->ClosestRookDistance();
+}
+
 void CLuaConflictEntry::changeTeam(const sol::optional<uint8> teamIdx)
 {
     // With no argument, swap to the other side.
@@ -211,6 +216,7 @@ void CLuaConflictEntry::Register()
     SOL_REGISTER("isTempEntry", CLuaConflictEntry::isTempEntry);
     SOL_REGISTER("changeTeam", CLuaConflictEntry::changeTeam);
     SOL_REGISTER("canScore", CLuaConflictEntry::canScore);
+    SOL_REGISTER("closestRookDistance", CLuaConflictEntry::closestRookDistance);
     SOL_REGISTER("quarry", CLuaConflictEntry::quarry);
     SOL_REGISTER("sprint", CLuaConflictEntry::sprint);
     SOL_REGISTER("scout", CLuaConflictEntry::scout);

@@ -2602,6 +2602,12 @@ end
 function CBaseEntity:copyConfrontationEffect(targetID)
 end
 
+-- Searches temporary storage first, since that is where a Ballista match keeps what it hands out.
+---@param itemId integer
+---@return boolean
+function CBaseEntity:useItem(itemId)
+end
+
 ---@nodiscard
 ---@return boolean
 function CBaseEntity:isInConflict()

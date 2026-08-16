@@ -30,12 +30,15 @@
 
 #include "data/enums/status_effect.h"
 
+#include "common/utils.h"
 #include "entities/char_entity.h"
 #include "lua/luautils.h"
 #include "packets/char_update.h"
 #include "packets/s2c/0x0e6_ballista.h"
+
 #include "status_effect_container.h"
 #include "utils/charutils.h"
+#include "utils/zoneutils.h"
 
 #include <algorithm>
 #include <chrono>
@@ -523,6 +526,33 @@ void ConflictEntry::SetupTemporaryInventory(const SendUpdate sendUpdate)
     {
         charutils::SetTempInventorySize(player, instance->settings.tempItemSize, static_cast<bool>(sendUpdate));
     }
+}
+
+auto ConflictEntry::ClosestRookDistance() const -> Maybe<float>
+{
+    if (player == nullptr)
+    {
+        return std::nullopt;
+    }
+
+    Maybe<float> closest;
+
+    for (const auto rookId : instance->activeRooks)
+    {
+        const auto* rook = zoneutils::GetEntity(rookId, TYPE_NPC);
+        if (rook == nullptr)
+        {
+            continue;
+        }
+
+        const auto rookDistance = distance(player->loc.p, rook->loc.p);
+        if (!closest || rookDistance < *closest)
+        {
+            closest = rookDistance;
+        }
+    }
+
+    return closest;
 }
 
 auto ConflictEntry::HasActiveEntry() const -> bool

@@ -81,7 +81,8 @@ end
 function CZone:getConflict()
 end
 
--- Starts an ad-hoc Conflict (Ballista) match in this zone, skipping the Herald sign-up flow.
+-- Starts a Conflict (Ballista) match in this zone. Ad-hoc by default, which skips the Herald
+-- sign-up flow; pass isScheduled to run the full timeline instead.
 ---@param data table
 function CZone:initializeConflict(data)
 end

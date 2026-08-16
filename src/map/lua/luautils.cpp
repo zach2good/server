@@ -83,6 +83,7 @@
 #include "ability.h"
 #include "action/action.h"
 #include "battlefield.h"
+#include "conflict_instance.h"
 #include "conquest_system.h"
 #include "daily_system.h"
 #include "data/datasets/zones/mobs/dataset.h"
@@ -2480,7 +2481,7 @@ void ConflictSetup(ConflictInstance* instance)
 {
     TracyZoneScoped;
 
-    callConflictLuaFunction("setupConflict", CLuaConflict(instance));
+    callConflictLuaFunction("setupConflict", CLuaConflict(instance), instance->settings.isScheduled);
 }
 
 void ConflictCleanup(ConflictInstance* instance)
@@ -2494,14 +2495,14 @@ void ConflictUpdateRookState(ConflictInstance* instance)
 {
     TracyZoneScoped;
 
-    callConflictLuaFunction("updateRookState", CLuaConflict(instance));
+    callConflictLuaFunction("updateRookState", CLuaConflict(instance), instance->HasOpenRooks());
 }
 
 auto ConflictGetRookIds(ConflictInstance* instance) -> std::vector<uint32>
 {
     TracyZoneScoped;
 
-    const auto result = callConflictLuaFunction("getRookIds", CLuaConflict(instance));
+    const auto result = callConflictLuaFunction("getRookIds", CLuaConflict(instance), instance->rookCount);
     if (!result.valid())
     {
         return {};

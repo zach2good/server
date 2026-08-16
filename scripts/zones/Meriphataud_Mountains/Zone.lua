@@ -2,6 +2,7 @@
 -- Zone: Meriphataud_Mountains (119)
 -----------------------------------
 require('scripts/missions/amk/helpers')
+require('scripts/globals/conflict/core')
 -----------------------------------
 ---@type TZone
 local zoneObject = {}
@@ -15,6 +16,8 @@ end
 
 zoneObject.onZoneIn = function(player, prevZone)
     local cs = -1
+
+    xi.conflict.onZoneIn(player)
 
     if
         player:getXPos() == 0 and

@@ -194,8 +194,9 @@ void CLuaZone::initializeConflict(const sol::table& data)
 
     settings.zoneId = m_pLuaZone->GetID();
 
-    // A match started from a script is ad-hoc: it skips the Herald sign-up flow entirely.
-    settings.isScheduled = false;
+    // A match started from a script is ad-hoc by default: it skips the Herald sign-up flow and
+    // starts straight away. Ask for a scheduled one to get the full sign-up timeline instead.
+    settings.isScheduled = data.get<sol::optional<bool>>("isScheduled").value_or(false);
 
     settings.team1 = static_cast<xi::Allegiance>(data.get<sol::optional<uint8>>("team1")
                                                      .value_or(std::to_underlying(xi::Allegiance::SanDoria)));

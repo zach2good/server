@@ -102,6 +102,12 @@ end
 function CConflictEntry:canScore()
 end
 
+-- Nil when the player is out of the zone, or no rooks are placed yet.
+---@nodiscard
+---@return number?
+function CConflictEntry:closestRookDistance()
+end
+
 -- Swaps to the other team when no index is given.
 ---@param teamIdx integer?
 function CConflictEntry:changeTeam(teamIdx)
