@@ -198,6 +198,30 @@ auto CDataLoader::GetPlayersCount(const SearchRequest& sr) const -> uint32
  *          Job ID is 0 for none specified.                              *
  ************************************************************************/
 
+namespace
+{
+
+// Conflict (Ballista) colours a participant by the side they are fighting for rather than their
+// nation, and marks them while a match is still forming. Allegiance counts nations from San
+// d'Oria, so it is shifted down to a zero-based team before packing.
+void applyConflictOverlay(SearchEntity& player)
+{
+    if (player.allegiance == 0)
+    {
+        return;
+    }
+
+    player.flags2 += (player.allegiance - 1) << 17;
+
+    // Still preparing rather than fighting.
+    if (!player.combatEnabled)
+    {
+        player.flags2 += 1 << 16;
+    }
+}
+
+} // namespace
+
 auto CDataLoader::GetPlayersList(SearchRequest sr, int* count) const -> std::vector<SearchEntity>
 {
     std::vector<SearchEntity> PlayersList;
@@ -237,7 +261,7 @@ auto CDataLoader::GetPlayersList(SearchRequest sr, int* count) const -> std::vec
     std::string fmtQuery =
         "SELECT charid, partyid, charname, pos_zone, pos_prevzone, nation, rank_sandoria, rank_bastok, unity_leader, "
         "rank_windurst, race, mjob, sjob, mlvl, slvl, languages, settings, seacom_type, disconnecting, gmHiddenEnabled, muted, "
-        "linkshellid1, linkshellid2 "
+        "linkshellid1, linkshellid2, conflict.allegiance, conflict.combat_enabled "
         "FROM accounts_sessions "
         "LEFT JOIN accounts_parties USING (charid) "
         "LEFT JOIN chars USING (charid) "
@@ -245,6 +269,15 @@ auto CDataLoader::GetPlayersList(SearchRequest sr, int* count) const -> std::vec
         "LEFT JOIN char_stats USING (charid) "
         "LEFT JOIN char_profile USING(charid) "
         "LEFT JOIN char_flags USING(charid) "
+        // A player fighting in a Ballista match is shown under their match allegiance rather than
+        // their nation, so the search window needs the match they are in.
+        "LEFT JOIN ("
+        "    SELECT ce.charid AS conflict_charid, ce.allegiance, ci.combat_enabled, ci.zoneid "
+        "    FROM conflict_entries ce "
+        "    LEFT JOIN conflict_instances ci USING(instanceid) "
+        "    WHERE ci.state BETWEEN 2 AND 4 AND ce.type IN (1, 2) "
+        "    GROUP BY ce.charid "
+        ") AS conflict ON chars.charid = conflict.conflict_charid AND chars.pos_zone = conflict.zoneid "
         "WHERE charname IS NOT NULL ";
 
     fmtQuery.append(filterQry);
@@ -350,7 +383,11 @@ auto CDataLoader::GetPlayersList(SearchRequest sr, int* count) const -> std::vec
                 player.flags1 |= 0x20000000;
             }
 
+            player.allegiance    = rset->getOrDefault<uint8>("allegiance", 0);
+            player.combatEnabled = rset->getOrDefault<bool>("combat_enabled", false);
+
             player.flags2 = player.flags1;
+            applyConflictOverlay(player);
 
             if (player.mjob == static_cast<uint8>(xi::Job::MON) || player.sjob == static_cast<uint8>(xi::Job::MON))
             {
@@ -527,6 +564,13 @@ auto CDataLoader::GetPartyList(uint32 PartyID, uint32 AllianceID) const -> std::
                                  "LEFT JOIN char_stats USING(charid) "
                                  "LEFT JOIN char_profile USING(charid) "
                                  "LEFT JOIN char_flags USING(charid) "
+                                 "LEFT JOIN ("
+                                 "    SELECT ce.charid AS conflict_charid, ce.allegiance, ci.combat_enabled, ci.zoneid "
+                                 "    FROM conflict_entries ce "
+                                 "    LEFT JOIN conflict_instances ci USING(instanceid) "
+                                 "    WHERE ci.state BETWEEN 2 AND 4 AND ce.type IN (1, 2) "
+                                 "    GROUP BY ce.charid "
+                                 ") AS conflict ON chars.charid = conflict.conflict_charid AND chars.pos_zone = conflict.zoneid "
                                  "WHERE IF (allianceid <> 0, allianceid IN (SELECT allianceid FROM accounts_parties WHERE charid = ?) , partyid = ?) "
                                  "ORDER BY charname ASC "
                                  "LIMIT 64",
@@ -606,7 +650,11 @@ auto CDataLoader::GetPartyList(uint32 PartyID, uint32 AllianceID) const -> std::
             player.flags1 |= 0x8000;
         }
 
+        player.allegiance    = rset->getOrDefault<uint8>("allegiance", 0);
+        player.combatEnabled = rset->getOrDefault<bool>("combat_enabled", false);
+
         player.flags2 = player.flags1;
+        applyConflictOverlay(player);
 
         PartyList.emplace_back(std::move(player));
     }

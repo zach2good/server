@@ -30,10 +30,13 @@
 
 #include "data/enums/status_effect.h"
 
+#include "enums/msg_std.h"
+
 #include "common/utils.h"
 #include "entities/char_entity.h"
 #include "lua/luautils.h"
 #include "packets/char_update.h"
+#include "packets/s2c/0x053_systemmes.h"
 #include "packets/s2c/0x0e6_ballista.h"
 
 #include "status_effect_container.h"
@@ -349,8 +352,13 @@ void ConflictEntry::SetGateBreach(const GateBreachOn on, [[maybe_unused]] const 
         player->pushPacket<CCharUpdatePacket>(player, ENTITY_UPDATE, static_cast<uint8>(UPDATE_HP));
     }
 
-    // TODO(conflict-messages): unless silent, basic message 124 when the breach is gained and
-    // system message 212 when it is lost.
+    if (player && !silent && had && !on)
+    {
+        player->pushPacket<GP_SERV_COMMAND_SYSTEMMES>(0, 0, MsgStd::GateBreachDisengaged);
+    }
+
+    // TODO(conflict-messages): the basic message announcing a breach being gained is not yet
+    // identified in MsgBasic.
 
     gateBreachTimeline.Clean();
 
@@ -371,7 +379,9 @@ void ConflictEntry::Quarry()
     const auto now = timer::now();
     if (now < nextQuarry)
     {
-        // TODO(conflict-messages): system message 38, with the seconds remaining.
+        const auto remaining = std::chrono::ceil<std::chrono::seconds>(nextQuarry - now).count();
+        player->pushPacket<GP_SERV_COMMAND_SYSTEMMES>(static_cast<uint32>(remaining), 0, MsgStd::WaitLonger);
+
         return;
     }
 
@@ -398,14 +408,17 @@ void ConflictEntry::Sprint()
 
     if (heldPetras > 0)
     {
-        // TODO(conflict-messages): system message 209, cannot act while holding a Petra.
+        player->pushPacket<GP_SERV_COMMAND_SYSTEMMES>(0, 0, MsgStd::CannotPerformPetra);
+
         return;
     }
 
     const auto now = timer::now();
     if (now < nextSprint)
     {
-        // TODO(conflict-messages): system message 38, with the seconds remaining.
+        const auto remaining = std::chrono::ceil<std::chrono::seconds>(nextSprint - now).count();
+        player->pushPacket<GP_SERV_COMMAND_SYSTEMMES>(static_cast<uint32>(remaining), 0, MsgStd::WaitLonger);
+
         return;
     }
 
@@ -417,7 +430,8 @@ void ConflictEntry::Scout()
 {
     if (heldPetras < 1)
     {
-        // TODO(conflict-messages): system message 210, cannot scout without a Petra.
+        player->pushPacket<GP_SERV_COMMAND_SYSTEMMES>(0, 0, MsgStd::CannotPerformNoPetra);
+
         return;
     }
 
@@ -427,9 +441,15 @@ void ConflictEntry::Scout()
         return;
     }
 
+    const auto* rook = ClosestRook();
+    if (rook == nullptr)
+    {
+        return;
+    }
+
     nextScout = now + conflict::ScoutCooldown;
 
-    // TODO(conflict-rooks): send GP_SERV_COMMAND_BALLISTA::SCOUT once rook entities exist.
+    player->pushPacket<GP_SERV_COMMAND_BALLISTA::SCOUT>(rook, distance(player->loc.p, rook->loc.p));
 }
 
 void ConflictEntry::EnableCombat(const bool enable)
@@ -528,31 +548,44 @@ void ConflictEntry::SetupTemporaryInventory(const SendUpdate sendUpdate)
     }
 }
 
-auto ConflictEntry::ClosestRookDistance() const -> Maybe<float>
+auto ConflictEntry::ClosestRook() const -> CBaseEntity*
 {
     if (player == nullptr)
     {
-        return std::nullopt;
+        return nullptr;
     }
 
-    Maybe<float> closest;
+    CBaseEntity* closest         = nullptr;
+    auto         closestDistance = 0.0f;
 
     for (const auto rookId : instance->activeRooks)
     {
-        const auto* rook = zoneutils::GetEntity(rookId, TYPE_NPC);
+        auto* rook = zoneutils::GetEntity(rookId, TYPE_NPC);
         if (rook == nullptr)
         {
             continue;
         }
 
         const auto rookDistance = distance(player->loc.p, rook->loc.p);
-        if (!closest || rookDistance < *closest)
+        if (closest == nullptr || rookDistance < closestDistance)
         {
-            closest = rookDistance;
+            closest         = rook;
+            closestDistance = rookDistance;
         }
     }
 
     return closest;
+}
+
+auto ConflictEntry::ClosestRookDistance() const -> Maybe<float>
+{
+    const auto* rook = ClosestRook();
+    if (rook == nullptr)
+    {
+        return std::nullopt;
+    }
+
+    return distance(player->loc.p, rook->loc.p);
 }
 
 auto ConflictEntry::HasActiveEntry() const -> bool

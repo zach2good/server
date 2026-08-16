@@ -1707,10 +1707,17 @@ void HandleEnspell(CBattleEntity* PAttacker, CBattleEntity* PDefender, action_re
 
 uint8 GetRangedHitRate(CBattleEntity* PAttacker, CBattleEntity* PDefender, bool isBarrage, int16 accBonus)
 {
-    // Check to see if distance is greater than 25 and force hitrate to be 0
+    // Past 25 yalms a shot cannot connect, except that a player in a Conflict (Ballista) match can
+    // reach further while Sharpshot is up. Mobs never get the exception.
     if (distance(PAttacker->loc.p, PDefender->loc.p) > 25)
     {
-        return 0;
+        const auto sharpshotReach = PAttacker->isInConflict() &&
+                                    PAttacker->StatusEffectContainer->HasStatusEffect(xi::StatusEffect::Sharpshot);
+
+        if (!sharpshotReach)
+        {
+            return 0;
+        }
     }
 
     double luaHitRate = luautils::callGlobal<double>("xi.combat.physicalHitRate.getRangedHitRate", PAttacker, PDefender, accBonus, false);
@@ -4402,6 +4409,22 @@ int32 CheckAndApplyDamageCap(int32 damage, CBattleEntity* PDefender)
     damage -= xirand::GetRandomNumber<int32>(0, damageVariant + 1);
 
     return std::clamp(damage, damageCap - damageVariant, damageCap);
+}
+
+auto HandleConflictDamage(CBattleEntity* PDefender, const int32 damage) -> int32
+{
+    if (damage <= 0 || PDefender == nullptr || !PDefender->isInConflict())
+    {
+        return damage;
+    }
+
+    // Damage falls away the larger the hit, so a single burst cannot decide a match. At 4000 the
+    // reduction would be total, so the scale is clamped short of that.
+    constexpr auto reductionScale = 4000.0f;
+
+    const auto retained = 1.0f - std::min(static_cast<float>(damage), reductionScale - 1.0f) / reductionScale;
+
+    return std::max(1, static_cast<int32>(static_cast<float>(damage) * retained));
 }
 
 // TODO: Study using lua functions.

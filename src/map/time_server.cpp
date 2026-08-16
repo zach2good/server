@@ -31,6 +31,7 @@
 #include "spawn_handler.h"
 #include "timetriggers.h"
 #include "transport.h"
+#include "utils/conflictutils.h"
 #include "utils/guildutils.h"
 #include "utils/instanceutils.h"
 #include "utils/moduleutils.h"
@@ -45,6 +46,10 @@ auto time_server(Scheduler& scheduler, MapConfig config) -> Task<void>
     // Track elapsed ticks.
     static auto tickNum = 0;
     ++tickNum;
+
+    // Reaps finished Ballista matches and plans the next one. Self-gates on whether this process
+    // hosts a Ballista zone at all.
+    conflictutils::Tick(tick);
 
     // Earth-based ticks.
     // Uses the JST equivalent of the current timer tick. (steady_clock -> system_clock)

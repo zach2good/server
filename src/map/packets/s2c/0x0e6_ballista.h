@@ -23,6 +23,7 @@
 
 #include "base.h"
 
+class CBaseEntity;
 class CCharEntity;
 
 // https://github.com/atom0s/XiPackets/tree/main/world/server/0x00E6
@@ -68,8 +69,8 @@ public:
         float    RookDistance;    // PS2: (New; did not exist.)
     };
 
-    // TODO: Unimplemented
-    SCOUT() = default;
+    // Answers a scout with where the nearest rook stands and how far off it is.
+    SCOUT(const CBaseEntity* PRook, float distanceToRook);
 };
 
 } // namespace GP_SERV_COMMAND_BALLISTA

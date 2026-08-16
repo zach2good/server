@@ -506,7 +506,18 @@ local function calculateResistanceFactor(actor, target, params)
         end
     end
 
-    return 1 / (2 ^ resistTier)
+    local resistanceFactor = 1 / (2 ^ resistTier)
+
+    -- Status effects are harder to land inside a Conflict (Ballista) match, so a match is not
+    -- decided by whoever sticks the first sleep.
+    if
+        params.effectId > 0 and
+        target:isInConflict()
+    then
+        resistanceFactor = resistanceFactor / 1.5
+    end
+
+    return resistanceFactor
 end
 
 -----------------------------------

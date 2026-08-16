@@ -32,6 +32,7 @@
 
 #include <chrono>
 
+class CBaseEntity;
 class CCharEntity;
 class ConflictInstance;
 class ConflictTeam;
@@ -109,8 +110,9 @@ public:
     void SetupBattleCommunication();
     void SetupTemporaryInventory(SendUpdate sendUpdate = SendUpdate::No);
 
-    // Distance from the player to the nearest active rook. No value when the player is not in the
-    // zone, or the match has no rooks placed yet.
+    // The active rook nearest the player, or nullptr when the player is out of the zone or the
+    // match has no rooks placed yet.
+    [[nodiscard]] auto ClosestRook() const -> CBaseEntity*;
     [[nodiscard]] auto ClosestRookDistance() const -> Maybe<float>;
 
     [[nodiscard]] auto HasActiveEntry() const -> bool;

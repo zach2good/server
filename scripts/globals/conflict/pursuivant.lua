@@ -26,7 +26,7 @@ function xi.conflict.pursuivant.onTrigger(player, npc)
         return
     end
 
-    local bp = player:getBallistaPoints()
+    local bp = player:getCurrency('ballista_point')
     local params = {}
 
     -- First two bits are nation.

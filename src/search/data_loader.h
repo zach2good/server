@@ -69,6 +69,11 @@ struct SearchEntity
     bool        disconnecting  = false;
     bool        muted          = false;
     uint8       unityLeader    = 0;
+
+    // Conflict (Ballista). The allegiance is zero for anyone not in a match; combat is off while
+    // a match is still signing up or lining up.
+    uint8 allegiance    = 0;
+    bool  combatEnabled = false;
 };
 
 /************************************************************************

@@ -3,6 +3,7 @@
 -----------------------------------
 require('scripts/missions/amk/helpers')
 require('scripts/globals/conflict/core')
+require('scripts/globals/conflict/notification')
 -----------------------------------
 ---@type TZone
 local zoneObject = {}
@@ -41,6 +42,9 @@ zoneObject.onZoneIn = function(player, prevZone)
 end
 
 zoneObject.afterZoneIn = function(player)
+    -- Tell an arriving player when the next Ballista match is.
+    xi.conflict.nextBallistaMatchNotification(player)
+
     xi.chocoboGame.handleMessage(player)
 end
 

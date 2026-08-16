@@ -24,6 +24,7 @@
 #include "conflict_instance.h"
 #include "conflict_player.h"
 #include "conflict_team.h"
+#include "entities/base_entity.h"
 #include "entities/char_entity.h"
 
 namespace GP_SERV_COMMAND_BALLISTA
@@ -82,6 +83,28 @@ SCOREBOARD::SCOREBOARD(const CCharEntity* PChar, const bool enabled)
     // The flame lights belong to Brenner and stay constant throughout a Ballista match.
     packet.Flammes   = 0x48;
     packet.FlammeFlg = 0;
+}
+
+SCOUT::SCOUT(const CBaseEntity* PRook, const float distanceToRook)
+{
+    auto& packet = this->data();
+
+    packet.Flags = 1;
+    packet.Mode  = 3; // Scout response.
+
+    if (PRook == nullptr)
+    {
+        return;
+    }
+
+    packet.RookUniqueNo = PRook->id;
+
+    packet.RookPosition[0] = PRook->loc.p.x;
+    packet.RookPosition[1] = PRook->loc.p.y;
+    packet.RookPosition[2] = PRook->loc.p.z;
+    packet.RookPosition[3] = 0.0f;
+
+    packet.RookDistance = distanceToRook;
 }
 
 } // namespace GP_SERV_COMMAND_BALLISTA

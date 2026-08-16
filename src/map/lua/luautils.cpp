@@ -70,6 +70,7 @@
 #include "utils/battleutils.h"
 
 #include "utils/charutils.h"
+#include "utils/conflictutils.h"
 #include "utils/instanceutils.h"
 #include "utils/itemutils.h"
 #include "utils/mobutils.h"
@@ -357,6 +358,25 @@ void init(IPP mapIPP, bool isRunningInCI)
     lua.set_function("VanadielYear", &luautils::VanadielYear);
     lua.set_function("VanadielMonth", &luautils::VanadielMonth);
     lua.set_function("VanadielUniqueDay", &luautils::VanadielUniqueDay);
+
+    // The Ballista match the calendar puts on next, which is today's if today is a match day.
+    // Nations are counted from zero the way the conflict scripts count them.
+    lua.set_function("GetNextBallistaInfo", []() -> sol::table
+                     {
+                         const auto& settings = conflictutils::GetNextBallistaSettings();
+
+                         auto info = lua.create_table();
+
+                         info["zoneId"]    = std::to_underlying(settings.zoneId);
+                         info["nation1"]   = std::to_underlying(settings.team1) - std::to_underlying(xi::Allegiance::SanDoria);
+                         info["nation2"]   = std::to_underlying(settings.team2) - std::to_underlying(xi::Allegiance::SanDoria);
+                         info["type"]      = std::to_underlying(settings.type);
+                         info["levelCap"]  = settings.levelCap;
+                         info["signupFee"] = settings.signupFee;
+                         info["startTime"] = settings.matchStart;
+
+                         return info;
+                     });
     lua.set_function("VanadielDayElement", &luautils::VanadielDayElement);
     lua.set_function("VanadielMoonPhase", &luautils::VanadielMoonPhase);
     lua.set_function("VanadielMoonDirection", &luautils::VanadielMoonDirection);

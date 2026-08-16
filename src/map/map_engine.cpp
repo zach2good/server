@@ -56,6 +56,7 @@
 
 #include "utils/battleutils.h"
 #include "utils/charutils.h"
+#include "utils/conflictutils.h"
 #include "utils/fishingutils.h"
 #include "utils/gardenutils.h"
 #include "utils/guildutils.h"
@@ -220,6 +221,8 @@ auto MapEngine::init() -> Task<void>
     {
         zoneutils::InitializeWeather(); // Need VanaTime initialized
     }
+
+    conflictutils::Initialize(); // Needs the zones and VanaTime up
 
     //
     // Queue up regular tasks for the Scheduler

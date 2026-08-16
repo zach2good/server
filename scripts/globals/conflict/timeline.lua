@@ -188,7 +188,7 @@ function xi.conflict.setupLineupTimeline(conflict, timestamp)
 
         -- Walk to speech position
         herald:initNpcAi()
-        herald:speed(13)
+        herald:setBaseSpeed(13)
         herald:pathTo(speechPos.x, speechPos.y, speechPos.z, 0x18)
     end)
 
@@ -251,7 +251,7 @@ function xi.conflict.setupLineupTimeline(conflict, timestamp)
 
     -- Path back to normal position
     timeline:offsetSeconds(20):addEvent(function()
-        herald:speed(13)
+        herald:setBaseSpeed(13)
         herald:pathTo(heraldPos.x, heraldPos.y, heraldPos.z, 0x18)
     end)
 
@@ -570,7 +570,7 @@ function xi.conflict.setupConclusionTimeline(conflict)
         -- Walk to speech position
         herald:setLocalVar('GivingSpeech', 1)
         herald:initNpcAi()
-        herald:speed(13)
+        herald:setBaseSpeed(13)
         herald:pathTo(speechPos.x, speechPos.y, speechPos.z, 0x18)
     end)
 
@@ -597,7 +597,7 @@ function xi.conflict.setupConclusionTimeline(conflict)
     end)
 
     timeline:offsetSeconds(5):addEvent(function()
-        herald:sendEntityEmote(herald, xi.emote.BOW, xi.emoteMode.MOTION)
+        herald:sendEmote(herald, xi.emote.BOW, xi.emoteMode.MOTION)
     end)
 
     timeline:offsetSeconds(5):addEvent(function()
@@ -626,12 +626,12 @@ function xi.conflict.setupConclusionTimeline(conflict)
     end)
 
     timeline:offsetSeconds(5):addEvent(function()
-        herald:sendEntityEmote(herald, xi.emote.CLAP, xi.emoteMode.MOTION)
+        herald:sendEmote(herald, xi.emote.CLAP, xi.emoteMode.MOTION)
     end)
 
     -- Path back to normal position
     timeline:offsetSeconds(5):addEvent(function()
-        herald:speed(13)
+        herald:setBaseSpeed(13)
         herald:pathTo(heraldPos.x, heraldPos.y, heraldPos.z, 0x18)
     end)
 

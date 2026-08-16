@@ -798,6 +798,10 @@ end
 xi.garrison.onEventFinish = function(player, csid, option, guardNation, guardType, guardRegion)
     if xi.settings.main.ENABLE_GARRISON then
         if csid == 32753 + player:getNation() and option == 0 then
+            if xi.garrison.isBallistaActive(player:getZone()) then
+                return true
+            end
+
             player:confirmTrade()
 
             local npc = GetNPCByID(player:getLocalVar('GARRISON_NPC'))
@@ -832,6 +836,18 @@ local function garrisonWatchdog(npc)
             garrisonWatchdog(npcArg)
         end
     end)
+end
+
+-- Garrison and Ballista share the outdoor zones. A Ballista match owns the field while it is
+-- running, so Garrison stands down rather than spawning waves into a PVP fight.
+xi.garrison.isBallistaActive = function(zone)
+    local conflict = zone:getConflict()
+    if conflict == nil then
+        return false
+    end
+
+    return conflict:getState() >= xi.conflictState.SIGN_UP and
+        conflict:getState() <= xi.conflictState.ACTIVE
 end
 
 xi.garrison.start = function(player, npc)

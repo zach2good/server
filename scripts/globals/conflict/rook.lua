@@ -88,7 +88,7 @@ local function emergeRook(rook, rookInfo)
         return
     end
 
-    rook:clearActions()
+    rook:clearActionQueue()
 
     local currentPosIdx = rook:getLocalVar('PositionIndex')
     local newPosIdx = 1
@@ -106,11 +106,11 @@ local function emergeRook(rook, rookInfo)
 
     local newPos = rookInfo.pos[newPosIdx]
     rook:setPos(newPos[1], newPos[2], newPos[3], newPos[4])
-    rook:untargetable(true)
-    rook:AnimationSub(69) -- Emerge from ground
+    rook:setUntargetable(true)
+    rook:setAnimationSub(69) -- Emerge from ground
     rook:queue(8000, function(rook)
-        rook:untargetable(false)
-        rook:AnimationSub(70) -- Stay above ground
+        rook:setUntargetable(false)
+        rook:setAnimationSub(70) -- Stay above ground
     end)
 end
 
@@ -119,11 +119,11 @@ local function submergeRook(rook)
         return
     end
 
-    rook:clearActions()
-    rook:untargetable(true)
-    rook:AnimationSub(71) -- Submerge into ground
+    rook:clearActionQueue()
+    rook:setUntargetable(true)
+    rook:setAnimationSub(71) -- Submerge into ground
     rook:queue(8000, function(rook)
-        rook:AnimationSub(72) -- Stay below ground
+        rook:setAnimationSub(72) -- Stay below ground
     end)
 end
 
@@ -151,7 +151,7 @@ function xi.conflict.rook.setup(conflict)
                 rook:setModelId(modelId)
                 rook:setAnimation(conflict:areRooksOpen() and 34 or 0)
                 rook:setStatus(xi.status.NORMAL)
-                rook:untargetable(false)
+                rook:setUntargetable(false)
             end
         end)
     end)
@@ -203,8 +203,8 @@ function xi.conflict.setRookVisibility(conflict, visible)
     xi.conflict.forEachRook(conflict, function(rook)
         if rook ~= nil then
             rook:setStatus(statusToSet)
-            rook:untargetable(not visible)
-            rook:AnimationSub(animationSub)
+            rook:setUntargetable(not visible)
+            rook:setAnimationSub(animationSub)
         end
     end)
 end

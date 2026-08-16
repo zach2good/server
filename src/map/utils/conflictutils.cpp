@@ -21,11 +21,81 @@
 
 #include "conflictutils.h"
 
+#include "common/database.h"
 #include "common/logging.h"
+#include "common/vana_time.h"
 
 #include "lua/luautils.h"
+#include "utils/timeutils.h"
 #include "utils/zoneutils.h"
 #include "zone.h"
+
+#include <array>
+#include <utility>
+
+namespace
+{
+
+// The zones that host scheduled Ballista. A process that loads none of them does no scheduling.
+constexpr std::array kConflictZones = {
+    xi::ZoneId::JugnerForest,
+    xi::ZoneId::PashhowMarshlands,
+    xi::ZoneId::MeriphataudMountains,
+};
+
+bool              isConflictProcess = false;
+timer::time_point scheduleUpdate    = timer::time_point::max();
+
+// GetNextBallistaSettings is asked for on every Herald visit, so the answer is cached per day.
+uint32           nextBallistaSettingsDay = 0;
+ConflictSettings nextBallistaSettings;
+
+struct VanaDate
+{
+    int32 year  = 0; // Years since 886, matching vanadiel_time::get_year()
+    uint8 month = 1;
+    uint8 day   = 1;
+};
+
+auto currentVanaDate() -> VanaDate
+{
+    const auto now = vanadiel_time::now();
+
+    return VanaDate{
+        .year  = vanadiel_time::get_year(now),
+        .month = static_cast<uint8>(vanadiel_time::get_month(now)),
+        .day   = static_cast<uint8>(vanadiel_time::get_monthday(now)),
+    };
+}
+
+// Drops the database rows of matches that finished long enough ago that nobody can still collect
+// from the Herald.
+void cleanupFinishedMatches(const uint32 vanaTimestamp)
+{
+    if (!db::preparedStmt("DELETE FROM conflict_instances WHERE start + length < ?", vanaTimestamp))
+    {
+        ShowError("conflictutils: failed to clean up finished Conflict matches.");
+    }
+}
+
+// 06:00 tomorrow, when the scheduler next looks ahead.
+auto nextScheduleUpdate() -> timer::time_point
+{
+    return timeutils::GetTimePointFromVanaTimestamp(timeutils::GetVanaTimestampAt(6, 0, 1));
+}
+
+void seedMatch(const ConflictSettings& settings)
+{
+    // An odd day, or a slot the calendar leaves empty, produces settings with no zone.
+    if (settings.zoneId == xi::ZoneId::Unknown)
+    {
+        return;
+    }
+
+    conflictutils::CreateConflictInstance(settings);
+}
+
+} // namespace
 
 namespace conflictutils
 {
@@ -56,6 +126,235 @@ void DestroyConflictInstance(CZone* zone)
     }
 
     zone->conflict.reset();
+}
+
+auto IsConflictProcess() -> bool
+{
+    for (const auto zoneId : kConflictZones)
+    {
+        if (zoneutils::GetZone(zoneId) != nullptr)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+auto GetEntryFeeFromLevelCap(const uint8 levelCap) -> uint16
+{
+    switch (levelCap)
+    {
+        case 30:
+            return 500;
+        case 40:
+            return 1000;
+        case 50:
+            return 1500;
+        case 60:
+            return 2000;
+        case 0:
+            return 3000; // Uncapped
+        default:
+            return 0;
+    }
+}
+
+auto GetBallistaSettingsFromDate(uint8 dayOfMonth, uint8 month, int32 year) -> ConflictSettings
+{
+    // Ballista runs on even days only.
+    if (dayOfMonth % 2 == 1)
+    {
+        return {};
+    }
+
+    // Callers ask about the day either side of today, which can fall outside this month.
+    auto day       = static_cast<int32>(dayOfMonth);
+    auto thisMonth = static_cast<int32>(month);
+
+    while (day <= 0)
+    {
+        day += 30;
+        --thisMonth;
+    }
+
+    while (day > 30)
+    {
+        day -= 30;
+        ++thisMonth;
+    }
+
+    while (thisMonth > 12)
+    {
+        thisMonth -= 12;
+        ++year;
+    }
+
+    while (thisMonth <= 0)
+    {
+        thisMonth += 12;
+        --year;
+    }
+
+    auto settings = ConflictSettings();
+
+    settings.isScheduled = true;
+    settings.matchStart  = timeutils::GetVanaTimestampFromDate(year, static_cast<uint8>(thisMonth), static_cast<uint8>(day));
+    settings.matchLength = 60 * 24; // One Vana'diel day
+
+    // The three zones take turns, and the nations they pit against each other rotate by season.
+    const auto matchup = [&](xi::Allegiance early, xi::Allegiance mid, xi::Allegiance late)
+    {
+        if (thisMonth <= 4)
+        {
+            return early;
+        }
+
+        if (thisMonth <= 8)
+        {
+            return mid;
+        }
+
+        return late;
+    };
+
+    switch ((day - 1) % 6)
+    {
+        case 1:
+            settings.zoneId              = xi::ZoneId::JugnerForest;
+            settings.restrictNormalItems = false;
+            settings.tempItemSize        = 15;
+            settings.type                = xi::ConflictType::AllOrNothing;
+            settings.team1               = matchup(xi::Allegiance::SanDoria, xi::Allegiance::Bastok, xi::Allegiance::SanDoria);
+            settings.team2               = matchup(xi::Allegiance::Bastok, xi::Allegiance::Windurst, xi::Allegiance::Windurst);
+            break;
+
+        case 3:
+            settings.zoneId              = xi::ZoneId::PashhowMarshlands;
+            settings.restrictNormalItems = true;
+            settings.tempItemSize        = 10;
+            settings.initialTempItems    = true;
+            settings.type                = xi::ConflictType::AllOrNothing;
+            settings.team1               = matchup(xi::Allegiance::Bastok, xi::Allegiance::SanDoria, xi::Allegiance::SanDoria);
+            settings.team2               = matchup(xi::Allegiance::Windurst, xi::Allegiance::Windurst, xi::Allegiance::Bastok);
+            break;
+
+        case 5:
+            settings.zoneId              = xi::ZoneId::MeriphataudMountains;
+            settings.restrictNormalItems = false;
+            settings.tempItemSize        = 15;
+            settings.type                = xi::ConflictType::BestOfThree;
+            settings.team1               = matchup(xi::Allegiance::SanDoria, xi::Allegiance::SanDoria, xi::Allegiance::Bastok);
+            settings.team2               = matchup(xi::Allegiance::Windurst, xi::Allegiance::Bastok, xi::Allegiance::Windurst);
+            break;
+
+        default:
+            // An even day the calendar leaves empty.
+            return {};
+    }
+
+    // The cap climbs through the month and the last few days are uncapped.
+    if (day < 26)
+    {
+        settings.levelCap = static_cast<uint8>((day - 1) / 6 * 10 + 30);
+    }
+
+    settings.signupFee = GetEntryFeeFromLevelCap(settings.levelCap);
+
+    return settings;
+}
+
+auto GetNextBallistaSettings() -> const ConflictSettings&
+{
+    const auto date = currentVanaDate();
+
+    // Today if today is a match day, otherwise tomorrow.
+    const auto nextMatchDay = static_cast<uint8>(date.day + (date.day % 2));
+
+    if (nextBallistaSettingsDay != nextMatchDay)
+    {
+        nextBallistaSettings    = GetBallistaSettingsFromDate(nextMatchDay, date.month, date.year);
+        nextBallistaSettingsDay = nextMatchDay;
+    }
+
+    return nextBallistaSettings;
+}
+
+void Initialize()
+{
+    // Ad-hoc matches do not survive a restart; only scheduled ones are recovered.
+    if (!db::preparedStmt("DELETE FROM conflict_instances WHERE type = 0"))
+    {
+        ShowError("conflictutils: failed to clean up ad hoc Conflict matches.");
+    }
+
+    if (!IsConflictProcess())
+    {
+        return;
+    }
+
+    isConflictProcess = true;
+
+    const auto date = currentVanaDate();
+
+    cleanupFinishedMatches(timeutils::GetCurrentVanaTimestamp());
+
+    // Seed the matches bracketing now: on an odd day that is yesterday's and tomorrow's, so a
+    // match still in its collection window is recovered alongside the one about to open.
+    if (date.day % 2 == 1)
+    {
+        seedMatch(GetBallistaSettingsFromDate(date.day - 1, date.month, date.year));
+        seedMatch(GetBallistaSettingsFromDate(date.day + 1, date.month, date.year));
+    }
+    else
+    {
+        seedMatch(GetBallistaSettingsFromDate(date.day, date.month, date.year));
+    }
+
+    scheduleUpdate = nextScheduleUpdate();
+
+    ShowInfo("conflictutils: Conflict (Ballista) scheduler initialised for this process.");
+}
+
+void Tick(const timer::time_point tick)
+{
+    if (!isConflictProcess)
+    {
+        return;
+    }
+
+    // Reap matches whose collection window has closed. A live match is advanced by its own zone's
+    // tick, so this only tears finished ones down.
+    for (const auto zoneId : kConflictZones)
+    {
+        auto* zone = zoneutils::GetZone(zoneId);
+        if (zone == nullptr || !zone->conflict)
+        {
+            continue;
+        }
+
+        if (tick > zone->conflict->cleanupTime)
+        {
+            zone->conflict.reset();
+        }
+    }
+
+    if (tick < scheduleUpdate)
+    {
+        return;
+    }
+
+    const auto date = currentVanaDate();
+
+    // On an odd day tomorrow's match can be planned.
+    if (date.day % 2 == 1)
+    {
+        seedMatch(GetBallistaSettingsFromDate(date.day + 1, date.month, date.year));
+    }
+
+    scheduleUpdate = nextScheduleUpdate();
+
+    cleanupFinishedMatches(timeutils::GetCurrentVanaTimestamp());
 }
 
 } // namespace conflictutils

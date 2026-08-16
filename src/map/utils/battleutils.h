@@ -214,6 +214,10 @@ auto  PhysicalDmgTaken(CBattleEntity* PDefender, int32 damage, xi::DamageType da
 auto  RangedDmgTaken(CBattleEntity* PDefender, int32 damage, xi::DamageType damageType, bool IsCovered = false) -> int32;
 int32 CheckAndApplyDamageCap(int32 damage, CBattleEntity* PDefender);
 
+// Softens damage taken inside a Conflict (Ballista) match, so a PVP fight is not decided by whoever
+// lands the first big hit. No effect outside a match.
+auto HandleConflictDamage(CBattleEntity* PDefender, int32 damage) -> int32;
+
 void HandleIssekiganEnmityBonus(CBattleEntity* PDefender, CBattleEntity* PAttacker);
 auto HandleSevereDamage(CBattleEntity* PDefender, int32 damage, bool isPhysical) -> int32;
 auto HandleSevereDamageEffect(CBattleEntity* PDefender, xi::StatusEffect effect, int32 damage, bool removeEffect) -> int32;
