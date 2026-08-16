@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=../schemas/enums/_enum.schema.json
+
+# The Herald opens sign-ups to progressively wider groups as the match approaches.
+meta:
+  cpp:
+    underlying: uint8_t
+  lua:
+    table: xi.conflictSignupState
+
+values:
+  nations:   0 # Only the two competing nations may enter.
+  guest:     1 # The third nation may also enter as guests.
+  temporary: 2 # Any nation may enter on a temporary entry.
+  fill:      3 # Entries are accepted to balance the teams.

@@ -66,6 +66,8 @@ std::vector<std::string> charIdTables = {
 
     "accounts_parties",
     "accounts_sessions",
+
+    "conflict_entries",
 };
 
 } // namespace
@@ -92,6 +94,9 @@ void TestChar::clean(uint32 charId /* = 0 */)
     {
         cleanupQueries.emplace_back(std::format("DELETE FROM {} WHERE charid {}", tableName, matchingCondition));
     }
+
+    // conflict_instances has no charid. Its entries are gone by now, so drop whatever they left behind.
+    cleanupQueries.emplace_back("DELETE FROM conflict_instances WHERE instanceid NOT IN (SELECT instanceid FROM conflict_entries)");
 
     for (auto& query : cleanupQueries)
     {

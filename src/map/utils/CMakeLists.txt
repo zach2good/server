@@ -46,6 +46,8 @@ set(UTIL_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/synergyutils.h
     ${CMAKE_CURRENT_SOURCE_DIR}/synthutils.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/synthutils.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/timeutils.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/timeutils.h
     ${CMAKE_CURRENT_SOURCE_DIR}/trustutils.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/trustutils.h
     ${CMAKE_CURRENT_SOURCE_DIR}/zoneutils.cpp

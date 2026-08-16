@@ -223,6 +223,8 @@ player_data = [
     "char_unlocks.sql",
     "char_vars.sql",
     "chars.sql",
+    "conflict_entries.sql",
+    "conflict_instances.sql",
     "conquest_system.sql",
     "delivery_box.sql",
     "fishing_contest.sql",

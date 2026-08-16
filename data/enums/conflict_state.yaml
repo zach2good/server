@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../schemas/enums/_enum.schema.json
+
+# These numbers directly correlate with the state sent in events. Do not alter.
+meta:
+  cpp:
+    underlying: uint8_t
+  lua:
+    table: xi.conflictState
+
+values:
+  setup:     0
+  sign_up:   2
+  preparing: 3
+  active:    4
+  cancelled: 5
+  post_game: 6
+  finished:  7

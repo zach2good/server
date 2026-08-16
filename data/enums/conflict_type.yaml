@@ -1,0 +1,11 @@
+# yaml-language-server: $schema=../schemas/enums/_enum.schema.json
+
+meta:
+  cpp:
+    underlying: uint8_t
+  lua:
+    table: xi.conflictType
+
+values:
+  all_or_nothing: 0
+  best_of_three:  1
