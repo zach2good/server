@@ -27,6 +27,8 @@
 #include "conflict_player.h"
 #include "conflict_team.h"
 #include "entities/char_entity.h"
+#include "utils/conflictutils.h"
+#include "zone.h"
 
 #include <utility>
 
@@ -47,6 +49,30 @@ auto CLuaConflictEntry::getHeldPetras() const -> uint32
 auto CLuaConflictEntry::getScoredPetras() const -> uint32
 {
     return m_PEntry->score;
+}
+
+// Across the whole match rather than the round in hand. A best of three banks each round's score
+// and starts the next from zero, so the running figure alone understates a finished match.
+auto CLuaConflictEntry::getTotalScoredPetras() const -> uint32
+{
+    return m_PEntry->totalScoredPetras + m_PEntry->score;
+}
+
+// Puts this match on the Marshal's board. Registering twice replaces rather than stacks.
+auto CLuaConflictEntry::registerForRanking() -> bool
+{
+    const auto* instance = m_PEntry->instance;
+    if (instance == nullptr || instance->zone == nullptr)
+    {
+        return false;
+    }
+
+    return conflictutils::RegisterForRanking(instance->GetId(),
+                                             m_PEntry->charid,
+                                             instance->zone->GetID(),
+                                             instance->settings.matchStart,
+                                             m_PEntry->ballistaPoints,
+                                             m_PEntry->job);
 }
 
 auto CLuaConflictEntry::getPoints() const -> uint32
@@ -149,8 +175,7 @@ auto CLuaConflictEntry::getTeamNation() const -> uint8
         return 0;
     }
 
-    // Scripts count nations from zero, while allegiance starts them at San d'Oria.
-    return std::to_underlying(team->allegiance) - std::to_underlying(xi::Allegiance::SanDoria);
+    return toNationIndex(team->allegiance);
 }
 
 auto CLuaConflictEntry::isTempEntry() const -> bool
@@ -197,6 +222,8 @@ void CLuaConflictEntry::Register()
 
     SOL_REGISTER("getHeldPetras", CLuaConflictEntry::getHeldPetras);
     SOL_REGISTER("getScoredPetras", CLuaConflictEntry::getScoredPetras);
+    SOL_REGISTER("getTotalScoredPetras", CLuaConflictEntry::getTotalScoredPetras);
+    SOL_REGISTER("registerForRanking", CLuaConflictEntry::registerForRanking);
     SOL_REGISTER("getPoints", CLuaConflictEntry::getPoints);
     SOL_REGISTER("addPetras", CLuaConflictEntry::addPetras);
     SOL_REGISTER("scorePetras", CLuaConflictEntry::scorePetras);

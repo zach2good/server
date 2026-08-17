@@ -103,6 +103,35 @@ describe('Conflict (Ballista) combat', function()
         end
     end)
 
+    -- The wider reach is there because players are harder to stay next to than mobs, so it has to
+    -- depend on who is being hit, not only on who is swinging.
+    it('widens melee reach between two participants', function()
+        local conflict = startMatch()
+
+        local baseline = p1:getMeleeRange(p2)
+
+        conflict:setCombatEnabled(true)
+
+        assert(p1:isInConflict(), 'setup: the attacker should be in the match')
+        assert(p2:isInConflict(), 'setup: the target should be in the match')
+
+        assert(p1:getMeleeRange(p2) > baseline, 'two participants should reach further')
+    end)
+
+    it('leaves melee reach alone against something outside the match', function()
+        local conflict = startMatch()
+
+        local mob = xi.test.world:spawnPlayer(playerConfig)
+        local baseline = p1:getMeleeRange(mob)
+
+        conflict:setCombatEnabled(true)
+
+        assert(p1:isInConflict(), 'setup: the attacker should be in the match')
+        assert(not mob:isInConflict(), 'setup: the target should not be in the match')
+
+        assert(p1:getMeleeRange(mob) == baseline, 'a participant should not out-reach a bystander')
+    end)
+
     it('leaves damage alone outside a match', function()
         startMatch()
 

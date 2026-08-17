@@ -53,9 +53,11 @@ public:
     auto resetOffset() -> CLuaTimeline*;
 
     // Returns the scheduled event id, or no value when the event was dropped as past due.
+    [[nodiscard]] auto eventTime() const -> timer::time_point;
+
     auto addEvent(sol::function eventFunc) -> Maybe<uint32>;
-    void addSkippableEvent(sol::function eventFunc);
-    void addImportantEvent(sol::function eventFunc);
+    auto addSkippableEvent(sol::function eventFunc) -> Maybe<uint32>;
+    auto addImportantEvent(sol::function eventFunc) -> Maybe<uint32>;
     auto addRepeatingEvent(sol::table options, sol::function eventFunc) -> bool;
 
     static void Register();

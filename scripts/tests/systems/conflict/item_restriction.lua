@@ -1,9 +1,9 @@
 -----------------------------------
 -- Conflict (Ballista): the ban on a player's own items.
 --
--- Two of the three matches bar normal items, which is why those two hand out fifteen temporary
--- slots instead of ten. The 2004/12/09 update names Jugner Forest and Pashhow Marshlands as the
--- restricted pair, and the temporary item allowance follows the same split.
+-- The Pashhow match bars a player's own items, which is why it hands out fifteen temporary slots
+-- instead of ten. String 7258 offers three match styles and none of them is a restricted Best of
+-- Three, and the 2005/02/24 update names Pashhow alone for the increase.
 --
 -- This drives the real 0x037 packet rather than the useItem binding, because the binding goes
 -- straight to the AI container and never passes the handler that enforces this.
@@ -137,6 +137,31 @@ describe('Conflict (Ballista) item restriction', function()
         startMatch(true)
 
         assert(player:getFreeSlotsCount(xi.inv.TEMPITEMS) == 15, 'a restricted match carries fifteen temporary slots')
+    end)
+
+    -- A container refuses to shrink below what it holds, so arriving with a full temporary bag
+    -- used to leave the match's allowance unapplied for the whole match.
+    it('applies its allowance to a player arriving with temporary items', function()
+        -- Distinct ids, because temporary storage holds only one of each type.
+        local carried =
+        {
+            xi.item.HI_POTION, xi.item.X_POTION, xi.item.MAX_POTION, xi.item.HI_ETHER,
+            xi.item.SUPER_ETHER, xi.item.PRO_ETHER, xi.item.HI_ELIXIR, xi.item.ELIXIR,
+            xi.item.REMEDY, xi.item.PETRA_EATER, xi.item.BOTTLE_OF_CATHOLICON, xi.item.MEGALIXIR,
+        }
+
+        for _, itemId in ipairs(carried) do
+            player:addTempItem(itemId)
+        end
+
+        local before = 50 - player:getFreeSlotsCount(xi.inv.TEMPITEMS)
+        assert(before > 10, 'setup: the player should be carrying more than the match allows, got ' .. before)
+
+        startMatch(false)
+
+        -- The allowance cannot apply while the container still holds more than it, so the match
+        -- empties it first. Ten free slots means both happened.
+        assert(player:getFreeSlotsCount(xi.inv.TEMPITEMS) == 10, 'the match allowance should have taken effect')
     end)
 
     it('gives ten temporary slots to a match that allows them', function()

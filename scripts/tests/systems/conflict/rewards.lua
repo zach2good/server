@@ -185,6 +185,79 @@ describe('Conflict (Ballista) rewards', function()
         assert(conflict:getGilOnHerald() == 0, 'the Herald should be holding nothing afterwards')
     end)
 
+    -- A best of three banks each round's petras and restarts the count, so the running figure is
+    -- the round in hand and the closing cutscene needs the whole match.
+    it('keeps the match petra total across a round boundary', function()
+        local zone = p1:getZone()
+
+        zone:initializeConflict({
+            team1  = xi.allegiance.SAN_DORIA,
+            team2  = xi.allegiance.BASTOK,
+            type   = xi.conflictType.BEST_OF_THREE,
+            length = 60 * 24,
+        })
+
+        local conflict = zone:getConflict()
+
+        conflict:addPlayer(p1, 0)
+        conflict:setState(xi.conflictState.ACTIVE)
+
+        local entry = p1:getConflictEntry()
+        entry:addPetras(4)
+        entry:scorePetras()
+
+        assert(entry:getScoredPetras() == 4, 'setup: four petras this round')
+        assert(entry:getTotalScoredPetras() == 4, 'setup: and four for the match so far')
+
+        -- Round two.
+        conflict:setPhase(2)
+
+        assert(entry:getScoredPetras() == 0, 'the round count restarts')
+        assert(entry:getTotalScoredPetras() == 4, 'the match total carries the banked round')
+
+        entry:addPetras(3)
+        entry:scorePetras()
+
+        assert(entry:getScoredPetras() == 3, 'the round count follows the new round')
+        assert(entry:getTotalScoredPetras() == 7, 'the match total covers both rounds')
+    end)
+
+    -- Both the periodic announcement and the closing cutscene call this player today's high
+    -- scorer and quote a total, so the last round's leader is not the right answer.
+    it('names the match high scorer, not the last round leader', function()
+        local zone = p1:getZone()
+
+        zone:initializeConflict({
+            team1  = xi.allegiance.SAN_DORIA,
+            team2  = xi.allegiance.BASTOK,
+            type   = xi.conflictType.BEST_OF_THREE,
+            length = 60 * 24,
+        })
+
+        local conflict = zone:getConflict()
+
+        conflict:addPlayer(p1, 0)
+        conflict:addPlayer(p2, 1)
+        conflict:setState(xi.conflictState.ACTIVE)
+
+        -- p1 takes the first round by a wide margin.
+        local entry1 = p1:getConflictEntry()
+        entry1:addPetras(5)
+        entry1:scorePetras()
+
+        conflict:setPhase(2)
+
+        -- p2 edges the second round, but is behind for the match.
+        local entry2 = p2:getConflictEntry()
+        entry2:addPetras(2)
+        entry2:scorePetras()
+
+        assert(entry2:getScoredPetras() > entry1:getScoredPetras(), 'setup: p2 leads the round in hand')
+        assert(entry1:getTotalScoredPetras() > entry2:getTotalScoredPetras(), 'setup: p1 leads the match')
+
+        assert(conflict:getHighScorer():getName() == p1:getName(), 'the match leader should be named')
+    end)
+
     it('decides a best of three on rounds rather than score', function()
         local zone = p1:getZone()
 

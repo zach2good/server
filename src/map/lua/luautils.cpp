@@ -368,14 +368,35 @@ void init(IPP mapIPP, bool isRunningInCI)
                          auto info = lua.create_table();
 
                          info["zoneId"]    = std::to_underlying(settings.zoneId);
-                         info["nation1"]   = std::to_underlying(settings.team1) - std::to_underlying(xi::Allegiance::SanDoria);
-                         info["nation2"]   = std::to_underlying(settings.team2) - std::to_underlying(xi::Allegiance::SanDoria);
+                         info["nation1"]   = toNationIndex(settings.team1);
+                         info["nation2"]   = toNationIndex(settings.team2);
                          info["type"]      = std::to_underlying(settings.type);
                          info["levelCap"]  = settings.levelCap;
                          info["signupFee"] = settings.signupFee;
                          info["startTime"] = settings.matchStart;
 
                          return info;
+                     });
+    // The Marshal's board for one location, best first, over the last ten matches held there.
+    lua.set_function("GetBallistaRanking", [](const uint16 zoneId) -> sol::table
+                     {
+                         auto board = lua.create_table();
+
+                         auto place = 1;
+                         for (const auto& entry : conflictutils::GetRanking(static_cast<xi::ZoneId>(zoneId)))
+                         {
+                             auto row = lua.create_table();
+
+                             row["charid"] = entry.charid;
+                             row["points"] = entry.points;
+                             row["job"]    = std::to_underlying(entry.job);
+                             row["place"]  = place;
+
+                             board[place] = row;
+                             ++place;
+                         }
+
+                         return board;
                      });
     lua.set_function("VanadielDayElement", &luautils::VanadielDayElement);
     lua.set_function("VanadielMoonPhase", &luautils::VanadielMoonPhase);

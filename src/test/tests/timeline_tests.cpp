@@ -46,6 +46,7 @@
 #include <catch2/catch_test_macros.hpp>
 
 #include <chrono>
+#include <tuple>
 #include <vector>
 
 using namespace std::chrono_literals;
@@ -97,9 +98,9 @@ TEST_CASE("Timeline fires events in timestamp order", "[timeline]")
     std::vector<int> fired;
 
     // Added out of order on purpose.
-    timeline.AddEvent(now + 30s, record(fired, 3));
-    timeline.AddEvent(now + 10s, record(fired, 1));
-    timeline.AddEvent(now + 20s, record(fired, 2));
+    std::ignore = timeline.AddEvent(now + 30s, record(fired, 3));
+    std::ignore = timeline.AddEvent(now + 10s, record(fired, 1));
+    std::ignore = timeline.AddEvent(now + 20s, record(fired, 2));
 
     REQUIRE(timeline.size() == 3);
 
@@ -116,9 +117,9 @@ TEST_CASE("Timeline breaks timestamp ties by insertion order", "[timeline]")
     auto             timeline = timeutils::Timeline();
     std::vector<int> fired;
 
-    timeline.AddEvent(now + 10s, record(fired, 1));
-    timeline.AddEvent(now + 10s, record(fired, 2));
-    timeline.AddEvent(now + 10s, record(fired, 3));
+    std::ignore = timeline.AddEvent(now + 10s, record(fired, 1));
+    std::ignore = timeline.AddEvent(now + 10s, record(fired, 2));
+    std::ignore = timeline.AddEvent(now + 10s, record(fired, 3));
 
     timeline.Tick(now + 10s);
 
@@ -132,9 +133,9 @@ TEST_CASE("Timeline runs priority events ahead of regular ones at the same time"
     auto             timeline = timeutils::Timeline();
     std::vector<int> fired;
 
-    timeline.AddEvent(now + 10s, record(fired, 1));
-    timeline.AddPriorityEvent(now + 10s, record(fired, 0));
-    timeline.AddEvent(now + 10s, record(fired, 2));
+    std::ignore = timeline.AddEvent(now + 10s, record(fired, 1));
+    std::ignore = timeline.AddPriorityEvent(now + 10s, record(fired, 0));
+    std::ignore = timeline.AddEvent(now + 10s, record(fired, 2));
 
     timeline.Tick(now + 10s);
 
@@ -148,8 +149,8 @@ TEST_CASE("Timeline does not fire events that are not yet due", "[timeline]")
     auto             timeline = timeutils::Timeline();
     std::vector<int> fired;
 
-    timeline.AddEvent(now + 10s, record(fired, 1));
-    timeline.AddEvent(now + 60s, record(fired, 2));
+    std::ignore = timeline.AddEvent(now + 10s, record(fired, 1));
+    std::ignore = timeline.AddEvent(now + 60s, record(fired, 2));
 
     timeline.Tick(now + 30s);
 
@@ -164,7 +165,7 @@ TEST_CASE("Timeline coalesces a past-due repeating event into a single fire", "[
     auto             timeline = timeutils::Timeline();
     std::vector<int> fired;
 
-    timeline.AddEvent(now + 1s, record(fired, 1), timeutils::ForceAdd::Yes, 1s);
+    std::ignore = timeline.AddEvent(now + 1s, record(fired, 1), timeutils::ForceAdd::Yes, 1s);
 
     // Ten intervals have elapsed since the event was due. It must report once, not ten times.
     timeline.Tick(now + 10s);
@@ -186,7 +187,7 @@ TEST_CASE("Timeline repeats a bounded event exactly the requested number of time
     auto             timeline = timeutils::Timeline();
     std::vector<int> fired;
 
-    timeline.AddEvent(now + 1s, record(fired, 1), timeutils::ForceAdd::Yes, 1s, 3);
+    std::ignore = timeline.AddEvent(now + 1s, record(fired, 1), timeutils::ForceAdd::Yes, 1s, 3);
 
     for (auto second = 1; second <= 10; ++second)
     {
@@ -204,13 +205,13 @@ TEST_CASE("Timeline repeats an unbounded event until its action stops it", "[tim
     auto timeline = timeutils::Timeline();
     auto runs     = 0;
 
-    timeline.AddEvent(now + 1s, [&runs]() -> bool
-                      {
-                          ++runs;
-                          return runs == 4;
-                      },
-                      timeutils::ForceAdd::Yes,
-                      1s);
+    std::ignore = timeline.AddEvent(now + 1s, [&runs]() -> bool
+                                    {
+                                        ++runs;
+                                        return runs == 4;
+                                    },
+                                    timeutils::ForceAdd::Yes,
+                                    1s);
 
     for (auto second = 1; second <= 10; ++second)
     {
@@ -279,8 +280,8 @@ TEST_CASE("Timeline Clean drops pending events and is idempotent", "[timeline]")
     auto             timeline = timeutils::Timeline();
     std::vector<int> fired;
 
-    timeline.AddEvent(now + 10s, record(fired, 1));
-    timeline.AddEvent(now + 20s, record(fired, 2));
+    std::ignore = timeline.AddEvent(now + 10s, record(fired, 1));
+    std::ignore = timeline.AddEvent(now + 20s, record(fired, 2));
 
     timeline.Clean();
     CHECK(timeline.empty());

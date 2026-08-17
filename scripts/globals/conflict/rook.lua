@@ -69,9 +69,11 @@ function xi.conflict.rook.onEventFinish(player, csid, option, npc)
 
     local petrasScored = entry:scorePetras()
     if petrasScored > 0 then
+        -- The string reads "you have scored $2 Petras today", and the high scorer is picked over
+        -- the whole match, so neither figure is the round in hand.
         local highScorer = entry:getConflict():getHighScorer()
-        local highScore  = highScorer and highScorer:getScoredPetras() or 0
-        player:showText(npc, zoneInfo.text.SCORE_PETRA, petrasScored, entry:getTeamAllegiance() - 2, entry:getScoredPetras(), highScore)
+        local highScore  = highScorer and highScorer:getTotalScoredPetras() or 0
+        player:showText(npc, zoneInfo.text.SCORE_PETRA, petrasScored, entry:getTeamAllegiance() - 2, entry:getTotalScoredPetras(), highScore)
     end
 end
 

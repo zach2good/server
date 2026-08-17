@@ -254,7 +254,8 @@ auto GetBallistaSettingsFromDate(uint8 dayOfMonth, uint8 month, int32 year) -> C
             break;
 
         default:
-            // An even day the calendar leaves empty.
+            // Unreachable: odd days returned above, and an even day always leaves 1, 3 or 5 here.
+            // Every even day of the month carries a match.
             return {};
     }
 
@@ -288,6 +289,57 @@ auto GetNextBallistaSettings() -> const ConflictSettings&
     }
 
     return nextBallistaSettings;
+}
+
+auto RegisterForRanking(const uint32 instanceId, const uint32 charId, const xi::ZoneId zoneId, const uint32 matchStart, const uint32 points, const xi::Job job) -> bool
+{
+    // Registering again overwrites rather than adds. Retail gives a window to register in, not a
+    // way to bank the same match twice.
+    const auto rset = db::preparedStmt("REPLACE INTO conflict_rankings (instanceid, charid, zoneid, matchstart, points, job) "
+                                       "VALUES (?, ?, ?, ?, ?, ?)",
+                                       instanceId,
+                                       charId,
+                                       std::to_underlying(zoneId),
+                                       matchStart,
+                                       points,
+                                       std::to_underlying(job));
+
+    if (!rset)
+    {
+        ShowErrorFmt("conflictutils: failed to register character {} for the ranking at zone {}.", charId, std::to_underlying(zoneId));
+        return false;
+    }
+
+    return true;
+}
+
+auto GetRanking(const xi::ZoneId zoneId) -> std::vector<RankingEntry>
+{
+    auto ranking = std::vector<RankingEntry>();
+
+    // The window is the last ten matches held here, not the last ten rows: one match contributes
+    // as many rows as it had registrants.
+    const auto rset = db::preparedStmt("SELECT charid, points, job FROM conflict_rankings "
+                                       "WHERE zoneid = ? AND matchstart IN ("
+                                       "    SELECT matchstart FROM ("
+                                       "        SELECT DISTINCT matchstart FROM conflict_rankings "
+                                       "        WHERE zoneid = ? ORDER BY matchstart DESC LIMIT ?"
+                                       "    ) AS recent"
+                                       ") ORDER BY points DESC, charid ASC",
+                                       std::to_underlying(zoneId),
+                                       std::to_underlying(zoneId),
+                                       kRankedMatches);
+
+    while (rset && rset->next())
+    {
+        ranking.emplace_back(RankingEntry{
+            .charid = rset->get<uint32>("charid"),
+            .points = rset->get<uint32>("points"),
+            .job    = static_cast<xi::Job>(rset->get<uint8>("job")),
+        });
+    }
+
+    return ranking;
 }
 
 void Initialize()

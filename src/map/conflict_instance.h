@@ -98,7 +98,7 @@ public:
     auto operator=(ConflictInstance&&) -> ConflictInstance&      = delete;
 
     // Returns the index of the team the player joined.
-    [[nodiscard]] auto AddPlayer(CCharEntity* player, Maybe<uint8> teamIdx) -> Maybe<uint8>;
+    [[nodiscard]] auto AddPlayer(CCharEntity* player, Maybe<uint8> requestedTeamIdx) -> Maybe<uint8>;
     [[nodiscard]] auto TryRejoinPlayer(CCharEntity* player) -> bool;
 
     void Tick(timer::time_point tick);

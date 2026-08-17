@@ -365,7 +365,7 @@ function xi.conflict.setupAllOrNothingTimeline(conflict)
         xi.conflict.messageSpecial(conflict, zoneInfo.text.MATCH_ENDS_AT, endTimeEpoch)
         local highScorer = conflict:getHighScorer()
         if highScorer then
-            xi.conflict.messageSpecial(conflict, zoneInfo.text.HIGHSCORER, highScorer:getTeamNation(), highScorer:getScoredPetras())
+            xi.conflict.messageSpecial(conflict, zoneInfo.text.HIGHSCORER, highScorer:getTeamNation(), highScorer:getTotalScoredPetras())
         end
     end)
 
@@ -441,7 +441,7 @@ function xi.conflict.setupBestOfThreeTimeline(conflict)
             xi.conflict.messageSpecial(conflict, zoneInfo.text.MATCH_X_ENDS_AT, currentMatch, currentMatchEndEpoch)
             local highScorer = conflict:getHighScorer()
             if highScorer then
-                xi.conflict.messageSpecial(conflict, zoneInfo.text.HIGHSCORER, highScorer:getTeamNation(), highScorer:getScoredPetras())
+                xi.conflict.messageSpecial(conflict, zoneInfo.text.HIGHSCORER, highScorer:getTeamNation(), highScorer:getTotalScoredPetras())
             end
         end)
 

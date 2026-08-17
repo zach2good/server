@@ -164,6 +164,7 @@ local zoneInfos =
         {
             ROOK_THROW      = 21,
             HERALD          = 22,
+            RETURN_CHEVRON  = 27,
             PURSUIVANT      = 23,
             LINE_UP         = 24,
             KEEP_TEMP_ITEM  = 25,
@@ -231,6 +232,7 @@ local zoneInfos =
         {
             ROOK_THROW      = 36,
             HERALD          = 37,
+            RETURN_CHEVRON  = 42,
             PURSUIVANT      = 38,
             LINE_UP         = 39,
             KEEP_TEMP_ITEM  = 40,
@@ -296,6 +298,7 @@ local zoneInfos =
         {
             ROOK_THROW      = 17,
             HERALD          = 18,
+            RETURN_CHEVRON  = 25,
             PURSUIVANT      = 19,
             LINE_UP         = 20,
             KEEP_TEMP_ITEM  = 23,

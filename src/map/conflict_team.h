@@ -54,20 +54,16 @@ public:
     void Tick(timer::time_point tick);
     void ResetRound();
     void UpdateMusic(bool isWinning);
-    void UpdatePlayersInZone();
-
-    [[nodiscard]] auto HasPlayersInZone() const -> bool;
 
     xi::Allegiance allegiance;
     int32          score     = 0;
     int32          roundsWon = 0;
 
-    ConflictMusic     currentMusic    = ConflictMusic::None;
-    ConflictMusic     nextMusic       = ConflictMusic::YouWantToLiveForever;
-    timer::time_point nextMusicChange = timer::time_point::max();
+    ConflictMusic currentMusic = ConflictMusic::None;
+    ConflictMusic nextMusic    = ConflictMusic::YouWantToLiveForever;
+    // Not max(): Tick guards on this, so a sentinel in the future stops the music from ever
+    // starting rather than merely delaying it.
+    timer::time_point nextMusicChange = timer::time_point::min();
 
     std::vector<ConflictEntry*> entries;
-
-private:
-    bool playersInZone = false;
 };

@@ -563,11 +563,12 @@ auto CBattleEntity::GetWeaponDelay(bool tp) -> uint32
 
 float CBattleEntity::GetMeleeRange(const CBattleEntity* target) const
 {
-    // A Conflict (Ballista) match widens the attacker's reach, because players are far harder to
-    // stay in range of than mobs.
+    // A Conflict (Ballista) match widens the reach, because players are far harder to stay in
+    // range of than mobs. Both sides have to be in the match: keying this off the attacker alone
+    // hands a participant the same reach against every mob in the zone.
     const auto conflictBonus = [&]
     {
-        if (isInConflict())
+        if (isInConflict() && target->isInConflict())
         {
             return 3.0f;
         }

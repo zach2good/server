@@ -21116,12 +21116,13 @@ void CLuaBaseEntity::Register()
     SOL_REGISTER("getConfrontationEffect", CLuaBaseEntity::getConfrontationEffect);
     SOL_REGISTER("copyConfrontationEffect", CLuaBaseEntity::copyConfrontationEffect);
 
-    // Battlefields
+    // Conflict (Ballista)
     SOL_REGISTER("useItem", CLuaBaseEntity::useItem);
     SOL_REGISTER("isInConflict", CLuaBaseEntity::isInConflict);
     SOL_REGISTER("getConflict", CLuaBaseEntity::getConflict);
     SOL_REGISTER("getConflictEntry", CLuaBaseEntity::getConflictEntry);
 
+    // Battlefields
     SOL_REGISTER("getBattlefield", CLuaBaseEntity::getBattlefield);
     SOL_REGISTER("getBattlefieldID", CLuaBaseEntity::getBattlefieldID);
     SOL_REGISTER("registerBattlefield", CLuaBaseEntity::registerBattlefield);

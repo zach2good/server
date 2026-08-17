@@ -1,3 +1,4 @@
+require('scripts/globals/conflict/ranking')
 require('scripts/globals/conflict/zoneinfo')
 
 xi = xi or {}
@@ -22,6 +23,16 @@ local minimumEntryLevel =
 function xi.conflict.herald.onTrigger(player, npc)
     if npc:getLocalVar('GivingSpeech') ~= 0 then
         return
+    end
+
+    -- A chevron is good for one Earth week. Past that the Herald wants it back before anything
+    -- else, which is what the second cutscene on this actor is for.
+    if xi.conflict.ranking.hasExpiredChevron(player) then
+        local zoneInfo = xi.conflict.getZoneInfoForEntity(player)
+        if zoneInfo ~= nil then
+            player:startEvent(zoneInfo.events.RETURN_CHEVRON)
+            return
+        end
     end
 
     local conflict = npc:getZone():getConflict()
@@ -492,6 +503,11 @@ end
 function xi.conflict.herald.onEventFinish(player, csid, option, npc)
     local zoneInfo = xi.conflict.getZoneInfoForEntity(player)
     if zoneInfo == nil then
+        return
+    end
+
+    if csid == zoneInfo.events.RETURN_CHEVRON then
+        xi.conflict.ranking.returnChevron(player)
         return
     end
 

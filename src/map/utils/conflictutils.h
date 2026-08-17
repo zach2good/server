@@ -21,7 +21,11 @@
 
 #pragma once
 
+#include "data/enums/job.h"
+
 #include "conflict_instance.h"
+
+#include <vector>
 
 namespace conflictutils
 {
@@ -44,6 +48,24 @@ void DestroyConflictInstance(CZone* zone);
 
 // The gil a match costs to enter at a given level cap. A cap of zero means uncapped.
 [[nodiscard]] auto GetEntryFeeFromLevelCap(uint8 levelCap) -> uint16;
+
+// One character's finished match, as the Marshal's ranking board sees it.
+struct RankingEntry
+{
+    uint32  charid = 0;
+    uint32  points = 0;
+    xi::Job job    = xi::Job::NONE;
+};
+
+// Records a finished match against the Marshal's board. Registering twice is not an error and
+// does not stack: the row is keyed on the match and the character.
+auto RegisterForRanking(uint32 instanceId, uint32 charId, xi::ZoneId zoneId, uint32 matchStart, uint32 points, xi::Job job) -> bool;
+
+// The board for one location, best first, over the last kRankedMatches matches held there.
+[[nodiscard]] auto GetRanking(xi::ZoneId zoneId) -> std::vector<RankingEntry>;
+
+// Retail ranks over the last ten matches at a location.
+constexpr uint8 kRankedMatches = 10;
 
 // Seeds the matches bracketing now, once the zones and Vana'diel time are up.
 void Initialize();

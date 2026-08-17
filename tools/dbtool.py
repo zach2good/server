@@ -227,6 +227,7 @@ player_data = [
     # conflict_instances, so the referenced table has to be created first.
     "conflict_instances.sql",
     "conflict_entries.sql",
+    "conflict_rankings.sql",
     "conquest_system.sql",
     "delivery_box.sql",
     "fishing_contest.sql",

@@ -121,23 +121,24 @@ auto CLuaTimeline::resetOffset() -> CLuaTimeline*
     return this;
 }
 
+auto CLuaTimeline::eventTime() const -> timer::time_point
+{
+    return timeutils::GetTimePointFromVanaTimestamp(vanaTimestamp) + std::chrono::milliseconds(offsetMs);
+}
+
 auto CLuaTimeline::addEvent(sol::function eventFunc) -> Maybe<uint32>
 {
-    return timeline->AddEvent(timeutils::GetTimePointFromVanaTimestamp(vanaTimestamp) + std::chrono::milliseconds(offsetMs),
-                              toTimelineAction(std::move(eventFunc)));
+    return timeline->AddEvent(eventTime(), toTimelineAction(std::move(eventFunc)));
 }
 
-void CLuaTimeline::addSkippableEvent(sol::function eventFunc)
+auto CLuaTimeline::addSkippableEvent(sol::function eventFunc) -> Maybe<uint32>
 {
-    timeline->AddEvent(timeutils::GetTimePointFromVanaTimestamp(vanaTimestamp) + std::chrono::milliseconds(offsetMs),
-                       toTimelineAction(std::move(eventFunc)),
-                       timeutils::ForceAdd::No);
+    return timeline->AddEvent(eventTime(), toTimelineAction(std::move(eventFunc)), timeutils::ForceAdd::No);
 }
 
-void CLuaTimeline::addImportantEvent(sol::function eventFunc)
+auto CLuaTimeline::addImportantEvent(sol::function eventFunc) -> Maybe<uint32>
 {
-    timeline->AddPriorityEvent(timeutils::GetTimePointFromVanaTimestamp(vanaTimestamp) + std::chrono::milliseconds(offsetMs),
-                               toTimelineAction(std::move(eventFunc)));
+    return timeline->AddPriorityEvent(eventTime(), toTimelineAction(std::move(eventFunc)));
 }
 
 auto CLuaTimeline::addRepeatingEvent(sol::table options, sol::function eventFunc) -> bool
@@ -182,11 +183,13 @@ auto CLuaTimeline::addRepeatingEvent(sol::table options, sol::function eventFunc
         return timeutils::ForceAdd{ !options.get<sol::optional<bool>>("skip").value_or(false) };
     }();
 
-    timeline->AddEvent(timeutils::GetTimePointFromVanaTimestamp(vanaTimestamp) + std::chrono::milliseconds(offsetMs),
-                       toTimelineAction(std::move(eventFunc)),
-                       forceAdd,
-                       repeatInterval,
-                       repeatTimes);
+    // The id is only useful for cancelling a one-shot; a repeating event is stopped by returning
+    // true from the action itself.
+    std::ignore = timeline->AddEvent(eventTime(),
+                                     toTimelineAction(std::move(eventFunc)),
+                                     forceAdd,
+                                     repeatInterval,
+                                     repeatTimes);
 
     return true;
 }

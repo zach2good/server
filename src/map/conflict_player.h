@@ -76,7 +76,9 @@ public:
     using GateBreachOn = xi::Flag<struct GateBreachOnTag>;
 
     ConflictEntry(CCharEntity* player, ConflictInstance* instance, uint8 teamIdx, ConflictEntryType entryType);
-    ConflictEntry(uint32 charid, ConflictInstance* instance, uint8 teamIdx, xi::Job job, ConflictEntryType entryType, uint32 points, uint32 scoredPetras);
+    // Recovers an entry from the database. score is the round in hand, totalScore the rounds
+    // already banked; a best of three restarts the first between rounds.
+    ConflictEntry(uint32 charid, ConflictInstance* instance, uint8 teamIdx, xi::Job job, ConflictEntryType entryType, uint32 points, uint32 score, uint32 totalScore);
     ~ConflictEntry();
 
     ConflictEntry(const ConflictEntry&)                    = delete;

@@ -54,7 +54,7 @@ constexpr auto toNationBit(const xi::Allegiance allegiance) -> uint8
 } // namespace
 
 ConflictInstance::ConflictInstance(ConflictSettings settings, CZone* zone)
-: settings(settings)
+: settings(std::move(settings))
 , zone(zone)
 {
     teams[0] = makeBox<ConflictTeam>(settings.team1);
@@ -72,7 +72,7 @@ ConflictInstance::ConflictInstance(ConflictSettings settings, CZone* zone)
                                        settings.isScheduled);
 
     // Recover a match that was already running before the last restart.
-    if (rset && rset->rowsCount() > 0 && rset->next())
+    if (rset && rset->next())
     {
         id                  = rset->get<uint32>("instanceid");
         state               = static_cast<xi::ConflictState>(rset->get<uint8>("state"));
@@ -85,7 +85,9 @@ ConflictInstance::ConflictInstance(ConflictSettings settings, CZone* zone)
         gilOnHerald         = rset->get<uint32>("gil_on_herald");
         activeRooks         = luautils::ConflictGetRookIds(this);
 
-        const auto entryRset = db::preparedStmt("SELECT charid, allegiance, type, job, points, score FROM conflict_entries WHERE instanceid = ?", id);
+        const auto matchIsActive = IsActive();
+
+        const auto entryRset = db::preparedStmt("SELECT charid, allegiance, type, job, points, score, total_score FROM conflict_entries WHERE instanceid = ?", id);
         while (entryRset && entryRset->next())
         {
             const auto charid     = entryRset->get<uint32>("charid");
@@ -94,6 +96,7 @@ ConflictInstance::ConflictInstance(ConflictSettings settings, CZone* zone)
             const auto job        = static_cast<xi::Job>(entryRset->get<uint8>("job"));
             const auto points     = entryRset->get<uint32>("points");
             const auto score      = entryRset->get<uint32>("score");
+            const auto totalScore = entryRset->get<uint32>("total_score");
 
             const auto teamIdx = [&]() -> uint8
             {
@@ -107,7 +110,7 @@ ConflictInstance::ConflictInstance(ConflictSettings settings, CZone* zone)
 
             teams[teamIdx]->score += static_cast<int32>(score);
 
-            auto  entry     = makeBox<ConflictEntry>(charid, this, teamIdx, job, entryType, points, score);
+            auto  entry     = makeBox<ConflictEntry>(charid, this, teamIdx, job, entryType, points, score, totalScore);
             auto* entryView = entry.get();
 
             if (entryView->HasActiveEntry())
@@ -121,10 +124,7 @@ ConflictInstance::ConflictInstance(ConflictSettings settings, CZone* zone)
             }
 
             // Whether the initial items were handed out is not persisted, so assume they were.
-            if (IsActive())
-            {
-                entryView->gotInitialItems = true;
-            }
+            entryView->gotInitialItems = matchIsActive;
         }
 
         return;
@@ -527,7 +527,15 @@ void ConflictInstance::SetLevelRestrictionEnabled(const bool enable)
 
 void ConflictInstance::ScoreUpdate(ConflictEntry* entry)
 {
-    if (entry && (highScorer == nullptr || entry->score > highScorer->score))
+    // Across the whole match, not the round in hand. Both the periodic announcement and the
+    // closing cutscene call this player today's high scorer and quote a total, so a best of three
+    // cannot pick whoever happened to lead the last round.
+    const auto matchTotal = [](const ConflictEntry* candidate) -> uint32
+    {
+        return candidate->totalScoredPetras + candidate->score;
+    };
+
+    if (entry && (highScorer == nullptr || matchTotal(entry) > matchTotal(highScorer)))
     {
         highScorer = entry;
     }
@@ -571,10 +579,8 @@ void ConflictInstance::SetPhase(const uint8 newPhase)
     if (id != 0 && gamePhase % 2 == 0)
     {
         db::preparedStmt("UPDATE conflict_instances SET phase = ? WHERE instanceid = ?", gamePhase, id);
-        db::preparedStmt("UPDATE conflict_entries SET score = 0 WHERE instanceid = ?", id);
+        db::preparedStmt("UPDATE conflict_entries SET total_score = total_score + score, score = 0 WHERE instanceid = ?", id);
     }
-
-    highScorer = nullptr;
 }
 
 void ConflictInstance::AddTeamRounds(const uint8 teamIdx, const int32 rounds)

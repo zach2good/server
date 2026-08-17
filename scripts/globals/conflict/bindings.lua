@@ -11,6 +11,7 @@
 -----------------------------------
 require('scripts/globals/conflict/core')
 require('scripts/globals/conflict/marshal')
+require('scripts/globals/conflict/ranking')
 require('scripts/globals/conflict/pursuivant')
 require('scripts/globals/conflict/quarry')
 require('scripts/globals/conflict/rook')

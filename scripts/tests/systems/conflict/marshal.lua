@@ -38,7 +38,7 @@ describe('Conflict (Ballista) Marshal', function()
     it('takes the points and hands over the voucher', function()
         player:addCurrency('ballista_point', 100)
 
-        local bought = xi.conflict.marshal.purchase(player, xi.keyItem.HI_POTION_VOUCHER, 0)
+        local bought = xi.conflict.marshal.purchase(player, xi.keyItem.HI_POTION_VOUCHER)
 
         assert(bought, 'the purchase was refused')
         assert(player:hasKeyItem(xi.keyItem.HI_POTION_VOUCHER), 'the voucher was not handed over')
@@ -48,7 +48,7 @@ describe('Conflict (Ballista) Marshal', function()
     it('refuses a player who cannot afford it', function()
         player:addCurrency('ballista_point', 10)
 
-        local bought, reason = xi.conflict.marshal.purchase(player, xi.keyItem.HI_POTION_VOUCHER, 0)
+        local bought, reason = xi.conflict.marshal.purchase(player, xi.keyItem.HI_POTION_VOUCHER)
 
         assert(not bought, 'a player who cannot pay was sold a voucher')
         assert(reason == xi.conflict.marshal.refusal.NOT_ENOUGH, 'the wrong refusal was given')
@@ -59,31 +59,37 @@ describe('Conflict (Ballista) Marshal', function()
     it('refuses a second voucher of the same type', function()
         player:addCurrency('ballista_point', 200)
 
-        assert(xi.conflict.marshal.purchase(player, xi.keyItem.POTION_VOUCHER, 0), 'setup: the first purchase failed')
+        assert(xi.conflict.marshal.purchase(player, xi.keyItem.POTION_VOUCHER), 'setup: the first purchase failed')
 
-        local bought, reason = xi.conflict.marshal.purchase(player, xi.keyItem.POTION_VOUCHER, 0)
+        local bought, reason = xi.conflict.marshal.purchase(player, xi.keyItem.POTION_VOUCHER)
 
         assert(not bought, 'only one of each voucher may be held')
         assert(reason == xi.conflict.marshal.refusal.ALREADY_HELD, 'the wrong refusal was given')
         assert(player:getCurrency('ballista_point') == 185, 'the refused purchase still took points')
     end)
 
-    -- The wiki marks the Elixir as 50+ cap only and the Revitalizer as 60+.
-    it('gates the restoratives the match level cap does not admit', function()
+    -- Marshal event 26 gates exactly one item, on wearing a chevron rather than on any match cap.
+    it('refuses the Catholicon to anyone without a chevron', function()
         player:addCurrency('ballista_point', 2000)
 
-        local bought, reason = xi.conflict.marshal.purchase(player, xi.keyItem.ELIXIR_VOUCHER, 30)
+        local bought, reason = xi.conflict.marshal.purchase(player, xi.keyItem.CATHOLICON_VOUCHER)
 
-        assert(not bought, 'a level 30 match should not admit an Elixir')
-        assert(reason == xi.conflict.marshal.refusal.LEVEL_CAP, 'the wrong refusal was given')
-
-        assert(xi.conflict.marshal.purchase(player, xi.keyItem.ELIXIR_VOUCHER, 50), 'a level 50 match admits an Elixir')
+        assert(not bought, 'the Catholicon needs a chevron')
+        assert(reason == xi.conflict.marshal.refusal.NOT_ENTITLED, 'the wrong refusal was given')
     end)
 
-    it('treats an uncapped match as admitting everything', function()
+    it('sells the Catholicon to a chevron wearer', function()
+        player:addCurrency('ballista_point', 2000)
+        player:addKeyItem(xi.keyItem.BRONZE_BALLISTA_CHEVRON)
+
+        assert(xi.conflict.marshal.purchase(player, xi.keyItem.CATHOLICON_VOUCHER), 'a chevron wearer may buy it')
+    end)
+
+    it('asks nothing extra of the rest of the list', function()
         player:addCurrency('ballista_point', 2000)
 
-        assert(xi.conflict.marshal.purchase(player, xi.keyItem.REVITALIZER_VOUCHER, 0), 'an uncapped match admits a Revitalizer')
+        assert(xi.conflict.marshal.purchase(player, xi.keyItem.REVITALIZER_VOUCHER), 'a Revitalizer needs no chevron')
+        assert(xi.conflict.marshal.purchase(player, xi.keyItem.ELIXIR_VOUCHER), 'nor does an Elixir')
     end)
 
     -- Marshal event 26 loads 10 into the voucher-count parameter of both the status line and the
@@ -93,7 +99,7 @@ describe('Conflict (Ballista) Marshal', function()
 
         local bought = 0
         for _, entry in ipairs(xi.conflict.marshal.shop) do
-            if xi.conflict.marshal.purchase(player, entry.keyItem, 0) then
+            if xi.conflict.marshal.purchase(player, entry.keyItem) then
                 bought = bought + 1
             end
         end
@@ -108,8 +114,8 @@ describe('Conflict (Ballista) Marshal', function()
     it('spends held vouchers into temporary items when the match starts', function()
         player:addCurrency('ballista_point', 200)
 
-        assert(xi.conflict.marshal.purchase(player, xi.keyItem.POTION_VOUCHER, 0), 'setup: the purchase failed')
-        assert(xi.conflict.marshal.purchase(player, xi.keyItem.ETHER_VOUCHER, 0), 'setup: the purchase failed')
+        assert(xi.conflict.marshal.purchase(player, xi.keyItem.POTION_VOUCHER), 'setup: the purchase failed')
+        assert(xi.conflict.marshal.purchase(player, xi.keyItem.ETHER_VOUCHER), 'setup: the purchase failed')
 
         startMatch(0)
 
@@ -123,7 +129,7 @@ describe('Conflict (Ballista) Marshal', function()
     it('keeps a voucher the match level cap does not admit', function()
         player:addCurrency('ballista_point', 2000)
 
-        assert(xi.conflict.marshal.purchase(player, xi.keyItem.REVITALIZER_VOUCHER, 0), 'setup: the purchase failed')
+        assert(xi.conflict.marshal.purchase(player, xi.keyItem.REVITALIZER_VOUCHER), 'setup: the purchase failed')
 
         startMatch(30)
 

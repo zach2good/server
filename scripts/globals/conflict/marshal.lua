@@ -13,6 +13,7 @@
 -- them are not confirmed. See notes.md.
 -----------------------------------
 
+require('scripts/globals/conflict/ranking')
 require('scripts/globals/conflict/zoneinfo')
 
 xi = xi or {}
@@ -27,9 +28,11 @@ xi.conflict.marshal.maxPoints = 2000
 -- refusal at 7535, so this is a hard ceiling on top of the one-of-each-type rule.
 xi.conflict.marshal.maxVouchers = 10
 
--- levelCap is the lowest match cap the voucher may be bought for, where an uncapped match counts
--- as the highest. Only the two restoratives Ffxiclopedia marks are gated, and the trigger is
--- unconfirmed: the client's refusal lines read more like a chevron unlock than a match cap.
+-- levelCap is the lowest match cap that will hand this voucher over. Ffxiclopedia annotates two
+-- restoratives that way, and redemption is where it belongs: Marshal event 26 has no cap check at
+-- all when buying. What it does have is one entitlement, on the Catholicon, gated on wearing a
+-- chevron: "I see that you are wearing $6. Ballista point exchange authorization has been
+-- granted", against "You have not earned the right to exchange your points for that item".
 xi.conflict.marshal.shop =
 {
     { keyItem = xi.keyItem.POTION_VOUCHER,               item = xi.item.POTION,                        cost = 15 },
@@ -92,22 +95,28 @@ end
 -- Reasons a purchase can be refused, so the caller can pick the right line to say.
 xi.conflict.marshal.refusal =
 {
-    UNKNOWN_ITEM = 1,
-    LEVEL_CAP    = 2,
-    NOT_ENOUGH   = 3,
-    ALREADY_HELD = 4,
-    TOO_MANY     = 5,
+    UNKNOWN_ITEM  = 1,
+    NOT_ENTITLED  = 2, -- 7529, you have not earned the right to that item
+    NOT_ENOUGH    = 3,
+    ALREADY_HELD  = 4,
+    TOO_MANY      = 5,
 }
 
--- Returns true on success, or false and a refusal reason.
-function xi.conflict.marshal.purchase(player, keyItem, levelCap)
+-- The one item the Marshal will not sell to just anyone.
+xi.conflict.marshal.entitledByChevron = { [xi.item.BOTTLE_OF_CATHOLICON] = true }
+
+-- Returns true on success, or false and a refusal reason. The match's level cap does not come
+-- into it: that decides what a match will hand over, which is redeemVouchers' business.
+function xi.conflict.marshal.purchase(player, keyItem)
     local entry = xi.conflict.marshal.shopByKeyItem[keyItem]
     if entry == nil then
         return false, xi.conflict.marshal.refusal.UNKNOWN_ITEM
     end
 
-    if not meetsLevelCap(entry, levelCap or 0) then
-        return false, xi.conflict.marshal.refusal.LEVEL_CAP
+    if xi.conflict.marshal.entitledByChevron[entry.item] then
+        if xi.conflict.ranking.heldChevron(player) == nil then
+            return false, xi.conflict.marshal.refusal.NOT_ENTITLED
+        end
     end
 
     -- One of each type, on top of the total below.

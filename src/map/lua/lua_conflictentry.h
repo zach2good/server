@@ -44,6 +44,8 @@ public:
 
     [[nodiscard]] auto getHeldPetras() const -> uint32;
     [[nodiscard]] auto getScoredPetras() const -> uint32;
+    [[nodiscard]] auto getTotalScoredPetras() const -> uint32;
+    auto               registerForRanking() -> bool;
     [[nodiscard]] auto getPoints() const -> uint32;
 
     auto addPetras(int32 petras) -> int32;

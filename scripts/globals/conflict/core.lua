@@ -343,7 +343,7 @@ function xi.conflict.lineupPlayer(player, zoneInfo, teamIndex, playerIndex, show
     if showPoints then
         local entry = player:getConflictEntry()
         if entry then
-            petraParam  = entry:getScoredPetras()
+            petraParam  = entry:getTotalScoredPetras()
             pointsParam = entry:getPoints()
         end
     end
@@ -354,7 +354,7 @@ function xi.conflict.lineupPlayer(player, zoneInfo, teamIndex, playerIndex, show
     if highScorer then
         highScorerName   = (highScorer:getName() or '???')
         highScorerNation = highScorer:getTeamNation()
-        highScorerPetra  = highScorer:getScoredPetras()
+        highScorerPetra  = highScorer:getTotalScoredPetras()
     end
 
     player:setLocalVar('[Conflict]InEvent', 1)

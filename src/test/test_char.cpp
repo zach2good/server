@@ -68,6 +68,7 @@ std::vector<std::string> charIdTables = {
     "accounts_sessions",
 
     "conflict_entries",
+    "conflict_rankings",
 };
 
 } // namespace

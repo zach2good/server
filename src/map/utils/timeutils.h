@@ -39,7 +39,8 @@
 namespace timeutils
 {
 
-// Drop a skippable event whose time has already passed, rather than firing it late.
+// Yes queues an event whose time has already passed so it fires on the next tick. No drops it
+// instead, which is what a match recovered from the database wants for the ceremony it missed.
 using ForceAdd = xi::Flag<struct ForceAddTag>;
 
 struct TimelineEvent
@@ -81,10 +82,10 @@ public:
     void Clean();
 
     // Returns the id of the scheduled event, or no value when a skippable past-due event was dropped.
-    auto AddEvent(timer::time_point tp, Fn<bool()> action, ForceAdd forceAdd = ForceAdd::Yes, timer::duration repeatInterval = timer::duration::zero(), Maybe<uint32> repeatTimes = std::nullopt) -> Maybe<uint32>;
+    [[nodiscard]] auto AddEvent(timer::time_point tp, Fn<bool()> action, ForceAdd forceAdd = ForceAdd::Yes, timer::duration repeatInterval = timer::duration::zero(), Maybe<uint32> repeatTimes = std::nullopt) -> Maybe<uint32>;
 
     // Runs ahead of every regular event sharing its timestamp.
-    auto AddPriorityEvent(timer::time_point tp, Fn<bool()> action) -> Maybe<uint32>;
+    [[nodiscard]] auto AddPriorityEvent(timer::time_point tp, Fn<bool()> action) -> Maybe<uint32>;
 
     [[nodiscard]] auto empty() const noexcept -> bool;
     [[nodiscard]] auto size() const noexcept -> std::size_t;

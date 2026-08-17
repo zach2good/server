@@ -85,12 +85,13 @@ ConflictEntry::ConflictEntry(CCharEntity* player, ConflictInstance* instance, co
     }
 }
 
-ConflictEntry::ConflictEntry(const uint32 charid, ConflictInstance* instance, const uint8 teamIdx, const xi::Job job, const ConflictEntryType entryType, const uint32 points, const uint32 score)
+ConflictEntry::ConflictEntry(const uint32 charid, ConflictInstance* instance, const uint8 teamIdx, const xi::Job job, const ConflictEntryType entryType, const uint32 points, const uint32 score, const uint32 totalScore)
 : charid(charid)
 , teamIdx(teamIdx)
 , instance(instance)
 , ballistaPoints(points)
 , score(score)
+, totalScoredPetras(totalScore)
 , job(job)
 , entryType(entryType)
 , savedToDb(true)
@@ -511,40 +512,42 @@ void ConflictEntry::Scout()
 
 void ConflictEntry::EnableCombat(const bool enable)
 {
-    if (player)
+    if (player == nullptr)
     {
-        player->changeAllegiance([&]
-                                 {
-                                     if (enable)
-                                     {
-                                         return instance->GetTeam(teamIdx)->allegiance;
-                                     }
+        return;
+    }
 
-                                     return xi::Allegiance::Player;
-                                 }());
-
-        nextHint = [&]
+    player->changeAllegiance(
+        [&]
         {
-            if (charutils::hasKeyItem(player, kBallistaEarringKeyItem))
+            // An entry that has not been seated has no team, so it fights for nobody.
+            const auto* team = instance->GetTeam(teamIdx);
+            if (!enable || team == nullptr)
             {
-                return timer::time_point::min();
+                return xi::Allegiance::Player;
             }
 
-            return timer::time_point::max();
-        }();
-    }
+            return team->allegiance;
+        }());
+
+    nextHint = [&]
+    {
+        if (charutils::hasKeyItem(player, kBallistaEarringKeyItem))
+        {
+            return timer::time_point::min();
+        }
+
+        return timer::time_point::max();
+    }();
 
     if (enable)
     {
-        if (player)
-        {
-            player->health.tp = 0;
-            player->updatemask |= UPDATE_HP;
-        }
+        player->health.tp = 0;
+        player->updatemask |= UPDATE_HP;
 
         SendStatusUpdate();
     }
-    else if (player)
+    else
     {
         if (player->isDead())
         {
@@ -599,10 +602,21 @@ void ConflictEntry::SetupBattleCommunication()
 
 void ConflictEntry::SetupTemporaryInventory(const SendUpdate sendUpdate)
 {
-    if (player)
+    if (player == nullptr)
     {
-        charutils::SetTempInventorySize(player, instance->settings.tempItemSize, static_cast<bool>(sendUpdate));
+        return;
     }
+
+    // A container refuses to shrink below what it already holds, so a player who walks in carrying
+    // more temporary items than the match allows would keep their full allowance for the whole
+    // match. The Herald collects this storage at the end regardless, so it is emptied first.
+    const auto* temp = player->getStorage(LOC_TEMPITEMS);
+    if (temp != nullptr && temp->GetSize() - temp->GetFreeSlotsCount() > instance->settings.tempItemSize)
+    {
+        charutils::ClearTempItems(player, false);
+    }
+
+    charutils::SetTempInventorySize(player, instance->settings.tempItemSize, static_cast<bool>(sendUpdate));
 }
 
 auto ConflictEntry::ClosestRook() const -> CBaseEntity*

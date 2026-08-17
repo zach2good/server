@@ -57,19 +57,10 @@ void ConflictTeam::Tick(const timer::time_point tick)
         return;
     }
 
-    const auto musicLength = [&]() -> timer::duration
-    {
-        // The first track of a match starts immediately.
-        if (currentMusic == ConflictMusic::None)
-        {
-            return 0s;
-        }
-
-        return getMusicLength(currentMusic);
-    }();
-
+    // The track about to play, not the one leaving. The guard exists so a track is left alone for
+    // its own length, which is a fact about the new one.
     currentMusic    = nextMusic;
-    nextMusicChange = tick + musicLength;
+    nextMusicChange = tick + getMusicLength(currentMusic);
 
     for (auto* entry : entries)
     {
@@ -82,7 +73,7 @@ void ConflictTeam::ResetRound()
     score           = 0;
     currentMusic    = ConflictMusic::None;
     nextMusic       = ConflictMusic::YouWantToLiveForever;
-    nextMusicChange = timer::time_point::max();
+    nextMusicChange = timer::time_point::min();
 }
 
 void ConflictTeam::UpdateMusic(const bool isWinning)
@@ -96,17 +87,4 @@ void ConflictTeam::UpdateMusic(const bool isWinning)
 
         return ConflictMusic::YouWantToLiveForever;
     }();
-}
-
-void ConflictTeam::UpdatePlayersInZone()
-{
-    playersInZone = std::ranges::any_of(entries, [](const ConflictEntry* entry)
-                                        {
-                                            return entry->player != nullptr;
-                                        });
-}
-
-auto ConflictTeam::HasPlayersInZone() const -> bool
-{
-    return playersInZone;
 }
