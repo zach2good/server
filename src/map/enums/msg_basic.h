@@ -100,6 +100,7 @@ enum class MsgBasic : uint16_t
     IsIntimidated                   = 106, // The <player> is intimidated by <target>'s presence.
     UsesAbilityTakesDamage          = 110, // <user> uses <ability>. <target> takes <amount> points of damage.
     MagicFail                       = 114, // <caster> casts <spell> on <target>, but the spell fails to take effect
+    AchievesGateBreach              = 124, // <player> achieves Gate Breach status!
     UsesAbilityFortifiedUndead      = 131, // <user> uses <ability>. <target> is fortified against undead.
     SpikesEffectHPDrain             = 132, // <target>'s spikes drain <number> HP from the <attacker>.
     UsesAbilityFortifiedArcana      = 134, // <user> uses <ability>. <target> is fortified against arcana.

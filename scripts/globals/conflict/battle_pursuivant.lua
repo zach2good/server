@@ -1,6 +1,6 @@
 -----------------------------------
--- Conflict (Ballista) field ('battle') Pursuivant: appears at the match camps
--- to lend/return the Ballista Earring during a match.
+-- Conflict (Ballista) field ('battle') Pursuivant: lends and takes back the Ballista Earring
+-- during a match. Placing them at the camps is xi.conflict.pursuivant.field.setup's job.
 --
 -- Ported from Eden; xi.ki -> xi.keyItem.
 -----------------------------------
@@ -10,45 +10,6 @@ xi = xi or {}
 xi.conflict = xi.conflict or {}
 xi.conflict.pursuivant = xi.conflict.pursuivant or {}
 xi.conflict.pursuivant.battle = xi.conflict.pursuivant.battle or {}
-
-function xi.conflict.pursuivant.battle.setup(conflict)
-    local zoneInfo = xi.conflict.getZoneInfoForConflict(conflict)
-    if zoneInfo == nil then
-        return
-    end
-
-    local n1, n2 = conflict:getTeamNations()
-
-    local zone = conflict:getZone()
-    local p1   = xi.conflict.getPursuivantEntity(zone, n1)
-    local p2   = xi.conflict.getPursuivantEntity(zone, n2)
-
-    local timeline = conflict:getTimelineAt(conflict:getStartTime())
-    timeline:addEvent(function()
-        if p1 then
-            local pos = zoneInfo.pursuivants.pos[1]
-            p1:setPos(pos[1], pos[2], pos[3], pos[4])
-            p1:setStatus(xi.status.NORMAL)
-        end
-
-        if p2 then
-            local pos = zoneInfo.pursuivants.pos[2]
-            p2:setPos(pos[1], pos[2], pos[3], pos[4])
-            p2:setStatus(xi.status.NORMAL)
-        end
-    end)
-
-    timeline = conflict:getTimelineAt(conflict:getEndTime())
-    timeline:addEvent(function()
-        if p1 then
-            p1:setStatus(xi.status.DISAPPEAR)
-        end
-
-        if p2 then
-            p2:setStatus(xi.status.DISAPPEAR)
-        end
-    end)
-end
 
 function xi.conflict.pursuivant.battle.onTrigger(player, npc)
     local zoneInfo = xi.conflict.getZoneInfoForEntity(player)

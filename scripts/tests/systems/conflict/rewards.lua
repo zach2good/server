@@ -14,6 +14,17 @@ describe('Conflict (Ballista) rewards', function()
 
     local entryFee = 2000
 
+    -- The award is written off the main thread, so it does not land the instant the match ends.
+    local function waitForPayout(player)
+        for _ = 1, 100 do
+            if player:getCurrency('ballista_point') > 0 then
+                return
+            end
+
+            xi.test.world:tick()
+        end
+    end
+
     local function startMatch()
         local zone = p1:getZone()
 
@@ -123,6 +134,8 @@ describe('Conflict (Ballista) rewards', function()
 
         assert(conflict:getWinningTeam() == 0, 'setup: team 0 should have taken it')
 
+        waitForPayout(p1)
+
         local winnerPoints = p1:getCurrency('ballista_point')
         local loserPoints  = p2:getCurrency('ballista_point')
 
@@ -145,7 +158,31 @@ describe('Conflict (Ballista) rewards', function()
 
         conflict:setState(xi.conflictState.POST_GAME)
 
+        waitForPayout(p2)
+
         assert(p2:getCurrency('ballista_point') > 0, 'a participant who zoned out was paid nothing')
+    end)
+
+    -- The pot cannot be rebuilt from the entries after anyone has collected: a winner takes more
+    -- than they put in, so counting the fees back would hand the rest a share already paid out.
+    it('tracks the pot as gil moves on and off the Herald', function()
+        local conflict = startMatch()
+
+        conflict:addPlayer(p1, 0)
+        conflict:addPlayer(p2, 1)
+
+        assert(conflict:getGilOnHerald() == entryFee * 2, 'both fees should be on the Herald')
+
+        conflict:setState(xi.conflictState.ACTIVE)
+
+        local entry1 = p1:getConflictEntry()
+        entry1:addPetras(3)
+        entry1:scorePetras()
+
+        conflict:setState(xi.conflictState.POST_GAME)
+
+        assert(p1:getConflictEntry():leave() == entryFee * 2, 'the winner should take the whole pot')
+        assert(conflict:getGilOnHerald() == 0, 'the Herald should be holding nothing afterwards')
     end)
 
     it('decides a best of three on rounds rather than score', function()

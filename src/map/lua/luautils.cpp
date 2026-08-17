@@ -2560,6 +2560,16 @@ auto ConflictDistributeInitialItems(CCharEntity* PChar) -> bool
     return result && result->get<sol::optional<bool>>().value_or(false);
 }
 
+// Vouchers are bought from the Marshal between matches and spent at the start of the next one.
+auto ConflictRedeemVouchers(CCharEntity* PChar, const uint8 levelCap) -> uint32
+{
+    TracyZoneScoped;
+
+    const auto result = callConflictLuaFunction("marshalRedeemVouchers", CLuaBaseEntity(PChar), levelCap);
+
+    return result ? result->get<sol::optional<uint32>>().value_or(0) : 0;
+}
+
 void ConflictGameHint(CCharEntity* PChar)
 {
     TracyZoneScoped;

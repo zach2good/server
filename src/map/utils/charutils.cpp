@@ -192,19 +192,22 @@ const std::set traverserStoneReductionKeyItems = {
 
 // Callers reach these from Lua, so validate against the schema before formatting into a query.
 // TODO: Extract this into some sort of database metadata system that's populated on startup.
+// Awards can be posted to a worker thread, so this is read from more than one thread: filling it
+// lazily under a plain empty() check would be a torn read of the table.
 auto isCharPointsColumn(const char* type) -> bool
 {
-    static std::unordered_set<std::string> charPointsColumnNames;
-    if (charPointsColumnNames.empty())
+    static const auto charPointsColumnNames = []
     {
-        const auto names = db::getTableColumnNames("char_points");
-        for (const auto& name : names)
+        auto names = std::unordered_set<std::string>();
+        for (const auto& name : db::getTableColumnNames("char_points"))
         {
-            charPointsColumnNames.insert(name);
+            names.insert(name);
         }
-    }
 
-    return charPointsColumnNames.find(type) != charPointsColumnNames.end();
+        return names;
+    }();
+
+    return charPointsColumnNames.contains(type);
 }
 
 } // namespace

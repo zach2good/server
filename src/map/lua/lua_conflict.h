@@ -94,6 +94,7 @@ public:
 
     // The gil each member of a team would take home if they won, given the pot on the Herald.
     [[nodiscard]] auto getTeamWinnings() const -> std::tuple<int32, int32>;
+    [[nodiscard]] auto getGilOnHerald() const -> uint32;
 
     [[nodiscard]] auto getTeamScores() const -> std::tuple<int32, int32>;
     [[nodiscard]] auto getTeamRounds() const -> std::tuple<int32, int32>;

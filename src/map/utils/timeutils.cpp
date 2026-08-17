@@ -47,7 +47,11 @@ namespace timeutils
 
 void Timeline::Tick(const timer::time_point tick)
 {
-    while (!events.empty())
+    // An action may schedule more work, and a forced add can land in the past, so the drain needs
+    // a ceiling of its own rather than trusting the heap to empty.
+    constexpr auto kMaxEventsPerTick = 256;
+
+    for (auto fired = 0; fired < kMaxEventsPerTick && !events.empty(); ++fired)
     {
         if (events.top().time > tick)
         {
@@ -56,7 +60,15 @@ void Timeline::Tick(const timer::time_point tick)
 
         auto timelineEvent = events.pop();
 
-        const auto shouldStop = timelineEvent.action();
+        const auto generationBefore = generation;
+        const auto shouldStop       = timelineEvent.action();
+
+        // The action emptied the timeline, so this event went with it and must not come back.
+        if (generation != generationBefore)
+        {
+            return;
+        }
+
         if (shouldStop || timelineEvent.repeatInterval == timer::duration::zero())
         {
             continue;
@@ -85,6 +97,7 @@ void Timeline::Tick(const timer::time_point tick)
 
 void Timeline::Clean()
 {
+    ++generation;
     events.clear();
 }
 

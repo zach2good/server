@@ -208,24 +208,30 @@ function xi.conflict.herald.onTrigger(player, npc)
 
             If exp should be rewarded as well, add 0x200000 to param
         ]]
+        -- Read the state rather than infer it. getWinningTeam is nil for a draw and for a match
+        -- that never ran, so testing it alone made the cancelled case unreachable and paid the
+        -- draw reward, with the experience bonus, for a match nobody fought.
         local reward = 4 -- Cancelled
 
         local playerTeam = entry:getTeamIndex()
         local winningNation = conflict:getWinningTeam()
-        if winningNation == playerTeam then -- Won
-            reward = 1
-        elseif winningNation == nil then -- Draw
-            reward = 3
-        elseif winningNation ~= nil then -- Lost
-            reward = 2
+
+        if state ~= xi.conflictState.CANCELLED then
+            if winningNation == playerTeam then -- Won
+                reward = 1
+            elseif winningNation == nil then -- Draw
+                reward = 3
+            else -- Lost
+                reward = 2
+            end
         end
 
         player:setLocalVar('[Conflict]Reward', reward)
-        if reward ~= 4 then
-            params[2] = params[2] + bit.lshift(reward, 8)
-            if winningNation ~= nil then
-                params[2] = params[2] + 0x200000
-            end
+        params[2] = params[2] + bit.lshift(reward, 8)
+
+        -- Experience is for a match that was actually decided.
+        if reward ~= 4 and winningNation ~= nil then
+            params[2] = params[2] + 0x200000
         end
     end
 
@@ -280,6 +286,24 @@ local function handleSignupRequest(player, conflict, isTempEntry, requestedTeamI
 
     local params = {}
 
+    -- The trigger decides only what the Herald displays. The client chooses which option it sends
+    -- back, so every gate the trigger reported has to hold again here or it is not a gate at all.
+    local minimumLevel = minimumEntryLevel[conflict:getLevelCap()] or 1
+    if player:getMainLvl() < minimumLevel then
+        params[0] = 10
+        return params
+    end
+
+    if not player:hasKeyItem(xi.keyItem.BALLISTA_LICENSE) then
+        params[0] = 12
+        return params
+    end
+
+    if conflict:hasPlayerLeft(player) then
+        params[0] = 9
+        return params
+    end
+
     local signupState = conflict:getSignupState()
     if signupState == xi.conflictSignupState.TEMPORARY and not isTempEntry then
         params[0] = 3
@@ -309,6 +333,16 @@ local function handleSignupRequest(player, conflict, isTempEntry, requestedTeamI
     local teamIdx = 0
     if requestedTeamIdx ~= nil then
         teamIdx = requestedTeamIdx
+
+        -- Naming a side by name has to respect that side's own ceiling. The FILL check above only
+        -- refuses when both sides are full, which a named request can walk straight past.
+        if signupState == xi.conflictSignupState.FILL then
+            local namedCounts = { [0] = members1, [1] = members2 }
+            if namedCounts[teamIdx] >= conflict:getMaxTeamSize() then
+                params[0] = 7
+                return params
+            end
+        end
 
         -- The same openings that gate a nation entry gate a request for that nation by name.
         if allowances[teamIdx] == xi.conflict.entryAllowance.RESTRICTED_START then

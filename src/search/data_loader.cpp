@@ -557,7 +557,8 @@ auto CDataLoader::GetPartyList(uint32 PartyID, uint32 AllianceID) const -> std::
 {
     std::vector<SearchEntity> PartyList;
 
-    auto rset = db::preparedStmt("SELECT charid, partyid, charname, pos_zone, nation, rank_sandoria, rank_bastok, rank_windurst, race, settings, mjob, sjob, mlvl, slvl, languages, seacom_type, disconnecting "
+    auto rset = db::preparedStmt("SELECT charid, partyid, charname, pos_zone, nation, rank_sandoria, rank_bastok, rank_windurst, race, settings, mjob, sjob, mlvl, slvl, languages, seacom_type, disconnecting, "
+                                 "conflict.allegiance, conflict.combat_enabled "
                                  "FROM accounts_sessions "
                                  "LEFT JOIN accounts_parties USING(charid) "
                                  "LEFT JOIN chars USING(charid) "

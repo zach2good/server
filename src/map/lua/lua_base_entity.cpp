@@ -1274,6 +1274,27 @@ void CLuaBaseEntity::StartEventHelper(int32 EventID, sol::variadic_args va, EVEN
 }
 
 /************************************************************************
+ *  Function: prepareEventForZone()
+ *  Purpose : Points the next event's handlers at the zone script
+ *  Example : player:prepareEventForZone()
+ *  Notes   : An event started without an NPC otherwise inherits whichever script the player last
+ *          : interacted with, so its finish is dispatched somewhere unrelated.
+ ************************************************************************/
+
+void CLuaBaseEntity::prepareEventForZone()
+{
+    auto* PChar = dynamic_cast<CCharEntity*>(m_PBaseEntity);
+    if (PChar == nullptr || PChar->loc.zone == nullptr)
+    {
+        ShowError("CLuaBaseEntity::prepareEventForZone: Called on a non-character entity.");
+        return;
+    }
+
+    PChar->eventPreparation->targetEntity = nullptr;
+    PChar->eventPreparation->scriptFile   = fmt::format("./scripts/zones/{}/Zone.lua", PChar->loc.zone->getName());
+}
+
+/************************************************************************
  *  Helper function for parsing event information from lua.
  ************************************************************************/
 EventInfo* CLuaBaseEntity::ParseEvent(int32 EventID, sol::variadic_args va, EventPrep* eventPreparation, EVENT_TYPE eventType)
@@ -12456,8 +12477,8 @@ auto CLuaBaseEntity::getBattlefield() const -> CBattlefield*
  *  Function: useItem()
  *  Purpose : Uses an item the player is holding, by item id
  *  Example : player:useItem(xi.item.HI_POTION)
- *  Notes   : Searches temporary storage first, since that is where a Ballista
- *          : match keeps the items it hands out
+ *  Notes   : Temporary storage only. A match that bars a player's own items would otherwise be
+ *          : bypassed by reaching past it into real inventory for the same item id.
  ************************************************************************/
 
 auto CLuaBaseEntity::useItem(const uint16 itemId) const -> bool
@@ -12469,7 +12490,7 @@ auto CLuaBaseEntity::useItem(const uint16 itemId) const -> bool
         return false;
     }
 
-    for (const auto location : { LOC_TEMPITEMS, LOC_INVENTORY })
+    for (const auto location : { LOC_TEMPITEMS })
     {
         auto* PContainer = PChar->getStorage(location);
         if (PContainer == nullptr)
@@ -20618,6 +20639,7 @@ void CLuaBaseEntity::Register()
     SOL_REGISTER("startEventString", CLuaBaseEntity::startEventString);
     SOL_REGISTER("updateEvent", CLuaBaseEntity::updateEvent);
     SOL_REGISTER("updateEventString", CLuaBaseEntity::updateEventString);
+    SOL_REGISTER("prepareEventForZone", CLuaBaseEntity::prepareEventForZone);
     SOL_REGISTER("getEventTarget", CLuaBaseEntity::getEventTarget);
     SOL_REGISTER("isInEvent", CLuaBaseEntity::isInEvent);
     SOL_REGISTER("release", CLuaBaseEntity::release);

@@ -73,18 +73,18 @@ SCOREBOARD::SCOREBOARD(const CCharEntity* PChar, const bool enabled)
     // Which team's flag hangs on the viewer's side of the board.
     packet.Scoreboard[0] = static_cast<int16_t>(entry->teamIdx != 0);
 
-    // TODO(conflict): this selects a render mode, one of whose jobs is hiding the board outright.
-    // Nation bits are not that, and no source gives the value table. Wrong here means a scoreboard
-    // that renders oddly, or not at all, for some nation pairings.
+    // The low three bits are the nations taking part, counted from San d'Oria. The client masks
+    // off the viewer's own nation and uses whichever bit is left to pick the opposing team's icon;
+    // with none of the three set it falls back on a generic pair of icons instead.
     packet.Scoreboard[1] = instance->GetNationBits();
 
     // The round markers beside each flag, at most two per side.
     packet.MatchPoints[0] = static_cast<uint8_t>(team0->roundsWon);
     packet.MatchPoints[1] = static_cast<uint8_t>(team1->roundsWon);
 
-    // The client shows this halved, so the set has to go out doubled. Phases run 1 and 2 for the
-    // first set, 3 and 4 for the second: sending the phase itself leaves the counter a set behind
-    // for the whole of every round.
+    // The client halves this, so the set has to go out doubled. Phases run 1 and 2 for the first
+    // set, 3 and 4 for the second: sending the phase itself leaves the counter a set behind for
+    // the whole of every round.
     packet.MatchSet = ToMatchSet(instance->gamePhase);
 
     // The flame lights are Brenner's, and the client draws them under the team icons whenever they

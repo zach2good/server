@@ -82,7 +82,7 @@ function xi.conflict.nextBallistaMatchNotification(player, force)
     if not isCity or now >= entryTime then
         local startYear  = math.floor(info.startTime / 518400) + 886
         local startMonth = math.floor(info.startTime / 43200) % 12 + 1
-        local startDay   = math.floor(entryTime / 1440) % 30 + 1
+        local startDay   = math.floor(info.startTime / 1440) % 30 + 1
         player:messageSpecial(text.MATCH_START, startYear, startMonth, startDay, info.startTime * 2.4)
     end
 

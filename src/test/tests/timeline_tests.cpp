@@ -313,3 +313,63 @@ TEST_CASE("Timeline schedules against the offset clock, not raw steady_clock", "
 
     CHECK((fired == std::vector<int>{ 1 }));
 }
+
+TEST_CASE("Timeline stops draining when an action empties it", "[timeline]")
+{
+    auto             timeline = timeutils::Timeline();
+    std::vector<int> fired;
+
+    const auto now = timer::now();
+
+    // A repeating event that cleans the timeline from inside its own action. Re-queueing it
+    // afterwards would leave one event alive on a timeline that was just emptied.
+    std::ignore = timeline.AddEvent(
+        now - 1s,
+        [&]() -> bool
+        {
+            fired.emplace_back(1);
+            timeline.Clean();
+
+            return false;
+        },
+        timeutils::ForceAdd::Yes,
+        1s);
+
+    std::ignore = timeline.AddEvent(now - 1s, record(fired, 2), timeutils::ForceAdd::Yes);
+
+    timeline.Tick(now);
+
+    CHECK((fired == std::vector<int>{ 1 }));
+    CHECK(timeline.empty());
+}
+
+TEST_CASE("Timeline does not spin on an action that schedules past-due work", "[timeline]")
+{
+    auto timeline = timeutils::Timeline();
+    auto fired    = 0;
+
+    const auto now = timer::now();
+
+    // Each firing queues another event already due, which an unbounded drain would chase forever.
+    std::ignore = timeline.AddEvent(
+        now - 1s,
+        [&]() -> bool
+        {
+            ++fired;
+            std::ignore = timeline.AddEvent(now - 1s, [&]() -> bool
+                                            {
+                                                ++fired;
+                                                return true;
+                                            },
+                                            timeutils::ForceAdd::Yes);
+
+            return true;
+        },
+        timeutils::ForceAdd::Yes);
+
+    timeline.Tick(now);
+
+    // Bounded rather than hung. The exact ceiling is an implementation detail; that it returns is not.
+    CHECK(fired > 0);
+    CHECK(fired <= 256);
+}

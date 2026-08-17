@@ -391,6 +391,7 @@ void ConflictCleanup(ConflictInstance* instance);
 void ConflictUpdateRookState(ConflictInstance* instance);
 auto ConflictGetRookIds(ConflictInstance* instance) -> std::vector<uint32>;
 auto ConflictDistributeInitialItems(CCharEntity* PChar) -> bool;
+auto ConflictRedeemVouchers(CCharEntity* PChar, uint8 levelCap) -> uint32;
 void ConflictGameHint(CCharEntity* PChar);
 void ConflictReraise(CCharEntity* PChar);
 void OnConflictGateBreach(ConflictEntry* entry, timeutils::Timeline* timeline, bool shortGateBreach, bool alreadyHad);

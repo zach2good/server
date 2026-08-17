@@ -144,7 +144,10 @@ auto GP_CLI_COMMAND_ACTION::validate(MapSession* PSession, const CCharEntity* PC
                     case GP_CLI_COMMAND_ACTION_ACTIONID::Sprint:
                     case GP_CLI_COMMAND_ACTION_ACTIONID::Scout:
                     {
-                        pv.blockedBy({ BlockedState::PreventAction })
+                        // Dead is its own state, not part of PreventAction. A corpse that can still
+                        // quarry farms petras where nobody can reach it, and the petra drop on death
+                        // only runs once, so they survive the reraise.
+                        pv.blockedBy({ BlockedState::PreventAction, BlockedState::Dead, BlockedState::InEvent })
                             .mustEqual(PChar->conflictEntry != nullptr && PChar->conflictEntry->HasActiveEntry(), true, "Character is not in a Conflict match.");
                         break;
                     }

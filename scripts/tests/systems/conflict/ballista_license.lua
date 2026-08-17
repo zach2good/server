@@ -69,6 +69,22 @@ describe('Ballista License', function()
         player.entities:gotoAndTrigger('Excenmille', { eventId = 31 })
     end)
 
+    -- The San d'Orian leader has one cutscene for his own citizens and one for everyone else, and
+    -- the quest previously sent Bastokans to an event that does not exist in the zone at all.
+    it('receives a citizen of another nation at the San dOrian leader', function()
+        local bastokan = spawnCitizenOf(xi.nation.BASTOK)
+
+        bastokan:gotoZone(xi.zone.METALWORKS)
+        bastokan.entities:gotoAndTrigger('Invincible_Shield', { eventId = 813, finishOption = 1 })
+
+        bastokan.assert:hasKI(xi.ki.LETTER_TO_THE_SAN_CONFLICT_CMD1)
+
+        -- gotoAndTrigger asserts which event came back, so this is the whole point: the mapping
+        -- used to name an event the zone does not have, and nothing happened at all.
+        bastokan:gotoZone(xi.zone.CHATEAU_DORAGUILLE)
+        bastokan.entities:gotoAndTrigger('_6h4', { eventId = 72 })
+    end)
+
     it('walks a San d\'Orian through to the licence', function()
         player:gotoZone(xi.zone.NORTHERN_SAN_DORIA)
         player.entities:gotoAndTrigger('Excenmille', { eventId = 36, finishOption = 1 })

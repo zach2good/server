@@ -76,8 +76,15 @@ function xi.conflict.onEventFinish(player, csid, option, npc, cancel)
                 player:addTempItem(itemId)
             end
         elseif option == 2 then -- use item
-            player:messageSpecial(zoneInfo.text.FIND_AND_USE, itemId)
-            player:useItem(itemId)
+            -- Used where it was dug up rather than carried, so it has to be held briefly first.
+            -- useItem only reaches temporary storage, so a full one leaves nothing to use.
+            if player:getFreeSlotsCount(xi.inv.TEMPITEMS) > 0 then
+                player:addTempItem(itemId)
+                player:messageSpecial(zoneInfo.text.FIND_AND_USE, itemId)
+                player:useItem(itemId)
+            else
+                player:messageSpecial(zoneInfo.text.FIND_BUT_THROW, itemId, 1)
+            end
         elseif option >= 1000 and option < (0xFFFF + 1000) then -- exchange
             local removedItemId = xi.conflict.tempItemByIndex[option - 1000]
             if removedItemId and player:delItem(removedItemId, 1, xi.inv.TEMPITEMS) then
@@ -110,11 +117,17 @@ function xi.conflict.onZoneIn(player)
     end
 
     local herald = xi.conflict.getHeraldEntity(player:getZone())
+    -- getIndex is the zero-based place in the team, and answers 0xFF for an entry the team does
+    -- not hold. The timeline lines everyone else up from a one-based loop, so this has to match or
+    -- a player arriving during the speech stands somewhere nobody else does.
+    local teamIndex = conflictInfo:getIndex()
+
     if
         herald and
-        herald:getLocalVar('GivingSpeech') == 1
+        herald:getLocalVar('GivingSpeech') == 1 and
+        teamIndex ~= 0xFF
     then
-        xi.conflict.lineupPlayer(player, zoneInfo, conflictInfo:getTeamIndex(), conflictInfo:getIndex())
+        xi.conflict.lineupPlayer(player, zoneInfo, conflictInfo:getTeamIndex(), teamIndex + 1)
     end
 end
 

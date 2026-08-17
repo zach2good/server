@@ -161,3 +161,26 @@ Still unverified, and marked TODO in code:
 - The `/search` team colour bits. XiPackets has no search server coverage.
 - The Marshal has no handler, so the Ballista Points shop, MVP board and ranking do not exist.
   Inherited: "Rankings" is on Eden's own TODO list at the top of `notes.md`.
+
+---
+
+## Merging base in
+
+`base` has moved on since this branch forked at `7b266449d9`, and it needs to come in before this
+goes anywhere: among the 36 commits are a tick-hotpath series and the `GetPoints` column-select
+change this branch does not have. A trial merge in a throwaway worktree conflicts in three files,
+all small.
+
+- `src/test/CMakeLists.txt`: both sides added a test source next to the same line. Keep both
+  `timeline_tests.cpp` and `roam_region_tests.cpp`.
+- `src/map/zone.cpp`: both sides added an accessor at the same spot. Keep both `CZone::scheduler`
+  and `CZone::roamRegion`.
+- `src/map/utils/charutils.cpp`: **the one that needs care.** Both sides extracted the same
+  `char_points` column check. Base calls it `isCharPointsColumn`, which this branch has since
+  adopted so only the body differs.
+
+  Base's body fills a function-local static under a plain `empty()` check. That is a data race
+  here, because a Ballista match end posts the point award to the worker pool while the main
+  thread is calling the same function. **Keep this branch's body**, the immediately-invoked
+  initialiser on a `static const`, and base's set of callers. Resolving in base's favour puts the
+  race back.

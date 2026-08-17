@@ -54,6 +54,10 @@ describe('Conflict (Ballista) sign-up', function()
                 job   = job,
                 level = 75,
             })
+
+            -- A real sign-up needs the licence, and the Herald now checks for it at the point the
+            -- client picks its option rather than only when the conversation opens.
+            players[i]:addKeyItem(xi.keyItem.BALLISTA_LICENSE)
         end
     end)
 
@@ -113,6 +117,39 @@ describe('Conflict (Ballista) sign-up', function()
         local counts1, counts2 = conflict:getTeamCounts()
         assert(counts1 == 0, 'a named request was balanced onto the other team')
         assert(counts2 == 2, 'the second named request did not land on the requested team')
+    end)
+
+    -- The trigger only decides what the Herald says; the client picks which option it sends back.
+    -- These drive the update directly, the way a crafted packet would.
+    it('refuses a player without a Ballista License', function()
+        local conflict = startMatch()
+        local heraldEvent = xi.conflict.getZoneInfoForEntity(players[1]).events.HERALD
+
+        players[1]:delKeyItem(xi.keyItem.BALLISTA_LICENSE)
+
+        xi.conflict.herald.onEventUpdate(players[1], heraldEvent, 2)
+
+        assert(players[1]:getConflictEntry() == nil, 'an unlicensed player was seated')
+    end)
+
+    it('refuses a player under the level bracket', function()
+        local conflict = startMatch({ levelCap = 60 })
+        local heraldEvent = xi.conflict.getZoneInfoForEntity(players[1]).events.HERALD
+
+        players[1]:setLevel(20)
+
+        xi.conflict.herald.onEventUpdate(players[1], heraldEvent, 2)
+
+        assert(players[1]:getConflictEntry() == nil, 'a player under the bracket minimum was seated')
+    end)
+
+    it('seats a licensed player of the right level', function()
+        local conflict = startMatch({ levelCap = 60 })
+        local heraldEvent = xi.conflict.getZoneInfoForEntity(players[1]).events.HERALD
+
+        xi.conflict.herald.onEventUpdate(players[1], heraldEvent, 2)
+
+        assert(players[1]:getConflictEntry() ~= nil, 'a licensed player of the right level was refused')
     end)
 
     it('refuses a player who cannot afford the fee', function()

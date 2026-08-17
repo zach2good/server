@@ -29,12 +29,10 @@ function xi.conflict.pursuivant.onTrigger(player, npc)
     local bp = player:getCurrency('ballista_point')
     local params = {}
 
-    -- First two bits are nation.
+    -- Bits 0-1 are the nation, bits 2-5 the rank in it. The client reads the rank as a number and
+    -- compares it, so setting a single bit passes the check only by landing on a value above it.
     params[0] = player:getNation()
-
-    if player:getRank(player:getNation()) >= 3 then
-        params[0] = params[0] + 0x20
-    end
+    params[0] = params[0] + bit.lshift(math.min(player:getRank(player:getNation()), 15), 2)
 
     if player:hasKeyItem(xi.keyItem.BALLISTA_LICENSE) then
         params[0] = params[0] + 0x40
@@ -125,7 +123,12 @@ function xi.conflict.pursuivant.onEventFinish(player, csid, option, npc)
 end
 
 function xi.conflict.pursuivant.field.setup(conflict)
+    -- An ad-hoc match can be started outside a Ballista zone, where there is no camp to stand in.
     local zoneInfo = xi.conflict.getZoneInfoForConflict(conflict)
+    if zoneInfo == nil then
+        return
+    end
+
     local n1, n2 = conflict:getTeamNations()
 
     local zone = conflict:getZone()

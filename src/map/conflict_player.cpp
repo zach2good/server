@@ -36,12 +36,14 @@
 #include "entities/char_entity.h"
 #include "lua/luautils.h"
 #include "packets/char_update.h"
+#include "packets/s2c/0x029_battle_message.h"
 #include "packets/s2c/0x053_systemmes.h"
 #include "packets/s2c/0x0e6_ballista.h"
 
 #include "status_effect_container.h"
 #include "utils/charutils.h"
 #include "utils/zoneutils.h"
+#include "zone.h"
 
 #include <algorithm>
 #include <chrono>
@@ -326,9 +328,15 @@ auto ConflictEntry::ScorePetras() -> int32
         return 0;
     }
 
+    auto* team = instance->GetTeam(teamIdx);
+    if (team == nullptr)
+    {
+        return 0;
+    }
+
     score += toScore;
     heldPetras -= toScore;
-    instance->GetTeam(teamIdx)->score += static_cast<int32>(toScore);
+    team->score += static_cast<int32>(toScore);
     instance->ScoreUpdate(this);
     SetGateBreach(GateBreachOn::No);
 
@@ -343,13 +351,19 @@ auto ConflictEntry::ScorePetras() -> int32
         return 3;
     }();
 
-    if (savedToDb)
+    // The score is already live in memory and nobody reads this back, so it does not belong on the
+    // tick. It is only here so a match can be recovered after a restart.
+    if (savedToDb && instance->zone != nullptr)
     {
-        db::preparedStmt("UPDATE conflict_entries SET score = ?, points = ? WHERE instanceid = ? AND charid = ?",
-                         score,
-                         ballistaPoints,
-                         instance->GetId(),
-                         charid);
+        instance->zone->scheduler().postToWorkerThread(
+            [entryScore = score, points = ballistaPoints, instanceId = instance->GetId(), charId = charid]()
+            {
+                db::preparedStmt("UPDATE conflict_entries SET score = ?, points = ? WHERE instanceid = ? AND charid = ?",
+                                 entryScore,
+                                 points,
+                                 instanceId,
+                                 charId);
+            });
     }
 
     return static_cast<int32>(toScore);
@@ -371,8 +385,10 @@ void ConflictEntry::SetGateBreach(const GateBreachOn on, const Silent silent)
         player->pushPacket<GP_SERV_COMMAND_SYSTEMMES>(0, 0, MsgStd::GateBreachDisengaged);
     }
 
-    // TODO(conflict-messages): the basic message announcing a breach being gained is not yet
-    // identified in MsgBasic.
+    if (player && !silent && !had && on)
+    {
+        player->pushPacket<GP_SERV_COMMAND_BATTLE_MESSAGE>(player, player, 0, 0, MsgBasic::AchievesGateBreach);
+    }
 
     gateBreachTimeline.Clean();
 
@@ -381,11 +397,23 @@ void ConflictEntry::SetGateBreach(const GateBreachOn on, const Silent silent)
         return;
     }
 
-    const auto scoreAdvantage = instance->GetTeam(teamIdx)->score - instance->GetTeam(1 - teamIdx)->score;
+    const auto* team      = instance->GetTeam(teamIdx);
+    const auto* otherTeam = instance->GetTeam(OtherTeamIndex(teamIdx));
+    if (team == nullptr || otherTeam == nullptr)
+    {
+        return;
+    }
+
+    const auto scoreAdvantage = team->score - otherTeam->score;
     luautils::OnConflictGateBreach(this, &gateBreachTimeline, scoreAdvantage > 0, had);
 
-    // TODO: Confirm the retail points award.
-    ballistaPoints += 1;
+    // Only a breach that was actually gained pays. Re-breaching while one is already held would
+    // otherwise bank a point per call.
+    if (!had)
+    {
+        // TODO: Confirm the retail points award.
+        ballistaPoints += 1;
+    }
 }
 
 void ConflictEntry::Quarry()

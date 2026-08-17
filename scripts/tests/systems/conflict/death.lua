@@ -56,11 +56,16 @@ describe('Conflict (Ballista) death', function()
         local zoneInfo = xi.conflict.getZoneInfo(xi.zone.JUGNER_FOREST)
         local camp     = zoneInfo.camps[1]
 
+        -- Drained first, or the reraise's floor of half MP is met by the MP the player never
+        -- spent and the assertion below proves nothing.
+        player:setMP(0)
+
         player:setHP(0)
         xi.test.world:tick(xi.tick.ZONE)
 
         -- The reraise is delayed, so nothing should have happened yet.
         assert(player:getHP() == 0, 'the player should still be dead immediately after dying')
+        assert(player:getMP() == 0, 'setup: the player should have died with no MP')
 
         xi.test.world:skipTime(35)
         xi.test.world:tick(xi.tick.ZONE)

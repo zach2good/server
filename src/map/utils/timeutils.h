@@ -93,6 +93,7 @@ private:
     auto Schedule(TimelineEvent timelineEvent, ForceAdd forceAdd) -> Maybe<uint32>;
 
     uint32                 nextEventId = 0;
+    uint32                 generation  = 0; // Bumped by Clean, so a fired action can cancel the rest.
     MinHeap<TimelineEvent> events;
 };
 

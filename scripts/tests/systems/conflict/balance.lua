@@ -57,6 +57,41 @@ describe('Conflict (Ballista) balancing', function()
         assert(not entry:hasGateBreach(), 'scoring should consume the gate breach')
     end)
 
+    -- MsgBasic 124 and MsgStd 212, both read out of the client message dumps in documentation/.
+    it('announces a gate breach being gained and lost', function()
+        local conflict = startMatch()
+
+        conflict:addPlayer(p1, 0)
+        conflict:addPlayer(p2, 1)
+        conflict:setCombatEnabled(true)
+
+        local entry = p1:getConflictEntry()
+
+        local function sawMessage(packetType, offset, messageId)
+            for _, packet in ipairs(p1.packets:getIncoming()) do
+                if packet.type == packetType then
+                    local seen = packet.data[offset] + packet.data[offset + 1] * 256
+                    if seen == messageId then
+                        return true
+                    end
+                end
+            end
+
+            return false
+        end
+
+        p1.packets:clear()
+        entry:addGateBreach()
+
+        assert(sawMessage(0x029, 0x18, 124), 'gaining a gate breach should be announced')
+
+        p1.packets:clear()
+        entry:addPetras(1)
+        entry:scorePetras()
+
+        assert(sawMessage(0x053, 0x0C, 212), 'losing a gate breach should be announced')
+    end)
+
     it('leaves the rooks open while only one side is present', function()
         local conflict = startMatch()
 

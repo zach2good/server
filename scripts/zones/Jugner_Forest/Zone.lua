@@ -66,6 +66,8 @@ zoneObject.onEventUpdate = function(player, csid, option, npc)
 end
 
 zoneObject.onEventFinish = function(player, csid, option, npc)
+    xi.conflict.onEventFinish(player, csid, option, npc)
+
     if csid == 14 then
         player:setCharVar('UnderOathCS', 8) -- Quest: Under Oath - PLD AF3
     end

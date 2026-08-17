@@ -51,13 +51,15 @@ describe('Conflict (Ballista) rooks', function()
         assert(rooks[2] == entities[2]:getID(), 'second rook id does not match the resolved entity')
     end)
 
-    it('asks for no more rooks than the zone defines', function()
+    it('asks for no more rooks than the zone has standing', function()
         local conflict = startMatch()
 
-        local zoneInfo = xi.conflict.getZoneInfo(xi.zone.JUGNER_FOREST)
-        local rooks    = xi.conflict.getRookIds(conflict, #zoneInfo.rooks + 5)
+        -- The cap is the number of rook entities in the zone, which is not the same number as the
+        -- position sets in zoneinfo. Asserting against the entities is what this actually bounds.
+        local entities = xi.conflict.getRookEntities(conflict:getZone())
+        local rooks    = xi.conflict.getRookIds(conflict, #entities + 5)
 
-        assert(#rooks == #zoneInfo.rooks, 'should not invent rooks the zone does not have')
+        assert(#rooks == #entities, 'should not invent rooks the zone does not have')
     end)
 
     it('opens and closes the rook gates', function()

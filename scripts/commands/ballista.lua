@@ -156,8 +156,13 @@ commandObj.onTrigger = function(player, sub, arg)
 
     elseif sub == 'end' then
         -- Disable combat first: this reverts every participant's allegiance to PLAYER, refreshes
-        -- their look/name, and clears the Ballista scoreboard. Then mark the match finished.
+        -- their look/name, and clears the Ballista scoreboard.
         conflict:setCombatEnabled(false)
+
+        -- Through the post-game rather than straight to finished. Lifting the level restriction
+        -- and collecting the temporary items only happen on that transition, so skipping it leaves
+        -- every participant capped with a match's items still in hand.
+        conflict:setState(xi.conflictState.POST_GAME)
         conflict:setState(xi.conflictState.FINISHED)
         player:printToPlayer('Ballista: match ended (combat disabled, players reverted, scoreboard cleared).')
 

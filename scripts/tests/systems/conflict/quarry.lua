@@ -70,6 +70,44 @@ describe('Conflict (Ballista) quarry', function()
         assert(xi.conflict.tempItemToIndex[itemId] ~= nil, 'quarried item ' .. tostring(itemId) .. ' has no temp-item index')
     end)
 
+    -- These drive the handler the zone script now forwards to. The forwarding itself is wiring in
+    -- the three Zone.lua files and is not covered here; what these pin down is that the handler
+    -- does something once it is reached, which nothing asserted while it was unreachable.
+    it('keeps a quarried temporary item when the dialog accepts it', function()
+        local conflict = startMatch()
+
+        conflict:addPlayer(player, 0)
+        conflict:configureGameSetup(6, 2)
+
+        local zoneInfo = xi.conflict.getZoneInfo(xi.zone.JUGNER_FOREST)
+        local entry    = player:getConflictEntry()
+
+        -- Stand in for the dig: the handler reads the item back off the local var.
+        player:setLocalVar('[Conflict]QuarryItemId', xi.item.HI_POTION)
+        player:prepareEventForZone()
+
+        assert(entry:getHeldPetras() == 0, 'setup: the player should hold no petras')
+
+        -- Option 0 keeps the item.
+        xi.conflict.onEventFinish(player, zoneInfo.events.KEEP_TEMP_ITEM, 0, nil)
+
+        assert(player:hasItem(xi.item.HI_POTION, xi.inv.TEMPITEMS), 'keeping the item did nothing')
+    end)
+
+    it('takes the first petra when the dialog accepts it', function()
+        local conflict = startMatch()
+
+        conflict:addPlayer(player, 0)
+
+        local zoneInfo = xi.conflict.getZoneInfo(xi.zone.JUGNER_FOREST)
+        local entry    = player:getConflictEntry()
+
+        -- Option 1 keeps the petra, per the event 28 bytecode.
+        xi.conflict.onEventFinish(player, zoneInfo.events.KEEP_FIRST_PETRA, 1, nil)
+
+        assert(entry:getHeldPetras() == 1, 'accepting the first petra did not hand it over')
+    end)
+
     it('hands out the initial temporary items', function()
         local conflict = startMatch()
 

@@ -31,8 +31,8 @@ class CCharEntity;
 namespace GP_SERV_COMMAND_BALLISTA
 {
 
-// The client displays the set counter as MatchSet / 2, so a set goes out doubled. Phases count
-// each set twice, once for the round and once for the break after it.
+// The client displays the set counter as (MatchSet + 1) / 2, so a set goes out doubled. Phases
+// count each set twice, once for the round and once for the break after it.
 constexpr auto ToMatchSet(const uint8_t gamePhase) -> uint8_t
 {
     return static_cast<uint8_t>(((gamePhase + 1) / 2) * 2);

@@ -352,6 +352,10 @@ public:
 
     void LoadXiMesh();
 
+    // For work that touches no game state and need not finish before the tick does, such as a
+    // write whose result nobody reads.
+    auto scheduler() const -> Scheduler&;
+
 protected:
     void CharZoneIn(CCharEntity* PChar);
     void CharZoneOut(CCharEntity* PChar);

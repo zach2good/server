@@ -118,6 +118,7 @@ public:
 
     void updateEvent(sol::variadic_args va);
     void updateEventString(sol::variadic_args va); // (string, string, string, string, uint32, ...)
+    void prepareEventForZone();                    // Route the next event's handlers to the zone script
     auto getEventTarget() -> CBaseEntity*;
     bool isInEvent();       // Returns true if the player is in an event
     void release();         // Stops event

@@ -64,7 +64,8 @@ ConflictInstance::ConflictInstance(ConflictSettings settings, CZone* zone)
 
     cleanupTime = timeutils::GetTimePointFromVanaTimestamp(settings.matchStart + settings.matchLength + kCleanupGraceVanaMinutes);
 
-    const auto rset = db::preparedStmt("SELECT instanceid, state, phase, rounds_team1, rounds_team2, max_team_size, rook_count "
+    const auto rset = db::preparedStmt("SELECT instanceid, state, phase, rounds_team1, rounds_team2, max_team_size, rook_count, "
+                                       "combat_enabled, gil_on_herald "
                                        "FROM conflict_instances WHERE zoneid = ? AND start = ? AND type = ?",
                                        std::to_underlying(zone->GetID()),
                                        settings.matchStart,
@@ -80,6 +81,8 @@ ConflictInstance::ConflictInstance(ConflictSettings settings, CZone* zone)
         teams[1]->roundsWon = rset->get<uint8>("rounds_team2");
         maxTeamSize         = rset->get<uint8>("max_team_size");
         rookCount           = rset->get<uint8>("rook_count");
+        combatEnabled       = rset->get<bool>("combat_enabled");
+        gilOnHerald         = rset->get<uint32>("gil_on_herald");
         activeRooks         = luautils::ConflictGetRookIds(this);
 
         const auto entryRset = db::preparedStmt("SELECT charid, allegiance, type, job, points, score FROM conflict_entries WHERE instanceid = ?", id);
@@ -115,12 +118,6 @@ ConflictInstance::ConflictInstance(ConflictSettings settings, CZone* zone)
             else
             {
                 oldEntries[charid] = std::move(entry);
-            }
-
-            // The Herald is still holding the fee unless the entry was discharged with a refund.
-            if (entryView->HasActiveEntry() || entryType == ConflictEntryType::DischargedNoRefund)
-            {
-                gilOnHerald += settings.signupFee;
             }
 
             // Whether the initial items were handed out is not persisted, so assume they were.
@@ -201,6 +198,7 @@ auto ConflictInstance::AddPlayer(CCharEntity* player, const Maybe<uint8> request
         }
 
         gilOnHerald += settings.signupFee;
+        PersistGilOnHerald();
     }
 
     const auto teamIdx = [&]() -> uint8
@@ -266,6 +264,19 @@ auto ConflictInstance::TryRejoinPlayer(CCharEntity* player) -> bool
     return true;
 }
 
+auto ConflictInstance::SnapshotEntries() const -> std::vector<ConflictEntry*>
+{
+    auto snapshot = std::vector<ConflictEntry*>();
+    snapshot.reserve(entries.size());
+
+    for (const auto& [charid, entry] : entries)
+    {
+        snapshot.emplace_back(entry.get());
+    }
+
+    return snapshot;
+}
+
 auto ConflictInstance::RemovePlayerEntry(const uint32 charId) -> bool
 {
     const auto entry = entries.find(charId);
@@ -319,7 +330,7 @@ void ConflictInstance::SetState(const xi::ConflictState newState)
 
     if (newState == xi::ConflictState::Preparing)
     {
-        for (const auto& [charid, entry] : entries)
+        for (auto* entry : SnapshotEntries())
         {
             entry->SetupBattleCommunication();
             entry->SetupTemporaryInventory(ConflictEntry::SendUpdate::Yes);
@@ -327,14 +338,20 @@ void ConflictInstance::SetState(const xi::ConflictState newState)
     }
     else if (newState == xi::ConflictState::Active)
     {
-        if (settings.initialTempItems)
+        for (auto* entry : SnapshotEntries())
         {
-            for (const auto& [charid, entry] : entries)
+            if (entry->player == nullptr)
             {
-                if (entry->player && !entry->gotInitialItems)
-                {
-                    entry->gotInitialItems = luautils::ConflictDistributeInitialItems(entry->player);
-                }
+                continue;
+            }
+
+            // A voucher is spent at the start of whichever match comes next, so this runs for
+            // every match rather than only the one that hands out items of its own.
+            std::ignore = luautils::ConflictRedeemVouchers(entry->player, settings.levelCap);
+
+            if (settings.initialTempItems && !entry->gotInitialItems)
+            {
+                entry->gotInitialItems = luautils::ConflictDistributeInitialItems(entry->player);
             }
         }
 
@@ -348,7 +365,7 @@ void ConflictInstance::SetState(const xi::ConflictState newState)
         const auto winningIdx  = GetWinningTeamIndex();
         const auto ballistaCap = settings::get<int32>("main.CAP_CURRENCY_BALLISTA");
 
-        for (const auto& [charid, entry] : entries)
+        for (auto* entry : SnapshotEntries())
         {
             entry->SetGateBreach(ConflictEntry::GateBreachOn::No, ConflictEntry::Silent::Yes);
 
@@ -369,15 +386,39 @@ void ConflictInstance::SetState(const xi::ConflictState newState)
             }();
 
             // Paid by id, so a participant who zoned out or logged off still collects what they
-            // earned. This is also the whole award in one statement rather than a read and a write.
-            charutils::AddPointsByCharId(charid, "ballista_point", static_cast<int32>(entry->ballistaPoints), ballistaCap);
+            // earned. The award reads no game state and nobody waits on its result, so it goes to
+            // a worker thread: a full match would otherwise stall every zone in this process for
+            // as long as it takes to write one row per participant.
+            zone->scheduler().postToWorkerThread(
+                [charid = entry->charid, points = static_cast<int32>(entry->ballistaPoints), ballistaCap]()
+                {
+                    charutils::AddPointsByCharId(charid, "ballista_point", points, ballistaCap);
+                });
         }
+    }
+}
+
+void ConflictInstance::PersistGilOnHerald() const
+{
+    if (id == 0)
+    {
+        return;
+    }
+
+    if (!db::preparedStmt("UPDATE conflict_instances SET gil_on_herald = ? WHERE instanceid = ?", gilOnHerald, id))
+    {
+        ShowErrorFmt("ConflictInstance: Failed to persist the pot for match {}.", id);
     }
 }
 
 auto ConflictInstance::GetSignupFee() const -> uint32
 {
     return settings.signupFee;
+}
+
+auto ConflictInstance::GetGilOnHerald() const -> uint32
+{
+    return gilOnHerald;
 }
 
 auto ConflictInstance::GetNationBits() const -> uint8
@@ -399,7 +440,7 @@ void ConflictInstance::Tick(const timer::time_point tick)
         team->Tick(tick);
     }
 
-    for (const auto& [charid, entry] : entries)
+    for (auto* entry : SnapshotEntries())
     {
         entry->Tick(tick);
     }
@@ -725,6 +766,7 @@ auto ConflictInstance::RemoveEntryAndTakeGilFromHerald(ConflictEntry* entry) -> 
     }
 
     gilOnHerald -= gilToGive;
+    PersistGilOnHerald();
 
     entry->SetEntryType(newEntryType);
 

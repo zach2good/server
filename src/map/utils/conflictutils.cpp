@@ -46,8 +46,8 @@ constexpr std::array kConflictZones = {
 bool              isConflictProcess = false;
 timer::time_point scheduleUpdate    = timer::time_point::max();
 
-// GetNextBallistaSettings is asked for on every Herald visit, so the answer is cached per day.
-uint32           nextBallistaSettingsDay = 0;
+// GetNextBallistaSettings is asked for on every Herald visit, so the answer is cached per match.
+uint32           nextBallistaSettingsStart = 0;
 ConflictSettings nextBallistaSettings;
 
 struct VanaDate
@@ -234,7 +234,9 @@ auto GetBallistaSettingsFromDate(uint8 dayOfMonth, uint8 month, int32 year) -> C
         case 3:
             settings.zoneId              = xi::ZoneId::PashhowMarshlands;
             settings.restrictNormalItems = true;
-            // Raised from ten to fifteen for the match where a player's own items are barred.
+            // The 2005/02/24 update raised the allowance from ten to fifteen, naming Pashhow as
+            // the one area where a player's own items cannot be used. String 7258 offers only
+            // three match styles and has no restricted Best of Three, so this is the only zone.
             settings.tempItemSize     = 15;
             settings.initialTempItems = true;
             settings.type             = xi::ConflictType::AllOrNothing;
@@ -274,10 +276,15 @@ auto GetNextBallistaSettings() -> const ConflictSettings&
     // Today if today is a match day, otherwise tomorrow.
     const auto nextMatchDay = static_cast<uint8>(date.day + (date.day % 2));
 
-    if (nextBallistaSettingsDay != nextMatchDay)
+    // Keyed on the whole date rather than the day alone. A Vana'diel month is under thirty hours,
+    // so a day number comes round again while the process is still up, and the same day of the
+    // next month would be answered with last month's pairing and a start time in the past.
+    const auto nextMatchStart = timeutils::GetVanaTimestampFromDate(date.year, date.month, nextMatchDay);
+
+    if (nextBallistaSettingsStart != nextMatchStart)
     {
-        nextBallistaSettings    = GetBallistaSettingsFromDate(nextMatchDay, date.month, date.year);
-        nextBallistaSettingsDay = nextMatchDay;
+        nextBallistaSettings      = GetBallistaSettingsFromDate(nextMatchDay, date.month, date.year);
+        nextBallistaSettingsStart = nextMatchStart;
     }
 
     return nextBallistaSettings;

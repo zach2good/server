@@ -379,14 +379,22 @@ function xi.conflict.quarry(player)
                     -- Flag the items already held that could be exchanged.
                     local inventoryItems = player:getItems(xi.inv.TEMPITEMS)
                     for _, inventoryItemId in ipairs(inventoryItems) do
+                        -- A held item the client's exchange list does not carry cannot be offered
+                        -- as an exchange. The Marshal sells vouchers for two such items.
                         local leftShift = xi.conflict.tempItemToIndex[inventoryItemId]
-                        local paramIdx = 2 + math.floor(leftShift / 32)
-                        leftShift = leftShift % 32
-                        params[paramIdx] = params[paramIdx] + bit.lshift(1, leftShift)
+                        if leftShift ~= nil then
+                            local paramIdx = 2 + math.floor(leftShift / 32)
+                            leftShift = leftShift % 32
+                            params[paramIdx] = params[paramIdx] + bit.lshift(1, leftShift)
+                        end
                     end
                 end
 
                 player:setLocalVar('[Conflict]QuarryItemId', itemId)
+
+                -- Quarrying involves no NPC, so the event would otherwise be dispatched into
+                -- whichever script the player last talked to.
+                player:prepareEventForZone()
                 player:startEvent(zoneInfo.events.KEEP_TEMP_ITEM, params)
             end
         elseif itemId < 0 then
@@ -394,6 +402,7 @@ function xi.conflict.quarry(player)
                 entry:getHeldPetras() == 0 and
                 player:hasKeyItem(xi.keyItem.BALLISTA_BAND)
             then
+                player:prepareEventForZone()
                 player:startEvent(zoneInfo.events.KEEP_FIRST_PETRA)
             else
                 player:messageSpecial(zoneInfo.text.OBTAIN_PETRA, 1, entry:addPetras(1))

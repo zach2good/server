@@ -606,6 +606,11 @@ auto CZone::addRoamRegion(std::string name, RoamRegion region) -> const RoamRegi
     return entry->second.get();
 }
 
+auto CZone::scheduler() const -> Scheduler&
+{
+    return scheduler_;
+}
+
 void CZone::LoadXiMesh()
 {
     TracyZoneScoped;

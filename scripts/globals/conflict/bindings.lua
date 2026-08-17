@@ -10,6 +10,7 @@
 -- entry point as a no-op.
 -----------------------------------
 require('scripts/globals/conflict/core')
+require('scripts/globals/conflict/marshal')
 require('scripts/globals/conflict/pursuivant')
 require('scripts/globals/conflict/quarry')
 require('scripts/globals/conflict/rook')
@@ -68,6 +69,10 @@ end
 
 -- distributeInitialItems is deliberately absent: the engine resolves it on the implementation
 -- name in quarry.lua, and a wrapper here would collide with it on the one xi.conflict table.
+
+xi.conflict.marshalRedeemVouchers = function(player, levelCap)
+    return xi.conflict.marshal.redeemVouchers(player, levelCap)
+end
 
 xi.conflict.updateRookState = function(conflict, shouldBeOpen)
     local rooks     = xi.conflict.getRookEntities(conflict:getZone())

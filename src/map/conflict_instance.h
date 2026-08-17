@@ -46,6 +46,19 @@ class ConflictEntry;
 
 constexpr uint8 kConflictTeamCount = 2;
 
+// An entry that has not been seated yet carries a team index outside the pair, so the other side
+// of that is not a team either. Subtracting from one would promote to int and wrap back onto a
+// real index instead.
+constexpr auto OtherTeamIndex(const uint8 teamIdx) -> uint8
+{
+    if (teamIdx >= kConflictTeamCount)
+    {
+        return teamIdx;
+    }
+
+    return static_cast<uint8>(kConflictTeamCount - 1 - teamIdx);
+}
+
 // A finished match is kept for a full Vana'diel day so that stragglers can still collect from the
 // Herald. Its database row has to outlive it by at least as long.
 constexpr uint32 kCleanupGraceVanaMinutes = 60 * 24;
@@ -103,10 +116,15 @@ public:
 
     [[nodiscard]] auto RemoveEntryAndTakeGilFromHerald(ConflictEntry* entry) -> Maybe<uint32>;
 
+    // The pot cannot be rebuilt from the entries: a winner who already collected took more than
+    // they put in, so counting the fees back would hand the rest a share that was already paid.
+    void PersistGilOnHerald() const;
+
     [[nodiscard]] auto GetWinningTeamIndex() -> Maybe<uint8>;
     [[nodiscard]] auto GetId() const -> uint32;
     [[nodiscard]] auto GetState() const -> xi::ConflictState;
     [[nodiscard]] auto GetSignupFee() const -> uint32;
+    [[nodiscard]] auto GetGilOnHerald() const -> uint32;
     [[nodiscard]] auto GetNationBits() const -> uint8;
     [[nodiscard]] auto IsActive() const -> bool;
     [[nodiscard]] auto IsCombatEnabled() const -> bool;
@@ -134,6 +152,12 @@ public:
 
 private:
     [[nodiscard]] auto RemovePlayerEntry(uint32 charId) -> bool;
+
+    // Entries as they stand right now. Anything that calls into Lua while walking them needs this:
+    // a script can seat or discharge a player, and either rehashes the map out from under a
+    // range-for. Discharging moves the entry into oldEntries rather than freeing it, so the
+    // pointers stay good for the rest of the pass.
+    [[nodiscard]] auto SnapshotEntries() const -> std::vector<ConflictEntry*>;
 
     uint32            id         = 0;
     xi::ConflictState state      = xi::ConflictState::Setup;

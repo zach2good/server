@@ -220,7 +220,22 @@ void CLuaZone::initializeConflict(const sol::table& data)
     settings.levelCap            = data.get<sol::optional<uint8>>("levelCap").value_or(0);
     settings.restrictNormalItems = data.get<sol::optional<bool>>("restrictItems").value_or(true);
     settings.initialTempItems    = data.get<sol::optional<bool>>("initialTempItems").value_or(false);
-    settings.signupFee           = data.get<sol::optional<uint16>>("signupFee").value_or(0);
+
+    // A match that bars a player's own items hands out fifteen temporary slots rather than ten.
+    // The scheduled matches carry this explicitly; an ad-hoc one follows the same rule.
+    const auto defaultTempItemSize = [&]() -> uint8
+    {
+        if (settings.restrictNormalItems)
+        {
+            return 15;
+        }
+
+        return 10;
+    }();
+
+    settings.tempItemSize = data.get<sol::optional<uint8>>("tempItemSize").value_or(defaultTempItemSize);
+
+    settings.signupFee = data.get<sol::optional<uint16>>("signupFee").value_or(0);
 
     // Default to a match that has just started, so an ad-hoc match is immediately playable.
     settings.matchStart  = data.get<sol::optional<uint32>>("startTime").value_or(timeutils::GetCurrentVanaTimestamp());

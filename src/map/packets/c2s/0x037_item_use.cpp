@@ -22,6 +22,8 @@
 #include "0x037_item_use.h"
 
 #include "ai/ai_container.h"
+#include "conflict_instance.h"
+#include "conflict_player.h"
 #include "entities/char_entity.h"
 #include "packets/s2c/0x029_battle_message.h"
 #include "universal_container.h"
@@ -97,6 +99,19 @@ void GP_CLI_COMMAND_ITEM_USE::process(MapSession* PSession, CCharEntity* PChar) 
     {
         ShowWarningFmt("GP_CLI_COMMAND_ITEM_USE: {} trying to use a claimed item", PChar->getName());
         return;
+    }
+
+    // Two of the three Ballista matches bar a player's own items, which is why those two hand out
+    // fifteen temporary slots instead of ten. Ammunition is exempt, but that is equipped rather
+    // than used, so it never reaches here.
+    if (this->Category != LOC_TEMPITEMS && PChar->conflictEntry != nullptr)
+    {
+        const auto* instance = PChar->conflictEntry->instance;
+        if (instance != nullptr && instance->settings.restrictNormalItems && instance->IsActive())
+        {
+            PChar->pushPacket<GP_SERV_COMMAND_BATTLE_MESSAGE>(PChar, PChar, 0, 0, MsgBasic::CannotInThisArea);
+            return;
+        }
     }
 
     // TODO: Using a charged item on a non-eligible target (i.e. Soultrapper): Cannot use the <item> on <target>.

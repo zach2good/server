@@ -262,7 +262,9 @@ auto CLuaConflict::getTeamCounts() const -> std::tuple<std::size_t, std::size_t>
 
 auto CLuaConflict::getTeamWinnings() const -> std::tuple<int32, int32>
 {
-    const auto total = static_cast<int32>(m_PConflict->entries.size()) * m_PConflict->settings.signupFee;
+    // The pot itself, not an estimate from the seat count: it keeps the fees of everyone who
+    // walked out of a live match, and those are part of what the winners take.
+    const auto total = static_cast<int32>(m_PConflict->GetGilOnHerald());
 
     const auto shareFor = [&](const uint8 teamIdx) -> int32
     {
@@ -270,6 +272,11 @@ auto CLuaConflict::getTeamWinnings() const -> std::tuple<int32, int32>
     };
 
     return { shareFor(0), shareFor(1) };
+}
+
+auto CLuaConflict::getGilOnHerald() const -> uint32
+{
+    return m_PConflict->GetGilOnHerald();
 }
 
 auto CLuaConflict::getTeamScores() const -> std::tuple<int32, int32>
@@ -343,6 +350,7 @@ void CLuaConflict::Register()
     SOL_REGISTER("getTeamPlayers", CLuaConflict::getTeamPlayers);
     SOL_REGISTER("getTeamCounts", CLuaConflict::getTeamCounts);
     SOL_REGISTER("getTeamWinnings", CLuaConflict::getTeamWinnings);
+    SOL_REGISTER("getGilOnHerald", CLuaConflict::getGilOnHerald);
     SOL_REGISTER("getTeamScores", CLuaConflict::getTeamScores);
     SOL_REGISTER("getTeamRounds", CLuaConflict::getTeamRounds);
     SOL_REGISTER("getTeamNations", CLuaConflict::getTeamNations);
