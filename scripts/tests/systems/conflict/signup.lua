@@ -5,9 +5,9 @@
 -- sides are viable the balancer shuffles only the entries that were taken on a temporary ticket,
 -- never the ones that paid to fight for a particular nation.
 --
--- This drives the sign-up rules and the state machine directly. The Herald's own conversation is
--- not driven here: its event option values are reverse engineered rather than confirmed, so
--- asserting them would only lock in a guess.
+-- This drives the sign-up rules and the state machine directly. The Herald's conversation is
+-- driven only where the client dumps pin the option values down; the rest are still reverse
+-- engineered, and asserting those would lock in a guess.
 -----------------------------------
 
 describe('Conflict (Ballista) sign-up', function()
@@ -93,16 +93,38 @@ describe('Conflict (Ballista) sign-up', function()
         assert(not entry:isTempEntry(), 'a nation entry should be locked, not temporary')
     end)
 
-    it('lets a player who cannot afford the fee join without paying', function()
+    -- Menu 7312 offers "Only in the <nation>'s forces" twice, naming the two teams in order. The
+    -- client returns 14 for the first and 15 for the second, per the Jugner event 22 and Pashhow
+    -- event 18 bytecode.
+    it('honours a request for a named nation', function()
+        local conflict = startMatch()
+        local heraldEvent = xi.conflict.getZoneInfoForEntity(players[1]).events.HERALD
+
+        xi.conflict.herald.onEventUpdate(players[2], heraldEvent, 15)
+
+        local entry = players[2]:getConflictEntry()
+        assert(entry ~= nil, 'asking for the second nation by name did not seat the player')
+        assert(entry:getTeamIndex() == 1, 'the player was seated on the wrong team')
+
+        -- Left to itself the Herald would put the next entry on the thinner side, which is team 0.
+        -- Naming team 1 has to override that, not defer to it.
+        xi.conflict.herald.onEventUpdate(players[3], heraldEvent, 15)
+
+        local counts1, counts2 = conflict:getTeamCounts()
+        assert(counts1 == 0, 'a named request was balanced onto the other team')
+        assert(counts2 == 2, 'the second named request did not land on the requested team')
+    end)
+
+    it('refuses a player who cannot afford the fee', function()
         local conflict = startMatch({ signupFee = 2000 })
 
-        -- The engine charges what it can and still seats the player; it is the Herald that refuses
-        -- to offer sign-up to someone who cannot pay.
         assert(players[1]:getGil() < 2000, 'setup: the player should not be able to afford the fee')
 
-        conflict:addPlayer(players[1], 0)
+        -- Seating them would let them draw on a pot they never paid into, and a drawn match
+        -- refunds the full fee to everyone.
+        assert(not conflict:addPlayer(players[1], 0), 'a player who cannot pay should be refused')
 
-        assert(players[1]:getConflictEntry() ~= nil, 'the player should still have been seated')
+        assert(players[1]:getConflictEntry() == nil, 'no entry should have been created')
         assert(players[1]:getGil() == 0, 'no gil should have been taken')
     end)
 

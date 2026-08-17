@@ -25,6 +25,7 @@
 
 #include "ability.h"
 #include "ai/ai_container.h"
+#include "conflict_player.h"
 #include "enmity_container.h"
 #include "entities/char_entity.h"
 #include "entities/trust_entity.h"
@@ -137,11 +138,14 @@ auto GP_CLI_COMMAND_ACTION::validate(MapSession* PSession, const CCharEntity* PC
                     {
                         break;
                     }
-                    // Unimplemented Ballista actions
+                    // Conflict (Ballista) match actions. The entry has to be a live one: a player
+                    // keeps a discharged entry so they can be recognised later, but cannot act on it.
                     case GP_CLI_COMMAND_ACTION_ACTIONID::Quarry:
                     case GP_CLI_COMMAND_ACTION_ACTIONID::Sprint:
                     case GP_CLI_COMMAND_ACTION_ACTIONID::Scout:
                     {
+                        pv.blockedBy({ BlockedState::PreventAction })
+                            .mustEqual(PChar->conflictEntry != nullptr && PChar->conflictEntry->HasActiveEntry(), true, "Character is not in a Conflict match.");
                         break;
                     }
                 }
@@ -509,9 +513,20 @@ void GP_CLI_COMMAND_ACTION::process(MapSession* PSession, CCharEntity* PChar) co
         }
         break;
         case GP_CLI_COMMAND_ACTION_ACTIONID::Quarry:
+        {
+            PChar->conflictEntry->Quarry();
+        }
+        break;
         case GP_CLI_COMMAND_ACTION_ACTIONID::Sprint:
+        {
+            PChar->conflictEntry->Sprint();
+        }
+        break;
         case GP_CLI_COMMAND_ACTION_ACTIONID::Scout:
-            break;
+        {
+            PChar->conflictEntry->Scout();
+        }
+        break;
         case GP_CLI_COMMAND_ACTION_ACTIONID::Blockaid:
         {
             if (!PChar->StatusEffectContainer->HasStatusEffect(xi::StatusEffect::AlliedTags))

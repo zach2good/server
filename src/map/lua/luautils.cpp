@@ -2463,7 +2463,7 @@ namespace
 // The Conflict scripts hang off one global table rather than a per-zone file, so the bridge
 // resolves against it directly. A test double installs a callable userdata rather than a Lua
 // function, which is why this returns an object and calls it as a protected_function.
-auto getConflictLuaFunction(const std::string& name) -> sol::object
+auto getConflictLuaFunction(std::string_view name) -> sol::object
 {
     const auto conflict = lua["xi"]["conflict"];
     if (!conflict.valid() || !conflict.is<sol::table>())
@@ -2471,16 +2471,19 @@ auto getConflictLuaFunction(const std::string& name) -> sol::object
         return sol::lua_nil;
     }
 
-    return conflict.get<sol::table>()[name];
+    return conflict.get<sol::table>()[std::string(name)];
 }
 
+// No value when the script is absent or the call failed. A default-constructed
+// protected_function_result carries a null lua_State but still reports valid(), so reading one
+// would dereference it; the absence has to be carried outside the result itself.
 template <typename... Args>
-auto callConflictLuaFunction(const std::string& name, Args&&... args) -> sol::protected_function_result
+auto callConflictLuaFunction(std::string_view name, Args&&... args) -> Maybe<sol::protected_function_result>
 {
     const auto func = getConflictLuaFunction(name);
     if (!func.valid())
     {
-        return {};
+        return std::nullopt;
     }
 
     auto result = func.as<sol::protected_function>()(std::forward<Args>(args)...);
@@ -2489,7 +2492,7 @@ auto callConflictLuaFunction(const std::string& name, Args&&... args) -> sol::pr
         const sol::error err = result;
         ShowErrorFmt("luautils::{}: {}", name, err.what());
 
-        return {};
+        return std::nullopt;
     }
 
     return result;
@@ -2523,12 +2526,12 @@ auto ConflictGetRookIds(ConflictInstance* instance) -> std::vector<uint32>
     TracyZoneScoped;
 
     const auto result = callConflictLuaFunction("getRookIds", CLuaConflict(instance), instance->rookCount);
-    if (!result.valid())
+    if (!result)
     {
         return {};
     }
 
-    const auto rookIds = result.get<sol::optional<sol::table>>();
+    const auto rookIds = result->get<sol::optional<sol::table>>();
     if (!rookIds)
     {
         return {};
@@ -2554,7 +2557,7 @@ auto ConflictDistributeInitialItems(CCharEntity* PChar) -> bool
 
     const auto result = callConflictLuaFunction("distributeInitialItems", CLuaBaseEntity(PChar));
 
-    return result.valid() && result.get<sol::optional<bool>>().value_or(false);
+    return result && result->get<sol::optional<bool>>().value_or(false);
 }
 
 void ConflictGameHint(CCharEntity* PChar)

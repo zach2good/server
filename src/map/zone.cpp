@@ -52,6 +52,7 @@ using ZoneSettingsDataset = xi::data::datasets::zones::settings::Dataset;
 
 #include "battlefield.h"
 #include "conflict_instance.h"
+#include "conflict_player.h"
 #include "enums/loot_recast.h"
 #include "ipc_client.h"
 #include "latent_effect_container.h"
@@ -1263,6 +1264,14 @@ void CZone::CharZoneIn(CCharEntity* PChar)
 void CZone::CharZoneOut(CCharEntity* PChar)
 {
     TracyZoneScoped;
+
+    // A Conflict match only speaks for players standing in its zone. Left attached, it would keep
+    // ticking on someone who walked out: auto-raising them wherever they now are, counting them
+    // towards the rook state, and sending them scoreboards.
+    if (PChar->conflictEntry != nullptr)
+    {
+        PChar->conflictEntry->ZoneOut();
+    }
 
     for (const auto& triggerArea : m_triggerAreaList)
     {

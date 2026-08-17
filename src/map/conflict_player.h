@@ -42,7 +42,7 @@ namespace conflict
 
 using namespace std::chrono_literals;
 
-constexpr auto QuarryCooldown = 12s;
+constexpr auto QuarryCooldown = 13s;
 constexpr auto SprintCooldown = 45s;
 constexpr auto ScoutCooldown  = 5s;
 constexpr auto HintInterval   = 3min;
@@ -93,7 +93,7 @@ public:
     void ZoneOut();
 
     // Returns the gil the Herald hands back, if the entry is owed a refund.
-    auto Leave() -> Maybe<uint32>;
+    [[nodiscard]] auto Leave() -> Maybe<uint32>;
 
     auto AddPetras(int32 amount) -> int32;
     auto ScorePetras() -> int32;

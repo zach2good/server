@@ -72,7 +72,7 @@ auto currentVanaDate() -> VanaDate
 // from the Herald.
 void cleanupFinishedMatches(const uint32 vanaTimestamp)
 {
-    if (!db::preparedStmt("DELETE FROM conflict_instances WHERE start + length < ?", vanaTimestamp))
+    if (!db::preparedStmt("DELETE FROM conflict_instances WHERE start + length + ? < ?", kCleanupGraceVanaMinutes, vanaTimestamp))
     {
         ShowError("conflictutils: failed to clean up finished Conflict matches.");
     }
@@ -110,7 +110,9 @@ auto CreateConflictInstance(ConflictSettings settings) -> ConflictInstance*
         return nullptr;
     }
 
-    // Replacing a match tears the old one down first, so its players are released cleanly.
+    // Torn down before the replacement is installed: assigning through the Box would destroy the
+    // old match afterwards, and its Lua cleanup would then hide the new match's NPCs.
+    zone->conflict.reset();
     zone->conflict = makeBox<ConflictInstance>(settings, zone);
 
     luautils::ConflictSetup(zone->conflict.get());
@@ -223,7 +225,7 @@ auto GetBallistaSettingsFromDate(uint8 dayOfMonth, uint8 month, int32 year) -> C
         case 1:
             settings.zoneId              = xi::ZoneId::JugnerForest;
             settings.restrictNormalItems = false;
-            settings.tempItemSize        = 15;
+            settings.tempItemSize        = 10;
             settings.type                = xi::ConflictType::AllOrNothing;
             settings.team1               = matchup(xi::Allegiance::SanDoria, xi::Allegiance::Bastok, xi::Allegiance::SanDoria);
             settings.team2               = matchup(xi::Allegiance::Bastok, xi::Allegiance::Windurst, xi::Allegiance::Windurst);
@@ -232,17 +234,18 @@ auto GetBallistaSettingsFromDate(uint8 dayOfMonth, uint8 month, int32 year) -> C
         case 3:
             settings.zoneId              = xi::ZoneId::PashhowMarshlands;
             settings.restrictNormalItems = true;
-            settings.tempItemSize        = 10;
-            settings.initialTempItems    = true;
-            settings.type                = xi::ConflictType::AllOrNothing;
-            settings.team1               = matchup(xi::Allegiance::Bastok, xi::Allegiance::SanDoria, xi::Allegiance::SanDoria);
-            settings.team2               = matchup(xi::Allegiance::Windurst, xi::Allegiance::Windurst, xi::Allegiance::Bastok);
+            // Raised from ten to fifteen for the match where a player's own items are barred.
+            settings.tempItemSize     = 15;
+            settings.initialTempItems = true;
+            settings.type             = xi::ConflictType::AllOrNothing;
+            settings.team1            = matchup(xi::Allegiance::Bastok, xi::Allegiance::SanDoria, xi::Allegiance::SanDoria);
+            settings.team2            = matchup(xi::Allegiance::Windurst, xi::Allegiance::Windurst, xi::Allegiance::Bastok);
             break;
 
         case 5:
             settings.zoneId              = xi::ZoneId::MeriphataudMountains;
             settings.restrictNormalItems = false;
-            settings.tempItemSize        = 15;
+            settings.tempItemSize        = 10;
             settings.type                = xi::ConflictType::BestOfThree;
             settings.team1               = matchup(xi::Allegiance::SanDoria, xi::Allegiance::SanDoria, xi::Allegiance::Bastok);
             settings.team2               = matchup(xi::Allegiance::Windurst, xi::Allegiance::Bastok, xi::Allegiance::Windurst);

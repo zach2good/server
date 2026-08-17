@@ -105,6 +105,49 @@ describe('Conflict (Ballista) rewards', function()
         assert(p2:getConflictEntry():leave() == 0, 'the losing side should get nothing')
     end)
 
+    -- Points are awarded by character id rather than through the online character, both so that a
+    -- participant who zoned out still collects and so the award is one statement instead of two.
+    it('pays ballista points to both sides when the match ends', function()
+        local conflict = startMatch()
+
+        conflict:addPlayer(p1, 0)
+        conflict:addPlayer(p2, 1)
+
+        local entry1 = p1:getConflictEntry()
+        entry1:addPetras(5)
+        entry1:scorePetras()
+
+        assert(p1:getCurrency('ballista_point') == 0, 'setup: nothing should be banked before the match ends')
+
+        conflict:setState(xi.conflictState.POST_GAME)
+
+        assert(conflict:getWinningTeam() == 0, 'setup: team 0 should have taken it')
+
+        local winnerPoints = p1:getCurrency('ballista_point')
+        local loserPoints  = p2:getCurrency('ballista_point')
+
+        assert(winnerPoints > 0, 'the winning side was paid nothing')
+        assert(loserPoints > 0, 'the losing side was paid nothing')
+        assert(winnerPoints > loserPoints, 'winning should be worth more than losing')
+    end)
+
+    it('still pays a participant who zoned out before the match ended', function()
+        local conflict = startMatch()
+
+        conflict:addPlayer(p1, 0)
+        conflict:addPlayer(p2, 1)
+
+        p2:gotoZone(xi.zone.BASTOK_MARKETS)
+
+        -- Zoning out drops the entry's pointer to the character, which is exactly why the award
+        -- goes by character id. Paying through the online character skipped this player entirely.
+        assert(p2:getConflictEntry() == nil, 'setup: the player should no longer hold an entry')
+
+        conflict:setState(xi.conflictState.POST_GAME)
+
+        assert(p2:getCurrency('ballista_point') > 0, 'a participant who zoned out was paid nothing')
+    end)
+
     it('decides a best of three on rounds rather than score', function()
         local zone = p1:getZone()
 

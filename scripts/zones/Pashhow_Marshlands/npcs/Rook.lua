@@ -1,6 +1,7 @@
 -----------------------------------
--- Area: Pashhow Marshlands
+-- Area: Pashhow Marshlands (109)
 --  NPC: Rook
+-- !pos 107.043 24.999 210.024 109
 -- Petras are thrown into these to score during a Conflict (Ballista) match.
 -----------------------------------
 require('scripts/globals/conflict/rook')

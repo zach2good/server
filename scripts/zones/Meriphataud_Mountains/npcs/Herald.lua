@@ -1,6 +1,7 @@
 -----------------------------------
--- Area: Meriphataud Mountains
+-- Area: Meriphataud Mountains (119)
 --  NPC: Herald
+-- !pos -46.596 -15.983 203.071 119
 -- Runs Conflict (Ballista) sign-up for this zone.
 -----------------------------------
 require('scripts/globals/conflict/herald')

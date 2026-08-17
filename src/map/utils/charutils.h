@@ -253,13 +253,14 @@ void ClearTempItems(CCharEntity* PChar, bool sendUpdate = false);
 void ReloadParty(CCharEntity* PChar);
 
 // Conflict (Ballista) helpers
-bool UpdateGil(CCharEntity* PChar, int32 amount); // False when the player cannot afford a negative amount
-void SetTempInventorySize(CCharEntity* PChar, uint8 tempItemSize, bool sendUpdate);
-void UnequipLinkshells(CCharEntity* PChar);
+[[nodiscard]] auto UpdateGil(CCharEntity* PChar, int32 amount) -> bool; // False when the player cannot afford a negative amount
+void               SetTempInventorySize(CCharEntity* PChar, uint8 tempItemSize, bool sendUpdate);
+void               UnequipLinkshells(CCharEntity* PChar);
 
 bool IsAidBlocked(CCharEntity* PInitiator, CCharEntity* PTarget);
 
 void  AddPoints(CCharEntity* PChar, const char* type, int32 amount, int32 max = INT32_MAX);
+void  AddPointsByCharId(uint32 charId, const char* type, int32 amount, int32 max = INT32_MAX);
 void  SetPoints(CCharEntity* PChar, const char* type, int32 amount);
 int32 GetPoints(CCharEntity* PChar, const char* type);
 void  SetUnityLeader(CCharEntity* PChar, uint8 leaderID);

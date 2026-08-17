@@ -286,19 +286,33 @@ auto ConflictEntry::Leave() -> Maybe<uint32>
         EnableCombat(false);
     }
 
-    return instance->RemoveEntryAndTakeGilFromHerald(this);
+    const auto payout = instance->RemoveEntryAndTakeGilFromHerald(this);
+
+    // The match keeps this entry so the player can be recognised later, but the two stop pointing
+    // at each other: the entry is freed when the match is reaped, long after the player has gone.
+    if (player != nullptr)
+    {
+        player->conflictEntry = nullptr;
+        player                = nullptr;
+    }
+
+    return payout;
 }
 
 void ConflictEntry::ZoneOut()
 {
-    player = nullptr;
+    if (player != nullptr)
+    {
+        player->conflictEntry = nullptr;
+        player                = nullptr;
+    }
 
     instance->UpdateOpenRooks();
 }
 
 auto ConflictEntry::AddPetras(const int32 amount) -> int32
 {
-    heldPetras += amount;
+    heldPetras = static_cast<uint32>(std::max(0, static_cast<int32>(heldPetras) + amount));
     SendStatusUpdate();
 
     return static_cast<int32>(heldPetras);
@@ -341,7 +355,7 @@ auto ConflictEntry::ScorePetras() -> int32
     return static_cast<int32>(toScore);
 }
 
-void ConflictEntry::SetGateBreach(const GateBreachOn on, [[maybe_unused]] const Silent silent)
+void ConflictEntry::SetGateBreach(const GateBreachOn on, const Silent silent)
 {
     const auto had = hasGateBreach;
 
@@ -376,6 +390,11 @@ void ConflictEntry::SetGateBreach(const GateBreachOn on, [[maybe_unused]] const 
 
 void ConflictEntry::Quarry()
 {
+    if (player == nullptr)
+    {
+        return;
+    }
+
     const auto now = timer::now();
     if (now < nextQuarry)
     {
@@ -401,6 +420,11 @@ void ConflictEntry::Quarry()
 
 void ConflictEntry::Sprint()
 {
+    if (player == nullptr)
+    {
+        return;
+    }
+
     if (player->StatusEffectContainer->HasStatusEffect(xi::StatusEffect::Flee))
     {
         return;
@@ -428,6 +452,11 @@ void ConflictEntry::Sprint()
 
 void ConflictEntry::Scout()
 {
+    if (player == nullptr)
+    {
+        return;
+    }
+
     if (heldPetras < 1)
     {
         player->pushPacket<GP_SERV_COMMAND_SYSTEMMES>(0, 0, MsgStd::CannotPerformNoPetra);

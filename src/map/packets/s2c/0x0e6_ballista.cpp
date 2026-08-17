@@ -34,11 +34,12 @@ SCOREBOARD::SCOREBOARD(const CCharEntity* PChar, const bool enabled)
 {
     auto& packet = this->data();
 
-    // Flags = 0 tells the client to take the scoreboard off screen.
+    // The client drops this packet entirely unless Flags is 1, so a cleared board has to be sent
+    // as a real update with nothing in it. Sending Flags = 0 instead leaves the last score up.
     if (!enabled)
     {
-        packet.Flags = 0;
-        packet.Mode  = 0;
+        packet.Flags = 1;
+        packet.Mode  = 2;
         return;
     }
 
@@ -71,17 +72,24 @@ SCOREBOARD::SCOREBOARD(const CCharEntity* PChar, const bool enabled)
 
     // Which team's flag hangs on the viewer's side of the board.
     packet.Scoreboard[0] = static_cast<int16_t>(entry->teamIdx != 0);
+
+    // TODO(conflict): this selects a render mode, one of whose jobs is hiding the board outright.
+    // Nation bits are not that, and no source gives the value table. Wrong here means a scoreboard
+    // that renders oddly, or not at all, for some nation pairings.
     packet.Scoreboard[1] = instance->GetNationBits();
 
     // The round markers beside each flag, at most two per side.
     packet.MatchPoints[0] = static_cast<uint8_t>(team0->roundsWon);
     packet.MatchPoints[1] = static_cast<uint8_t>(team1->roundsWon);
 
-    // 1 is the first set, 2 is the break after it, 3 is the second set, and so on.
-    packet.MatchSet = instance->gamePhase;
+    // The client shows this halved, so the set has to go out doubled. Phases run 1 and 2 for the
+    // first set, 3 and 4 for the second: sending the phase itself leaves the counter a set behind
+    // for the whole of every round.
+    packet.MatchSet = ToMatchSet(instance->gamePhase);
 
-    // The flame lights belong to Brenner and stay constant throughout a Ballista match.
-    packet.Flammes   = 0x48;
+    // The flame lights are Brenner's, and the client draws them under the team icons whenever they
+    // are set. A Ballista match has none.
+    packet.Flammes   = 0;
     packet.FlammeFlg = 0;
 }
 
@@ -99,12 +107,21 @@ SCOUT::SCOUT(const CBaseEntity* PRook, const float distanceToRook)
 
     packet.RookUniqueNo = PRook->id;
 
-    packet.RookPosition[0] = PRook->loc.p.x;
-    packet.RookPosition[1] = PRook->loc.p.y;
-    packet.RookPosition[2] = PRook->loc.p.z;
-    packet.RookPosition[3] = 0.0f;
+    // The client reads this one back as `RookDistance * 0.91399997 + 0.5`, so the distance it
+    // finally shows is only the real one if the inverse goes out.
+    constexpr auto kScoutDistanceScale  = 0.91399997f;
+    constexpr auto kScoutDistanceOffset = 0.5f;
 
-    packet.RookDistance = distanceToRook;
+    const auto scoutDistance = (distanceToRook - kScoutDistanceOffset) / kScoutDistanceScale;
+
+    // This packet carries the position as X, Z, Y rather than the usual X, Y, Z. Feeding it the
+    // height where it wants the second horizontal axis points the compass somewhere else entirely.
+    packet.RookPosition[0] = PRook->loc.p.x;
+    packet.RookPosition[1] = PRook->loc.p.z;
+    packet.RookPosition[2] = PRook->loc.p.y;
+    packet.RookPosition[3] = scoutDistance;
+
+    packet.RookDistance = scoutDistance;
 }
 
 } // namespace GP_SERV_COMMAND_BALLISTA

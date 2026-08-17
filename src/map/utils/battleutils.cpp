@@ -1707,17 +1707,10 @@ void HandleEnspell(CBattleEntity* PAttacker, CBattleEntity* PDefender, action_re
 
 uint8 GetRangedHitRate(CBattleEntity* PAttacker, CBattleEntity* PDefender, bool isBarrage, int16 accBonus)
 {
-    // Past 25 yalms a shot cannot connect, except that a player in a Conflict (Ballista) match can
-    // reach further while Sharpshot is up. Mobs never get the exception.
+    // Check to see if distance is greater than 25 and force hitrate to be 0
     if (distance(PAttacker->loc.p, PDefender->loc.p) > 25)
     {
-        const auto sharpshotReach = PAttacker->isInConflict() &&
-                                    PAttacker->StatusEffectContainer->HasStatusEffect(xi::StatusEffect::Sharpshot);
-
-        if (!sharpshotReach)
-        {
-            return 0;
-        }
+        return 0;
     }
 
     double luaHitRate = luautils::callGlobal<double>("xi.combat.physicalHitRate.getRangedHitRate", PAttacker, PDefender, accBonus, false);
@@ -4418,13 +4411,19 @@ auto HandleConflictDamage(CBattleEntity* PDefender, const int32 damage) -> int32
         return damage;
     }
 
-    // Damage falls away the larger the hit, so a single burst cannot decide a match. At 4000 the
-    // reduction would be total, so the scale is clamped short of that.
-    constexpr auto reductionScale = 4000.0f;
+    // Big hits are softened so a match is not decided by one burst, but a heavier blow must always
+    // land heavier: damage * scale / (scale + damage) rises with the hit and flattens towards the
+    // scale rather than turning back down.
+    //
+    // Eden multiplies by (1 - damage/4000) instead, which peaks around 2000 and then falls away,
+    // so a stronger weaponskill would land for less than a weaker one and anything past 4000 would
+    // heal. The shape here is a guess in the same spirit; no source documents the retail curve.
+    constexpr auto softeningScale = 4000.0f;
 
-    const auto retained = 1.0f - std::min(static_cast<float>(damage), reductionScale - 1.0f) / reductionScale;
+    const auto raw      = static_cast<float>(damage);
+    const auto softened = raw * softeningScale / (softeningScale + raw);
 
-    return std::max(1, static_cast<int32>(static_cast<float>(damage) * retained));
+    return std::max(1, static_cast<int32>(softened));
 }
 
 // TODO: Study using lua functions.

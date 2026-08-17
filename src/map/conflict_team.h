@@ -26,9 +26,17 @@
 
 #include "data/enums/allegiance.h"
 
+#include <utility>
 #include <vector>
 
 class ConflictEntry;
+
+// Allegiance numbers the nations from San d'Oria. Both the client's nation bits and the Lua
+// scripts count them from zero instead.
+constexpr auto toNationIndex(const xi::Allegiance allegiance) -> uint8
+{
+    return static_cast<uint8>(std::to_underlying(allegiance) - std::to_underlying(xi::Allegiance::SanDoria));
+}
 
 enum class ConflictMusic : uint16
 {

@@ -1,6 +1,7 @@
 -----------------------------------
--- Area: Jugner Forest
---  NPC: San_dOrian Pursuivant
+-- Area: Jugner Forest (104)
+--  NPC: San d'Orian Pursuivant
+-- !pos placed by the match; see scripts/globals/conflict/zoneinfo.lua
 -- Handles entry and rewards on the field during a Conflict (Ballista) match.
 -----------------------------------
 require('scripts/globals/conflict/battle_pursuivant')

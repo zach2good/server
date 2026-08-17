@@ -128,7 +128,10 @@ auto Timeline::Schedule(TimelineEvent timelineEvent, const ForceAdd forceAdd) ->
         // skipped occurrences against its remaining repeats.
         auto skipped = static_cast<uint32>((now - timelineEvent.time) / timelineEvent.repeatInterval);
         timelineEvent.time += skipped * timelineEvent.repeatInterval;
-        if (timelineEvent.time < now)
+
+        // Strictly in the future: landing exactly on now would fire on the very next tick, which
+        // is the past-due replay this skip exists to avoid.
+        if (timelineEvent.time <= now)
         {
             timelineEvent.time += timelineEvent.repeatInterval;
             ++skipped;

@@ -223,8 +223,10 @@ player_data = [
     "char_unlocks.sql",
     "char_vars.sql",
     "chars.sql",
-    "conflict_entries.sql",
+    # Out of alphabetical order on purpose: conflict_entries has a foreign key into
+    # conflict_instances, so the referenced table has to be created first.
     "conflict_instances.sql",
+    "conflict_entries.sql",
     "conquest_system.sql",
     "delivery_box.sql",
     "fishing_contest.sql",

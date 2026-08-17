@@ -33,17 +33,6 @@
 #include <algorithm>
 #include <utility>
 
-namespace
-{
-
-// Scripts count nations from zero, while allegiance starts them at San d'Oria.
-auto toNationIndex(const xi::Allegiance allegiance) -> int32
-{
-    return std::to_underlying(allegiance) - std::to_underlying(xi::Allegiance::SanDoria);
-}
-
-} // namespace
-
 CLuaConflict::CLuaConflict(ConflictInstance* PConflict)
 : m_PConflict(PConflict)
 {

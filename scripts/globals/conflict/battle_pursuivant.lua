@@ -58,7 +58,7 @@ function xi.conflict.pursuivant.battle.onTrigger(player, npc)
 
     local params = {}
     params[0] = player:getAllegiance()
-    params[1] = npc:getID() - zoneInfo.pursuivants.ids[1]
+    params[1] = xi.conflict.getPursuivantIndex(zoneInfo, npc)
     params[2] = player:getCurrency('ballista_point')
     params[3] = player:hasKeyItem(xi.keyItem.BALLISTA_EARRING) and 1 or 0
 

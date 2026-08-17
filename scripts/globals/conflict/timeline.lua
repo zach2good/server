@@ -117,13 +117,13 @@ function xi.conflict.setupBallistaSignupTimeline(conflict, isScheduled)
         end
     end)
 
-    -- Guests can enter at 16:30 in-game time
-    timeline:addVanaTime(4, 30):addImportantEvent(function()
+    -- Guests can enter at 16:00 in-game time
+    timeline:addVanaTime(4, 0):addImportantEvent(function()
         conflict:setSignupState(xi.conflictSignupState.GUEST)
     end)
 
     -- Temporary entry starts at 18:00 in-game time
-    timeline:addVanaTime(1, 30):addImportantEvent(function()
+    timeline:addVanaTime(2, 0):addImportantEvent(function()
         conflict:setSignupState(xi.conflictSignupState.TEMPORARY)
     end)
 

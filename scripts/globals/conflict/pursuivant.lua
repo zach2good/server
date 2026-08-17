@@ -85,6 +85,15 @@ function xi.conflict.pursuivant.onEventFinish(player, csid, option, npc)
         return
     end
 
+    -- The menu options are only offered to a licensed adventurer of rank 3, but the client picks
+    -- which one it sends, so the same gate has to hold here.
+    if
+        player:getRank(player:getNation()) < 3 or
+        not player:hasKeyItem(xi.keyItem.BALLISTA_LICENSE)
+    then
+        return
+    end
+
     local keyItem = nil
     if option == 5 then
         keyItem = xi.keyItem.BALLISTA_EARRING

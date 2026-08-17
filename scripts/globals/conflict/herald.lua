@@ -5,9 +5,19 @@ xi.conflict = xi.conflict or {}
 
 xi.conflict.herald = xi.conflict.herald or {}
 
--- Warping from the Herald costs either the key item or this many Ballista Points. The English and
--- Japanese wikis disagree (200 vs 100); Eden implements 100.
+-- Warping from the Herald costs either the key item or this many Ballista Points.
 local teleportCost = 100
+
+-- The lowest level admitted to each capped bracket. The level 30 match takes anyone, and the
+-- uncapped match starts at 61 rather than the 66 a flat cap-minus-nine would give.
+local minimumEntryLevel =
+{
+    [30] = 1,
+    [40] = 31,
+    [50] = 41,
+    [60] = 51,
+    [0]  = 61, -- Uncapped
+}
 
 function xi.conflict.herald.onTrigger(player, npc)
     if npc:getLocalVar('GivingSpeech') ~= 0 then
@@ -48,12 +58,7 @@ function xi.conflict.herald.onTrigger(player, npc)
     local signupState = conflict:getSignupState()
     local allowances = xi.conflict.getTeamEntryAllowances(conflict)
 
-    local minimumLevel = conflict:getLevelCap()
-    if minimumLevel == 0 then
-        minimumLevel = 75
-    end
-
-    minimumLevel = minimumLevel - 9
+    local minimumLevel = minimumEntryLevel[conflict:getLevelCap()] or 1
 
     if entry ~= nil then
         params[0] = 11
@@ -209,7 +214,7 @@ function xi.conflict.herald.onTrigger(player, npc)
         local winningNation = conflict:getWinningTeam()
         if winningNation == playerTeam then -- Won
             reward = 1
-        elseif winningNation == -1 then -- Draw
+        elseif winningNation == nil then -- Draw
             reward = 3
         elseif winningNation ~= nil then -- Lost
             reward = 2
@@ -243,7 +248,9 @@ function xi.conflict.herald.onTrigger(player, npc)
     player:startEvent(zoneInfo.events.HERALD, params)
 end
 
-local function handleSignupRequest(player, conflict, isTempEntry)
+-- requestedTeamIdx is set when the player picked a specific nation's forces off the menu rather
+-- than letting the Herald place them.
+local function handleSignupRequest(player, conflict, isTempEntry, requestedTeamIdx)
     --[[ Responses based on p0:
     0:  The entry period has come to a close. Your application was not accepted.
     3:  I'm sorry. We are unable to accept your entry.
@@ -300,7 +307,20 @@ local function handleSignupRequest(player, conflict, isTempEntry)
     local allowances = xi.conflict.getTeamEntryAllowances(conflict)
 
     local teamIdx = 0
-    if signupState == xi.conflictSignupState.NATIONS then
+    if requestedTeamIdx ~= nil then
+        teamIdx = requestedTeamIdx
+
+        -- The same openings that gate a nation entry gate a request for that nation by name.
+        if allowances[teamIdx] == xi.conflict.entryAllowance.RESTRICTED_START then
+            params[0] = 6
+            return params
+
+        elseif allowances[teamIdx] == xi.conflict.entryAllowance.RESTRICTED_DIFF then
+            params[0] = 5
+            return params
+        end
+
+    elseif signupState == xi.conflictSignupState.NATIONS then
         -- Join own nation team if possible
         local nation1, nation2 = conflict:getTeamNations()
         if nation1 == player:getNation() then
@@ -385,14 +405,28 @@ function xi.conflict.herald.onEventUpdate(player, csid, option)
     end
 
     if csid == zoneInfo.events.HERALD then
-        if option == 1 or option == 2 or option == 16 then
+        if
+            option == 1 or
+            option == 2 or
+            option == 14 or
+            option == 15 or
+            option == 16
+        then
             local conflict = player:getZone():getConflict()
             if conflict == nil then
                 return
             end
 
+            -- 14 and 15 are "only in the <nation>'s forces", naming the first and second team.
+            local requestedTeamIdx = nil
+            if option == 14 then
+                requestedTeamIdx = 0
+            elseif option == 15 then
+                requestedTeamIdx = 1
+            end
+
             -- Sign-up
-            local params = handleSignupRequest(player, conflict, option == 1)
+            local params = handleSignupRequest(player, conflict, option == 1, requestedTeamIdx)
             if params then
                 player:updateEvent(params)
             end

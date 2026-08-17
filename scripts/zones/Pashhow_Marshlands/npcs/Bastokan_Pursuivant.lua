@@ -1,6 +1,7 @@
 -----------------------------------
--- Area: Pashhow Marshlands
+-- Area: Pashhow Marshlands (109)
 --  NPC: Bastokan Pursuivant
+-- !pos placed by the match; see scripts/globals/conflict/zoneinfo.lua
 -- Handles entry and rewards on the field during a Conflict (Ballista) match.
 -----------------------------------
 require('scripts/globals/conflict/battle_pursuivant')

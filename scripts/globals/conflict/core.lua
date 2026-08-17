@@ -220,6 +220,10 @@ function xi.conflict.autoBalance(entries)
     end
 end
 
+-- How lopsided the sides must be before a second rook appears. Retail calls the trigger a
+-- "significant difference" without giving a number, so this is a guess.
+local unevenSidesForSecondRook = 3
+
 function xi.conflict.tryConfiguringMatch(conflict, options)
     if conflict:getMaxTeamSize() ~= 0 then
         return true
@@ -244,7 +248,10 @@ function xi.conflict.tryConfiguringMatch(conflict, options)
 
     if rookCount == 0 then
         rookCount = 1
-        if math.abs(teamSize1 - teamSize2) > 0 then
+
+        -- Any difference at all would put two rooks in nearly every match, removing the single
+        -- contested rook the mode is built around.
+        if math.abs(teamSize1 - teamSize2) >= unevenSidesForSecondRook then
             rookCount = rookCount + 1
         end
     end
@@ -332,7 +339,7 @@ function xi.conflict.lineupPlayer(player, zoneInfo, teamIndex, playerIndex, show
     local highScorerNation = 0
     local highScorerPetra  = 0
     if highScorer then
-        highScorerName   = highScorer:getName()
+        highScorerName   = (highScorer:getName() or '???')
         highScorerNation = highScorer:getTeamNation()
         highScorerPetra  = highScorer:getScoredPetras()
     end
@@ -354,7 +361,10 @@ function xi.conflict.lineupPlayer(player, zoneInfo, teamIndex, playerIndex, show
         highScorerPetra)
 end
 
-local maxMemberDifference = 2
+-- Sign-ups close on the fuller side once it leads by this much. The Japanese wiki gives four; a
+-- 2004 announcement says one. Neither is a capture, and this follows the wiki.
+local maxMemberDifference = 4
+
 local maxMembers = 72
 local minimumStartMembers = 3
 

@@ -311,6 +311,28 @@ local function getQuarryResult(player)
         petraChance = math.min(33.3, petraChance + (rookDist - 15) * 2)
     end
 
+    -- Petras are harder to turn up while already ahead, and easier while behind: this is the
+    -- catch-up that lets a losing side back into a match. Holding a gate breach counts as being
+    -- ahead, since the throw is already open. The sizes of both adjustments are a guess; only the
+    -- direction is documented.
+    local conflict = entry:getConflict()
+    if conflict ~= nil then
+        local ownScore, otherScore = conflict:getTeamScores()
+        if entry:getTeamIndex() == 1 then
+            ownScore, otherScore = otherScore, ownScore
+        end
+
+        if ownScore > otherScore then
+            petraChance = petraChance * 0.75
+        elseif ownScore < otherScore then
+            petraChance = math.min(33.3, petraChance * 1.25)
+        end
+
+        if entry:hasGateBreach() then
+            petraChance = petraChance * 0.75
+        end
+    end
+
     if roll <= petraChance * 10 then
         return -1
     end
@@ -328,7 +350,7 @@ function xi.conflict.quarry(player)
     local itemId = getQuarryResult(player) or 0
     player:setAnimation(48)
 
-    player:timer(2000, function(player)
+    player:timer(3000, function(player)
         player:setAnimation(0)
 
         if itemId == 0 then

@@ -33,7 +33,7 @@ namespace
 
 // A track is left alone for at least its own length, so a lead that changes hands repeatedly
 // does not restart the music on every swing.
-auto getMusicLength(const ConflictMusic music) -> timer::duration
+constexpr auto getMusicLength(const ConflictMusic music) -> timer::duration
 {
     if (music == ConflictMusic::MarchOfTheHero)
     {

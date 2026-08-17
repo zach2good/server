@@ -81,6 +81,28 @@ describe('Conflict (Ballista) combat', function()
         end
     end)
 
+    it('never lets a bigger hit land for less', function()
+        local conflict = startMatch()
+
+        conflict:setCombatEnabled(true)
+
+        -- The softening curve has to keep rising: a formula that peaks and falls away would make a
+        -- stronger weaponskill worse than a weaker one.
+        local previous = 0
+
+        for _, hit in ipairs({ 100, 500, 1000, 2000, 3000, 4000, 8000, 20000 }) do
+            local maxHp = p2:getMaxHP()
+
+            p2:setHP(maxHp)
+            p2:takeDamage(hit, p1)
+
+            local taken = maxHp - p2:getHP()
+
+            assert(taken >= previous, 'a hit of ' .. hit .. ' landed for less than a smaller one')
+            previous = taken
+        end
+    end)
+
     it('leaves damage alone outside a match', function()
         startMatch()
 

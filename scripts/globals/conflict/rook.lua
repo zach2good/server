@@ -45,7 +45,22 @@ end
 function xi.conflict.rook.onEventFinish(player, csid, option, npc)
     local zoneInfo = xi.conflict.getZoneInfoForEntity(player)
     local entry    = player:getConflictEntry()
-    if zoneInfo == nil or entry == nil then
+    if
+        zoneInfo == nil or
+        entry == nil
+    then
+        return
+    end
+
+    -- The client decides when to close the event, so everything the trigger checked has to hold
+    -- again here. Otherwise a throw can be opened while it is legal and banked until it is not.
+    local conflict = entry:getConflict()
+    if
+        conflict == nil or
+        not conflict:isCombatEnabled() or
+        entry:getHeldPetras() < 1 or
+        not entry:canScore()
+    then
         return
     end
 
@@ -91,15 +106,19 @@ local function emergeRook(rook, rookInfo)
     rook:clearActionQueue()
 
     local currentPosIdx = rook:getLocalVar('PositionIndex')
-    local newPosIdx = 1
-    if currentPosIdx ~= 0 then
-        -- Do not pick the same position again.
+    local newPosIdx     = 1
+
+    if currentPosIdx == 0 then
+        newPosIdx = math.randomInt(1, #rookInfo.pos)
+    elseif #rookInfo.pos > 1 then
+        -- Draw from the other positions, then step over the one already in use. Most rooks have a
+        -- single fixed spot, where there is nothing else to pick and this would run off the end.
         newPosIdx = math.randomInt(1, #rookInfo.pos - 1)
         if newPosIdx >= currentPosIdx then
             newPosIdx = newPosIdx + 1
         end
     else
-        newPosIdx = math.randomInt(1, #rookInfo.pos)
+        newPosIdx = currentPosIdx
     end
 
     rook:setLocalVar('PositionIndex', newPosIdx)

@@ -1,6 +1,7 @@
 -----------------------------------
--- Area: Jugner Forest
+-- Area: Jugner Forest (104)
 --  NPC: Herald
+-- !pos 45.258 0.26 -9.622 104
 -- Runs Conflict (Ballista) sign-up for this zone.
 -----------------------------------
 require('scripts/globals/conflict/herald')

@@ -1,6 +1,7 @@
 -----------------------------------
--- Area: Pashhow Marshlands
+-- Area: Pashhow Marshlands (109)
 --  NPC: Herald
+-- !pos 117.104 24.648 156.788 109
 -- Runs Conflict (Ballista) sign-up for this zone.
 -----------------------------------
 require('scripts/globals/conflict/herald')

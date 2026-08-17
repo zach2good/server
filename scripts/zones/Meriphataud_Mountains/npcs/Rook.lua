@@ -1,6 +1,7 @@
 -----------------------------------
--- Area: Meriphataud Mountains
+-- Area: Meriphataud Mountains (119)
 --  NPC: Rook
+-- !pos 11.47 -22.826 232.226 119
 -- Petras are thrown into these to score during a Conflict (Ballista) match.
 -----------------------------------
 require('scripts/globals/conflict/rook')

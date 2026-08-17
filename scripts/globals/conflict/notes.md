@@ -1,6 +1,34 @@
 
 # Notes
 
+## Event option values, confirmed from the client
+
+Read out of the event bytecode in the `FFXI-EventsDump` tree, not from another server. Jugner,
+Pashhow and Meriphataud were cross-checked and agree, so anything below is settled.
+
+To read a dump: `Work_Zone[0]` is the menu selection, `Work_Zone[1]` is the value returned to the
+server, and `Work_Zone[N]` is `params[N - 2]` for everything `startEvent` sent. `0x40000000` is
+the client cancelling.
+
+Herald, sign-up menu:
+
+| Value | Meaning |
+| --- | --- |
+| 1 | Temporary entry |
+| 2 | Let the Herald place you |
+| 14, 15 | The first or second nation, by name |
+| 16 | Fill a slot mid-match |
+
+Herald, everything else: 3 and 4 discharge during or before the match, 5/8/7/6 collect for a win,
+loss, draw or cancellation, 9 warps to homepoint for 100 points, and 10, 11 and 12 teleport to
+Jugner, Pashhow and Meriphataud in that order.
+
+Quarry, temp item: 0 keeps, 2 uses, 3 throws away, and an exchange returns the temp item index
+plus 1000. Quarry, first petra: 1 keeps.
+
+The line-up cutscene takes position as params 0 to 3. A petra count of `-1` suppresses the score
+line, and a high scorer petra count of 0 suppresses the MVP line.
+
 ## Rough ToDos
 
 * Schedule
@@ -68,7 +96,6 @@ Random:
 - Sprint lasts 10s
 - Quarry cooldown is 10s
 
-
 ## Note-worthy events
 
 An entry canceled mid-fight (he just disappears): https://youtu.be/gLGzCIWWIec?t=565
@@ -81,7 +108,6 @@ Rook gate is still open: https://youtu.be/AxFYdkzqUDw?t=773
 
 Steal: 05:38:37 in 1st Meri video
 Full temporary item: 6:13:05 in 1st Meri video
-
 
 # Rook data
 
@@ -103,7 +129,6 @@ Meri:
     https://youtu.be/gLGzCIWWIec?t=731
     https://youtu.be/gLGzCIWWIec?t=2075
 
-
 Jugner:
 
     https://youtu.be/zIPgfK8vhOU?t=209
@@ -114,11 +139,9 @@ Jugner:
     https://youtu.be/6Jg0X_KoDhk?t=602 Warping Rook?! A participant joins a bit later: https://youtu.be/6Jg0X_KoDhk?t=622 but still 2 Rooks
     https://youtu.be/6Jg0X_KoDhk?t=750 Rooks still on opposite sides of OP
 
-
 Pashhow:
 
     https://youtu.be/AxFYdkzqUDw?t=881 both Rooks in sight-line, after teams have evened out
-
 
 Rook count:
 
@@ -128,7 +151,6 @@ Rook count:
 - 6v5 gave 2 Rooks: https://youtu.be/gLGzCIWWIec?t=15
 - 4v4 (but line-up looks like it was 5v4) gave 2 Rooks: https://youtu.be/ZqhTAWGcWGY?t=35
 - 5v5 line-up gave 1 Rook: https://youtu.be/FvCxq_C6aCI?t=109 Weird that in line-up it's 3v5
-
 
 # Timeline
 

@@ -28,17 +28,17 @@ Verdicts from a per-commit diff vs our tree. **3 PRESENT / 4 PARTIAL / 8 MISSING
 heavily refactored into Lua modules (`scripts/globals/combat/*`) + new C++ states, so several Eden
 mechanics exist via different APIs. The genuinely conflict-relevant gaps to consider porting:
 
-- [x] **#1133** Damage taken is reduced in Conflict — `80b8584` — **MISSING** ⚠️ *(flagged important)*
+- [x] **#1133** Damage taken is reduced in Conflict — `80b8584` — **PORTED since this review, see Finding 2.**
       Eden adds `HandleConflictDamage`: `if isInConflict() dmg *= 1 - dmg/4000` in 5 damage-taken paths. No equivalent in our `battleutils.cpp`. Players take full damage in our Ballista.
-- [x] **#4304** Increased resist trait in conflict — `671541f` — **MISSING**
+- [x] **#4304** Increased resist trait in conflict — `671541f` — **DROPPED since this review, see Finding 4.**
       Eden: `if target:isInConflict() then effectres = effectres * 1.5`. Our resist path (`combat/magic_hit_rate.lua`) has **no `isInConflict()` call anywhere in scripts/**.
-- [x] **#2785** Conflict — restore mp to 50% on reraise if lower — `c3634e5` — **MISSING**
+- [x] **#2785** Conflict — restore mp to 50% on reraise if lower — `c3634e5` — **PORTED since this review, see Finding 6.**
       Our `CCharEntity::OnRaise` has no MP-restore / conflict branch; conflict auto-raise (`conflict_player.cpp:365`) doesn't top MP to 50%.
-- [x] **#2561** Sharpshot bypasses auto miss (conflict ranged) — `c1709be` — **MISSING**
+- [x] **#2561** Sharpshot bypasses auto miss (conflict ranged) — `c1709be` — **DROPPED since this review, see Finding 5.**
       Our `GetRangedHitRate` unconditionally returns 0 past 25 yalms; no PC-in-conflict case, no Sharpshot bypass (Sharpshot never consulted in hit-rate).
-- [x] **#4526** Re-apply level restriction after raise — `6c0ba80` — **PARTIAL** ⚠️
+- [x] **#4526** Re-apply level restriction after raise — `6c0ba80` — **PORTED since this review, see Finding 1.**
       No `resetCharToLevel`; no `CRaiseState` (raise = `death_state.cpp`, no level re-cap). **AND `charutils::SetLevelRestriction` is an EMPTY STUB (charutils.cpp:5859)** — so our Ballista level caps likely don't apply at all. See Findings.
-- [x] **#2775** Base pet conflict effects (closed PR) — **MISSING (our tree)** / PARTIAL (Eden mainline)
+- [x] **#2775** Base pet conflict effects (closed PR) — **PORTED since this review, see Finding 3.**
       The deeper PR never merged anywhere. But Eden mainline `changeAllegiance` does `ClearMobEnmity()`, widens melee range 3→6 in conflict, and propagates allegiance to the pet — our `battle_entity.cpp:1659` `changeAllegiance` only flips allegiance + updatemask (the rest is our explicit TODO).
 - [x] **#1124** Immortal shield fix + rampart for ballista — `dbfe3e1` — **PARTIAL**
       Rampart (SDT mods) + Immortal Shield exist in LSB but via different impl; the ballista MAGIC_SHIELD subPower HP-absorb-pool depletion is absent.
@@ -64,8 +64,8 @@ mechanics exist via different APIs. The genuinely conflict-relevant gaps to cons
 1. ✅ **DONE — BUG (independent of Eden):** `charutils::SetLevelRestriction` was an empty stub (Ballista level caps did nothing). Now applies the `LEVEL_RESTRICTION` status effect (same as level-capped zones/battlefields), which recaps via `levelRestriction()`. *Verify in a capped match on the client.*
 2. ✅ **DONE — #1133** damage-reduction-in-conflict. Hooked once at `CBattleEntity::takeDamage` instead of `battleutils::HandleConflictDamage` (`isInConflict()` → `dmg * (1 - dmg/4000)`, positive-only, clamped). Eden hooks the five damage-taken funnels, but three of those are pure mitigation calculators that never decrement HP, two of them reachable from Lua on damage the script may discard, and the set misses skillchains, damage over time and mob skills. `CBattleEntity::takeDamage` is the single chokepoint every path already funnels through, next to the existing ROE hook. Eden's curve also reaches zero at 4000 damage and goes negative above it, turning a large hit into healing; the scale is clamped so the floor is 1.
 3. ✅ **DONE — #2775 / changeAllegiance** — now clears nearby mobs' enmity (`ForEachMob` → `PEnmityContainer->Clear`), propagates allegiance to the pet, and `GetMeleeRange` widens by +3 (Eden 3→6) when `isInConflict()`.
-4. ✅ **DONE — #4304** 1.5x status resist. Added a Lua `isInConflict()` binding and, in `combat/magic_hit_rate.lua` `calculateResistanceFactor`, divide the landing factor by 1.5 for status effects on conflict targets.
-5. ✅ **DONE — #2561** Sharpshot/ranged conflict auto-miss. Ported Eden's exact condition to `GetRangedHitRate`: the >25-yalm auto-miss now applies to mobs and conflict PCs and is bypassed by Sharpshot (our code was previously *stricter* — auto-missing everyone past 25).
+4. ⬜ **DROPPED — #4304** 1.5x status resist. Reverted: retail resists repeated enfeebles with a per-effect resistance that accumulates and decays, plus a hard sleep-duration cap. A flat divisor is the wrong shape and touched both land rate and duration. Originally added a Lua `isInConflict()` binding and, in `combat/magic_hit_rate.lua` `calculateResistanceFactor`, divide the landing factor by 1.5 for status effects on conflict targets.
+5. ⬜ **DROPPED — #2561** Sharpshot/ranged conflict auto-miss. Reverted after checking sources: the patch note Eden cites is about distance accuracy penalties generally, not about extending maximum range, and says nothing about Ballista. Originally ported Eden's exact condition to `GetRangedHitRate`: the >25-yalm auto-miss now applies to mobs and conflict PCs and is bypassed by Sharpshot (our code was previously *stricter* — auto-missing everyone past 25).
 
 6. ✅ **DONE — #2785 / conflict death and reraise.**
    - On death in a live match: drop held petras + schedule reraise (`ConflictEntry::Tick`).
@@ -92,3 +92,72 @@ mechanics exist via different APIs. The genuinely conflict-relevant gaps to cons
 
 - [x] **#1249** Adding missing bard songs — `e230c9c` — incidental (bard song effects/spells).
 - [x] **#494** Fixing feather tickle — `c3dd262` — incidental (Blue Magic enmity spell formula).
+
+---
+
+## Retail accuracy, checked 2026-08-17
+
+Checked against the SE patch notes mirrored on Ffxiclopedia, the Japanese FFO wiki and the client
+event dumps. **No Ballista packet capture exists on this machine**, so anything not covered by those
+cannot be settled here.
+
+Corrected:
+
+- Temporary item slots were inverted. Pashhow, the zone where a player's own items are barred, is
+  the one raised from ten to fifteen; the other two stay at ten.
+- Guest entry opens at 16:00, not 16:30.
+- The second rook was appearing on any imbalance at all, so nearly every match ran two. The
+  threshold retail describes is a "significant difference", with no number given.
+- Quarry is a three second dig on a thirteen second recast.
+- The maximum member difference matched no source; the Japanese wiki gives four.
+
+Verified correct and left alone: even-day scheduling, the six-day zone rotation, the seasonal nation
+pairings, the level cap ladder and entry fees, the sign-up and line-up times, the three-per-side
+minimum, the five-petra throw cap, the best-of-three round structure, and the hundred point teleport.
+
+Still unknown, and marked TODO in code: every Ballista point award, the shape of the damage
+reduction, and the quarry drop weights. The quarry roll also ignores the score and gate breach,
+which retail uses as its catch-up mechanic.
+
+---
+
+## Found after the review above, against the client's own data
+
+None of these are Eden PRs. They came out of the event bytecode in the `FFXI-EventsDump` tree and
+the packet reference at `atom0s/XiPackets`, both of which settle things that looked like they
+needed a live client.
+
+Herald and events, cross-checked between the Jugner, Pashhow and Meriphataud dumps:
+
+- The sign-up menu offers each nation by name, returned as options 14 and 15. **Neither was
+  handled**, so choosing a side did nothing at all. Every other option value, the quarry temp item
+  and petra menus, and the line-up cutscene params were confirmed correct.
+
+Packet 0x00E6, checked field by field:
+
+- Scout sent the position as X, Y, Z where the client reads **X, Z, Y**, so the compass pointed
+  somewhere else, and the fourth slot that repeats the distance was zero.
+- The client shows the distance as `sent * 0.914 + 0.5`, so the server has to send the inverse.
+- The scoreboard set counter is displayed halved, so it goes out doubled. Sending the phase left
+  the counter a set behind for the whole of every round.
+- A cleared board needs `Flags` set. With `Flags = 0` the client's handler exits and the last score
+  stays on screen.
+- `Flammes` drives Brenner's indicators and belongs at zero in a Ballista match.
+
+Engine correctness:
+
+- A zone change cleared the entry's pointer to the character but not the character's pointer back,
+  leaving a freed entry reachable once the match was reaped.
+- A default-constructed `sol::protected_function_result` reports `valid()` with a null `lua_State`,
+  so the Lua bridge's "script absent" path dereferenced null.
+- Ballista points are paid by character id, so a participant who zoned out still collects. They
+  were previously paid through the online character and lost everything they had earned.
+
+Still unverified, and marked TODO in code:
+
+- `Scoreboard[1]` selects a render mode, one of whose jobs is hiding the board outright. The code
+  passes nation bits, which is certainly not that. XiPackets does not give the value table, so any
+  value would be a guess. This is the one field that could leave a scoreboard invisible.
+- The `/search` team colour bits. XiPackets has no search server coverage.
+- The Marshal has no handler, so the Ballista Points shop, MVP board and ranking do not exist.
+  Inherited: "Rankings" is on Eden's own TODO list at the top of `notes.md`.

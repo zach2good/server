@@ -24,6 +24,7 @@
 #include "common/cbasetypes.h"
 #include "common/timer.h"
 #include "common/types/box.h"
+#include "common/types/cached.h"
 #include "common/types/flat_hash_map.h"
 #include "common/types/maybe.h"
 
@@ -44,6 +45,10 @@ class CCharEntity;
 class ConflictEntry;
 
 constexpr uint8 kConflictTeamCount = 2;
+
+// A finished match is kept for a full Vana'diel day so that stragglers can still collect from the
+// Herald. Its database row has to outlive it by at least as long.
+constexpr uint32 kCleanupGraceVanaMinutes = 60 * 24;
 
 struct ConflictSettings
 {
@@ -80,8 +85,8 @@ public:
     auto operator=(ConflictInstance&&) -> ConflictInstance&      = delete;
 
     // Returns the index of the team the player joined.
-    auto AddPlayer(CCharEntity* player, Maybe<uint8> teamIdx) -> Maybe<uint8>;
-    auto TryRejoinPlayer(CCharEntity* player) -> bool;
+    [[nodiscard]] auto AddPlayer(CCharEntity* player, Maybe<uint8> teamIdx) -> Maybe<uint8>;
+    [[nodiscard]] auto TryRejoinPlayer(CCharEntity* player) -> bool;
 
     void Tick(timer::time_point tick);
     void BroadcastStatusUpdate();
@@ -96,7 +101,7 @@ public:
 
     void UpdateOpenRooks();
 
-    auto RemoveEntryAndTakeGilFromHerald(ConflictEntry* entry) -> Maybe<uint32>;
+    [[nodiscard]] auto RemoveEntryAndTakeGilFromHerald(ConflictEntry* entry) -> Maybe<uint32>;
 
     [[nodiscard]] auto GetWinningTeamIndex() -> Maybe<uint8>;
     [[nodiscard]] auto GetId() const -> uint32;
@@ -128,7 +133,7 @@ public:
     ConflictEntry* highScorer = nullptr;
 
 private:
-    auto RemovePlayerEntry(uint32 charId) -> bool;
+    [[nodiscard]] auto RemovePlayerEntry(uint32 charId) -> bool;
 
     uint32            id         = 0;
     xi::ConflictState state      = xi::ConflictState::Setup;
@@ -138,8 +143,8 @@ private:
     bool levelRestrictionEnabled = false;
     bool openRooks               = false;
 
-    bool         winningTeamDetermined = false;
-    Maybe<uint8> winningTeamIdx;
+    // Outer: whether the result has been worked out yet. Inner: no value for a draw.
+    Cached<Maybe<uint8>> winningTeam;
 
     uint32 gilOnHerald = 0;
 };

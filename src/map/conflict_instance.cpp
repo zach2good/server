@@ -46,13 +46,9 @@ using namespace std::chrono_literals;
 namespace
 {
 
-// A finished match is kept for a full Vana'diel day so that stragglers can still collect from the Herald.
-constexpr uint32 kCleanupGraceVanaMinutes = 60 * 24;
-
-// The client shows both nations as bits counted from San d'Oria.
-auto toNationBit(const xi::Allegiance allegiance) -> uint8
+constexpr auto toNationBit(const xi::Allegiance allegiance) -> uint8
 {
-    return static_cast<uint8>(1 << (std::to_underlying(allegiance) - std::to_underlying(xi::Allegiance::SanDoria)));
+    return static_cast<uint8>(1 << toNationIndex(allegiance));
 }
 
 } // namespace
@@ -64,7 +60,7 @@ ConflictInstance::ConflictInstance(ConflictSettings settings, CZone* zone)
     teams[0] = makeBox<ConflictTeam>(settings.team1);
     teams[1] = makeBox<ConflictTeam>(settings.team2);
 
-    nationBits = toNationBit(settings.team1) + toNationBit(settings.team2);
+    nationBits = static_cast<uint8>(toNationBit(settings.team1) | toNationBit(settings.team2));
 
     cleanupTime = timeutils::GetTimePointFromVanaTimestamp(settings.matchStart + settings.matchLength + kCleanupGraceVanaMinutes);
 
@@ -72,7 +68,7 @@ ConflictInstance::ConflictInstance(ConflictSettings settings, CZone* zone)
                                        "FROM conflict_instances WHERE zoneid = ? AND start = ? AND type = ?",
                                        std::to_underlying(zone->GetID()),
                                        settings.matchStart,
-                                       settings.isScheduled ? 1 : 0);
+                                       settings.isScheduled);
 
     // Recover a match that was already running before the last restart.
     if (rset && rset->rowsCount() > 0 && rset->next())
@@ -138,7 +134,7 @@ ConflictInstance::ConflictInstance(ConflictSettings settings, CZone* zone)
     }
 
     const auto insertRset = db::preparedStmt("INSERT INTO conflict_instances (type, zoneid, start, length) VALUES (?, ?, ?, ?)",
-                                             settings.isScheduled ? 1 : 0,
+                                             settings.isScheduled,
                                              std::to_underlying(settings.zoneId),
                                              settings.matchStart,
                                              settings.matchLength);
@@ -183,8 +179,9 @@ auto ConflictInstance::AddPlayer(CCharEntity* player, const Maybe<uint8> request
         return player->conflictEntry->teamIdx;
     }
 
-    // The player was in this match and left; they do not get a second entry.
-    if (player->conflictEntry)
+    // The player was in this match and left; they do not get a second entry. The entry pointer is
+    // cleared when they zone, so the record of who left is what actually decides this.
+    if (player->conflictEntry || oldEntries.contains(player->id))
     {
         return std::nullopt;
     }
@@ -194,8 +191,15 @@ auto ConflictInstance::AddPlayer(CCharEntity* player, const Maybe<uint8> request
         return std::nullopt;
     }
 
-    if (settings.signupFee > 0 && charutils::UpdateGil(player, -static_cast<int32>(settings.signupFee)))
+    if (settings.signupFee > 0)
     {
+        // Seating someone who did not pay would let them draw on a pot they never contributed to,
+        // and a draw refunds the full fee to everyone.
+        if (!charutils::UpdateGil(player, -static_cast<int32>(settings.signupFee)))
+        {
+            return std::nullopt;
+        }
+
         gilOnHerald += settings.signupFee;
     }
 
@@ -364,11 +368,9 @@ void ConflictInstance::SetState(const xi::ConflictState newState)
                 return 30;
             }();
 
-            // TODO(conflict): pay out participants who are offline, which Eden did by charid.
-            if (entry->player)
-            {
-                charutils::AddPoints(entry->player, "ballista_point", static_cast<int32>(entry->ballistaPoints), ballistaCap);
-            }
+            // Paid by id, so a participant who zoned out or logged off still collects what they
+            // earned. This is also the whole award in one statement rather than a read and a write.
+            charutils::AddPointsByCharId(charid, "ballista_point", static_cast<int32>(entry->ballistaPoints), ballistaCap);
         }
     }
 }
@@ -427,7 +429,7 @@ void ConflictInstance::SetCombatEnabled(const bool enable)
 
     if (id != 0)
     {
-        db::preparedStmt("UPDATE conflict_instances SET combat_enabled = ? WHERE instanceid = ?", combatEnabled ? 1 : 0, id);
+        db::preparedStmt("UPDATE conflict_instances SET combat_enabled = ? WHERE instanceid = ?", combatEnabled, id);
     }
 
     if (enable)
@@ -549,7 +551,21 @@ void ConflictInstance::AddTeamRounds(const uint8 teamIdx, const int32 rounds)
 
     teams[teamIdx]->roundsWon += rounds;
 
-    const auto query = fmt::format("UPDATE conflict_instances SET rounds_team{} = ? WHERE instanceid = ?", teamIdx + 1);
+    if (id == 0)
+    {
+        return;
+    }
+
+    const auto query = [&]
+    {
+        if (teamIdx == 0)
+        {
+            return "UPDATE conflict_instances SET rounds_team1 = ? WHERE instanceid = ?";
+        }
+
+        return "UPDATE conflict_instances SET rounds_team2 = ? WHERE instanceid = ?";
+    }();
+
     if (const auto rset = db::preparedStmt(query, teams[teamIdx]->roundsWon, id); !rset)
     {
         ShowErrorFmt("ConflictInstance: Failed to update rounds for team {}.", teamIdx + 1);
@@ -576,51 +592,60 @@ auto ConflictInstance::GetWinningTeamIndex() -> Maybe<uint8>
     }
 
     // No value means a draw, which is what refunds an entry fee.
-    if (!winningTeamDetermined)
-    {
-        const auto scoreOf = [&](const uint8 teamIdx) -> int32
+    return winningTeam.getOrCompute(
+        [&]() -> Maybe<uint8>
         {
-            if (settings.type == xi::ConflictType::BestOfThree)
+            const auto scoreOf = [&](const uint8 teamIdx) -> int32
             {
-                return teams[teamIdx]->roundsWon;
+                if (settings.type == xi::ConflictType::BestOfThree)
+                {
+                    return teams[teamIdx]->roundsWon;
+                }
+
+                return teams[teamIdx]->score;
+            };
+
+            if (scoreOf(0) > scoreOf(1))
+            {
+                return 0;
             }
 
-            return teams[teamIdx]->score;
-        };
+            if (scoreOf(0) < scoreOf(1))
+            {
+                return 1;
+            }
 
-        if (scoreOf(0) > scoreOf(1))
-        {
-            winningTeamIdx = 0;
-        }
-        else if (scoreOf(0) < scoreOf(1))
-        {
-            winningTeamIdx = 1;
-        }
-
-        winningTeamDetermined = true;
-    }
-
-    return winningTeamIdx;
+            return std::nullopt;
+        });
 }
 
 void ConflictInstance::UpdateOpenRooks()
 {
-    auto teamsWithMembers = 0;
+    // The gates open when a side can no longer contest a throw, which retail describes as most of
+    // the opposing team having left the field rather than all of it. The proportion is not
+    // documented anywhere, so a majority is the reading taken here.
+    constexpr auto presentShareToContest = 0.5f;
+
+    auto sidesAbleToContest = 0;
     for (const auto& team : teams)
     {
-        const auto hasPlayer = std::ranges::any_of(team->entries, [](const ConflictEntry* entry)
+        if (team->entries.empty())
+        {
+            continue;
+        }
+
+        const auto present = std::ranges::count_if(team->entries, [](const ConflictEntry* entry)
                                                    {
                                                        return entry->player != nullptr;
                                                    });
 
-        if (hasPlayer)
+        if (static_cast<float>(present) > static_cast<float>(team->entries.size()) * presentShareToContest)
         {
-            ++teamsWithMembers;
+            ++sidesAbleToContest;
         }
     }
 
-    // With only one side present there is nobody to contest a rook, so they all stand open.
-    const auto newValue = teamsWithMembers <= 1;
+    const auto newValue = sidesAbleToContest <= 1;
     if (newValue != openRooks)
     {
         openRooks = newValue;
@@ -641,12 +666,15 @@ auto ConflictInstance::RemoveEntryAndTakeGilFromHerald(ConflictEntry* entry) -> 
     }
 
     const auto teamIdx = entry->teamIdx;
+
+    // Counted before the entry is removed: the pot is shared between everyone who won it, not
+    // between whoever has not claimed yet. Reading it afterwards pays the first claimant more.
+    const auto winnerCount = std::max<std::size_t>(1, teams[teamIdx]->entries.size());
+
     if (!RemovePlayerEntry(entry->charid))
     {
         return std::nullopt;
     }
-
-    const auto membersLeftOnTeam = std::max<std::size_t>(1, teams[teamIdx]->entries.size());
 
     auto newEntryType = ConflictEntryType::DischargedNoRefund;
     auto gilToGive    = uint32{ 0 };
@@ -679,7 +707,7 @@ auto ConflictInstance::RemoveEntryAndTakeGilFromHerald(ConflictEntry* entry) -> 
             }
             else if (*winningTeamIndex == teamIdx)
             {
-                gilToGive = gilOnHerald / static_cast<uint32>(membersLeftOnTeam);
+                gilToGive = gilOnHerald / static_cast<uint32>(winnerCount);
             }
 
             break;

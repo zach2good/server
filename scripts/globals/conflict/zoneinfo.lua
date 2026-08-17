@@ -436,6 +436,24 @@ function xi.conflict.getPursuivantEntity(zone, nationIndex)
     return zone:queryEntitiesByName(name)[1]
 end
 
+-- Which of the three Pursuivants this is, counted the way the scripts count nations.
+function xi.conflict.getPursuivantIndex(zoneInfo, npc)
+    if
+        zoneInfo == nil or
+        zoneInfo.pursuivants == nil
+    then
+        return 0
+    end
+
+    for index, name in ipairs(zoneInfo.pursuivants.names) do
+        if npc:getName() == name then
+            return index - 1
+        end
+    end
+
+    return 0
+end
+
 function xi.conflict.getPursuivantEntities(zone)
     local zoneInfo = xi.conflict.getZoneInfo(zone:getID())
     if

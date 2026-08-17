@@ -202,8 +202,8 @@ namespace
 {
 
 // Conflict (Ballista) colours a participant by the side they are fighting for rather than their
-// nation, and marks them while a match is still forming. Allegiance counts nations from San
-// d'Oria, so it is shifted down to a zero-based team before packing.
+// nation, and marks them separately while a match is still forming. The value packed is the
+// allegiance counted from San d'Oria, which the client reads as the team colour.
 void applyConflictOverlay(SearchEntity& player)
 {
     if (player.allegiance == 0)
@@ -211,12 +211,12 @@ void applyConflictOverlay(SearchEntity& player)
         return;
     }
 
-    player.flags2 += (player.allegiance - 1) << 17;
+    player.flags2 |= (player.allegiance - 1) << 17;
 
     // Still preparing rather than fighting.
     if (!player.combatEnabled)
     {
-        player.flags2 += 1 << 16;
+        player.flags2 |= 1 << 16;
     }
 }
 
@@ -272,9 +272,10 @@ auto CDataLoader::GetPlayersList(SearchRequest sr, int* count) const -> std::vec
         // A player fighting in a Ballista match is shown under their match allegiance rather than
         // their nation, so the search window needs the match they are in.
         "LEFT JOIN ("
-        "    SELECT ce.charid AS conflict_charid, ce.allegiance, ci.combat_enabled, ci.zoneid "
+        "    SELECT ce.charid AS conflict_charid, MIN(ce.allegiance) AS allegiance, "
+        "           MIN(ci.combat_enabled) AS combat_enabled, MIN(ci.zoneid) AS zoneid "
         "    FROM conflict_entries ce "
-        "    LEFT JOIN conflict_instances ci USING(instanceid) "
+        "    JOIN conflict_instances ci USING(instanceid) "
         "    WHERE ci.state BETWEEN 2 AND 4 AND ce.type IN (1, 2) "
         "    GROUP BY ce.charid "
         ") AS conflict ON chars.charid = conflict.conflict_charid AND chars.pos_zone = conflict.zoneid "
@@ -565,9 +566,10 @@ auto CDataLoader::GetPartyList(uint32 PartyID, uint32 AllianceID) const -> std::
                                  "LEFT JOIN char_profile USING(charid) "
                                  "LEFT JOIN char_flags USING(charid) "
                                  "LEFT JOIN ("
-                                 "    SELECT ce.charid AS conflict_charid, ce.allegiance, ci.combat_enabled, ci.zoneid "
+                                 "    SELECT ce.charid AS conflict_charid, MIN(ce.allegiance) AS allegiance, "
+                                 "           MIN(ci.combat_enabled) AS combat_enabled, MIN(ci.zoneid) AS zoneid "
                                  "    FROM conflict_entries ce "
-                                 "    LEFT JOIN conflict_instances ci USING(instanceid) "
+                                 "    JOIN conflict_instances ci USING(instanceid) "
                                  "    WHERE ci.state BETWEEN 2 AND 4 AND ce.type IN (1, 2) "
                                  "    GROUP BY ce.charid "
                                  ") AS conflict ON chars.charid = conflict.conflict_charid AND chars.pos_zone = conflict.zoneid "

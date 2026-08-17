@@ -6570,8 +6570,17 @@ void ClearTempItems(CCharEntity* PChar, bool sendUpdate)
 
     CItemContainer* Temp = PChar->getStorage(LOC_TEMPITEMS);
 
-    db::preparedStmt("DELETE FROM char_inventory WHERE charid = ? AND location = 3", PChar->id);
-    Temp->Clear();
+    // Most players finish a match holding nothing, and this runs for every participant at once
+    // when a match ends. Skipping the empty case takes that from one query per player to none.
+    if (Temp->GetFreeSlotsCount() < Temp->GetSize())
+    {
+        db::preparedStmt("DELETE FROM char_inventory WHERE charid = ? AND location = 3", PChar->id);
+        Temp->Clear();
+    }
+
+    // A Ballista match narrows this container to its own allowance. Restore the character's real
+    // capacity, or they carry the match's smaller one into Abyssea, Salvage and every casket.
+    Temp->SetSize(static_cast<uint8>(Temp->GetBuff()));
 
     // A player clearing temp items mid-session, rather than on a zone change, needs to be told.
     if (sendUpdate)
@@ -6580,7 +6589,7 @@ void ClearTempItems(CCharEntity* PChar, bool sendUpdate)
     }
 }
 
-bool UpdateGil(CCharEntity* PChar, int32 amount)
+auto UpdateGil(CCharEntity* PChar, int32 amount) -> bool
 {
     TracyZoneScoped;
 
@@ -6796,6 +6805,28 @@ void AddPoints(CCharEntity* PChar, const char* type, int32 amount, int32 max)
         roeutils::UpdateUnityTrust(PChar, true);
 
         PChar->pushPacket<GP_SERV_COMMAND_CLISTATUS>(PChar);
+    }
+}
+
+// Awards points to a character who need not be online. char_points is read through on every
+// access rather than cached on the character, so this stays correct for a character who is logged
+// in, and it clamps in the one statement instead of taking a read and a write.
+void AddPointsByCharId(const uint32 charId, const char* type, const int32 amount, const int32 max)
+{
+    TracyZoneScoped;
+
+    if (!isCharPointsColumn(type))
+    {
+        ShowErrorFmt("charutils::AddPointsByCharId: Invalid type {} for character {}", type, charId);
+        return;
+    }
+
+    // The point columns are unsigned, and an unsigned column plus a negative binds to an unsigned
+    // result, so a debit would fail out of range instead of floating at zero. Sign it first.
+    const auto query = fmt::format("UPDATE char_points SET {} = LEAST(GREATEST(CAST({} AS SIGNED) + ?, 0), ?) WHERE charid = ?", type, type);
+    if (const auto rset = db::preparedStmt(query, amount, std::max(max, 0), charId); !rset)
+    {
+        ShowErrorFmt("charutils::AddPointsByCharId: Failed to award {} to character {}", type, charId);
     }
 }
 

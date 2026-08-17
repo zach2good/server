@@ -1,6 +1,7 @@
 -----------------------------------
--- Area: Jugner Forest
+-- Area: Jugner Forest (104)
 --  NPC: Rook
+-- !pos 102.672 -2.505 -11.482 104
 -- Petras are thrown into these to score during a Conflict (Ballista) match.
 -----------------------------------
 require('scripts/globals/conflict/rook')
