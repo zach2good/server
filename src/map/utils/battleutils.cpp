@@ -4404,28 +4404,6 @@ int32 CheckAndApplyDamageCap(int32 damage, CBattleEntity* PDefender)
     return std::clamp(damage, damageCap - damageVariant, damageCap);
 }
 
-auto HandleConflictDamage(CBattleEntity* PDefender, const int32 damage) -> int32
-{
-    if (damage <= 0 || PDefender == nullptr || !PDefender->isInConflict())
-    {
-        return damage;
-    }
-
-    // Big hits are softened so a match is not decided by one burst, but a heavier blow must always
-    // land heavier: damage * scale / (scale + damage) rises with the hit and flattens towards the
-    // scale rather than turning back down.
-    //
-    // Eden multiplies by (1 - damage/4000) instead, which peaks around 2000 and then falls away,
-    // so a stronger weaponskill would land for less than a weaker one and anything past 4000 would
-    // heal. The shape here is a guess in the same spirit; no source documents the retail curve.
-    constexpr auto softeningScale = 4000.0f;
-
-    const auto raw      = static_cast<float>(damage);
-    const auto softened = raw * softeningScale / (softeningScale + raw);
-
-    return std::max(1, static_cast<int32>(softened));
-}
-
 // TODO: Study using lua functions.
 auto MagicDmgTaken(CBattleEntity* PDefender, int32 damage, ELEMENT element) -> int32
 {

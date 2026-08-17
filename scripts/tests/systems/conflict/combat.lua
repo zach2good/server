@@ -1,8 +1,8 @@
 -----------------------------------
 -- Conflict (Ballista): the combat rules that only apply inside a match.
 --
--- A PVP fight should not be decided by whoever lands the first big hit or the first sleep, so
--- damage is softened and status effects are harder to land while a match is running.
+-- Damage is passed through unchanged, but status effects are harder to land and melee reach is
+-- wider while a match is running.
 -----------------------------------
 
 describe('Conflict (Ballista) combat', function()
@@ -42,12 +42,15 @@ describe('Conflict (Ballista) combat', function()
         p2:setPos(p1:getXPos(), p1:getYPos(), p1:getZPos())
     end)
 
-    it('softens damage taken inside a match', function()
+    -- A retail capture of a private match in Diorama Abdhaljs-Ghelsba (2019-12-15) has one player
+    -- killing another with a 1833 damage weaponskill. Eden scales PVP damage by (1 - damage/4000),
+    -- which cannot produce anything above 1000, so retail is not doing that and nothing else
+    -- suggests a curve of its own. Damage is passed through untouched.
+    it('does not scale damage taken inside a match', function()
         local conflict = startMatch()
 
         local maxHp = p2:getMaxHP()
 
-        -- The same blow outside a match, for comparison.
         p2:setHP(maxHp)
         p2:takeDamage(1000, p1)
         local outsideLoss = maxHp - p2:getHP()
@@ -59,48 +62,21 @@ describe('Conflict (Ballista) combat', function()
         p2:takeDamage(1000, p1)
         local insideLoss = maxHp - p2:getHP()
 
-        assert(insideLoss < outsideLoss,
-            'damage inside a match should be softened: ' .. insideLoss .. ' vs ' .. outsideLoss)
+        assert(insideLoss == outsideLoss,
+            'a match should not change damage taken: ' .. insideLoss .. ' inside vs ' .. outsideLoss .. ' outside')
     end)
 
-    it('never turns a large hit into healing', function()
+    -- The capture's killing blow, which any softening curve would have cut down.
+    it('lands a weaponskill-sized hit in full', function()
         local conflict = startMatch()
 
         conflict:setCombatEnabled(true)
 
-        -- The reduction scales with the size of the hit, and a naive formula reaches zero and then
-        -- goes negative around 4000.
-        for _, hit in ipairs({ 3999, 4000, 4001, 20000 }) do
-            local maxHp = p2:getMaxHP()
+        p2:setMaxHP(5000)
+        p2:setHP(5000)
+        p2:takeDamage(1833, p1)
 
-            p2:setHP(maxHp)
-            p2:takeDamage(hit, p1)
-
-            assert(p2:getHP() <= maxHp, 'a hit of ' .. hit .. ' restored HP instead of taking it')
-            assert(p2:getHP() < maxHp, 'a hit of ' .. hit .. ' did nothing at all')
-        end
-    end)
-
-    it('never lets a bigger hit land for less', function()
-        local conflict = startMatch()
-
-        conflict:setCombatEnabled(true)
-
-        -- The softening curve has to keep rising: a formula that peaks and falls away would make a
-        -- stronger weaponskill worse than a weaker one.
-        local previous = 0
-
-        for _, hit in ipairs({ 100, 500, 1000, 2000, 3000, 4000, 8000, 20000 }) do
-            local maxHp = p2:getMaxHP()
-
-            p2:setHP(maxHp)
-            p2:takeDamage(hit, p1)
-
-            local taken = maxHp - p2:getHP()
-
-            assert(taken >= previous, 'a hit of ' .. hit .. ' landed for less than a smaller one')
-            previous = taken
-        end
+        assert(5000 - p2:getHP() == 1833, 'expected the full 1833 to land, took ' .. (5000 - p2:getHP()))
     end)
 
     -- The wider reach is there because players are harder to stay next to than mobs, so it has to

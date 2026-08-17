@@ -1053,8 +1053,6 @@ auto CBattleEntity::takeDamage(int32 amount, CBattleEntity* attacker /* = nullpt
     }
     this->BattleHistory.lastHitTaken_atkType = attackType;
 
-    amount = battleutils::HandleConflictDamage(this, amount);
-
     PAI->EventHandler.triggerListener("TAKE_DAMAGE", this, amount, attacker, (uint16)attackType, (uint16)damageType);
 
     // RoE Damage Taken Trigger

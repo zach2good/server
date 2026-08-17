@@ -164,6 +164,29 @@ Still unverified, and marked TODO in code:
 
 ---
 
+## Built beyond Eden
+
+Eden's own rough ToDo list at the top of `notes.md` includes "Rankings", which it never wrote.
+These are new here rather than ported, and every value behind them is cited:
+
+- **The Marshal's point exchange.** Twenty-three vouchers, each one bought with Ballista Points and
+  spent at the start of the next match for one temporary item. The costs are read out of Marshal
+  event 26, which carries the exchange table as twenty-three rows of item, voucher and price;
+  Ffxiclopedia lists two further rows the client's table does not have. Ten vouchers may be held,
+  one of each type, both numbers from the same event. The Catholicon needs a chevron.
+- **Ballista Point Ranking.** `conflict_rankings` records a finished match against a location's
+  board, which ranks the last ten matches held there on the points earned in a single one.
+  Registration runs for four Vana'diel hours after a match, the board is unreadable until that
+  closes and readable for four Vana'diel days after. A placing takes a chevron and its title, only
+  one may be held, and it expires after an Earth week; the Herald's second cutscene takes it back.
+
+**Not built.** The Marshal's conversation is not wired to any NPC, and the previous match MVP
+board is not implemented. Both are blocked on the same thing: option -3 is reused between the
+exchange and the ranking flows, so a wiring has to track which branch the conversation is in, and
+the MVP display takes its data from the event's opening parameters rather than a round trip. The
+parameter layout and capability bits are written up in `notes.md`; what is missing is a client to
+check the branch handling against.
+
 ## Merging base in
 
 `base` has moved on since this branch forked at `7b266449d9`, and it needs to come in before this

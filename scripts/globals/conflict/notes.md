@@ -29,10 +29,46 @@ plus 1000. Quarry, first petra: 1 keeps.
 The line-up cutscene takes position as params 0 to 3. A petra count of `-1` suppresses the score
 line, and a high scorer petra count of 0 suppresses the MVP line.
 
+## The Marshal's event, read out of the client
+
+Event 26 on the Marshal actor. Not wired yet; this is what a wiring needs.
+
+Parameters, using `Work_Zone[N] = params[N - 2]`:
+
+| Param | Meaning |
+| --- | --- |
+| 0 | Cumulative Ballista Points. The client caps the display at 2000 itself |
+| 1 | Unread by the main flow |
+| 2 | Read into a local the exchange list uses |
+| 3 | Bit 0 and bit 1 set two flags; bit 0 is the "job does not match the record" case |
+| 4 | Unread by the main flow |
+| 5 | Points earned in the previous match. Zero takes the "you earned none" branch |
+| 6 | Capability bits, below |
+| 7 | Read into a local the ranking branch uses |
+
+Param 6 decides which lines of menu 7524 are greyed out. The menu is: exchange points, view
+the previous match MVPs, sign up for ranking, view the ranking, learn about points, learn about
+ranking, nothing.
+
+- Bit 0 clear disables sign up, view ranking and learn about ranking. Set, it disables the MVP
+  line instead. So this is "the ranking section is what is on offer right now".
+- Bit 1 gates sign up on its own. Clear, the Marshal says registration has concluded.
+- Bits 2 and 3, both clear, disable the MVP line.
+- Bit 6 disables the exchange.
+
+Options the client returns, all as negative numbers arriving unsigned: -2, -4 and -6 in the
+exchange flow, an item index plus 1000 to buy one, -5 to register for the ranking, -3 for the
+board, -7 for the assessment.
+
+**-3 is reused.** In the exchange flow it asks whether the Catholicon may be bought; in the
+ranking flow it asks for the board. Nothing in the option value separates them, so a wiring has to
+track which branch the conversation is in. That is the part that wants a live client.
+
 ## Rough ToDos
 
-* Schedule
-* Rankings
+* Schedule — done
+* Rankings — the board, registration, chevrons and expiry are done; the Marshal's own
+  conversation and the MVP board are not, see conflict_prs.md
 * NPC interaction and messages
   * Appear in right zone
   * Sign-up reminders
@@ -186,3 +222,34 @@ After speech, level restriction is applied
 18:00    | Rooks move.
 21:00    | Rooks move.
 00:00    | Game ends.
+
+## What a retail capture settles
+
+Source: a packet capture of the Ballista license quest and a private 2v2 match in Diorama
+Abdhaljs-Ghelsba, 2019-12-15. The zone is retail's own private-match arena, reserved from the
+Pursuivant in Ru'Lude Gardens, and the capture's zone list matches that flow.
+
+Confirmed against the 0x0E6 implementation, from 13 scoreboard and 16 scout packets:
+
+- `Flags` is 1 on every packet, and `Mode` is 2 for the scoreboard and 3 for the scout, matching
+  the bitfield split of 6 and 10 bits.
+- The payloads are 36 and 32 bytes, exactly the two `PacketData` layouts.
+- `PetraCount` tracks petras held, climbing 0 to 5 and resetting.
+- `Scoreboard[1]` is 8 in this match. The low three bits are the nations, and they are all clear
+  here, which is right for a private match with no nations behind it. Bit 3 is set on top of that
+  and is not accounted for.
+- `Flammes` is 0x48 in every scoreboard packet, from the first update to the last, whatever the
+  score. Meaning unknown.
+- `FlammeFlg` is 8 exactly while a player holds Gate Breach, matched to the
+  "achieves Gate Breach status!" message.
+- The scout's `padding0C` is not padding: it holds the rook's target index, the low bits of the
+  `RookUniqueNo` beside it. `RookPosition[3]` repeats `RookDistance`.
+
+Damage is **not** scaled inside a match. One player kills another with a weaponskill for 1833,
+which Eden's `damage * (1 - damage/4000)` cannot produce at all, since that formula peaks at 1000
+for an input of 2000 and falls away after. No source supports a curve of any shape, so the
+softening is gone rather than replaced.
+
+Still unsourced: quarry drop weights and the Ballista point awards. Eden's award is 60 to the
+winning side and 30 to the losing one under its own `TODO: figure out actual points gain`, so those
+numbers carry no more authority than a guess.

@@ -82,7 +82,6 @@ end
 
 zoneObject.onEventFinish = function(player, csid, option, npc)
     xi.conflict.onEventFinish(player, csid, option, npc)
-
 end
 
 return zoneObject

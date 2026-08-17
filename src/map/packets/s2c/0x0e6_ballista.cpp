@@ -87,10 +87,23 @@ SCOREBOARD::SCOREBOARD(const CCharEntity* PChar, const bool enabled)
     // the whole of every round.
     packet.MatchSet = ToMatchSet(instance->gamePhase);
 
-    // The flame lights are Brenner's, and the client draws them under the team icons whenever they
-    // are set. A Ballista match has none.
-    packet.Flammes   = 0;
-    packet.FlammeFlg = 0;
+    // The flame lights are Brenner's. A retail capture of a Ballista match (Diorama Abdhaljs-Ghelsba,
+    // 2019-12-15) carries 0x48 here in every scoreboard packet, unchanged from the first update to
+    // the last and regardless of the score, so it is sent verbatim rather than left empty. What the
+    // client does with it in a Ballista match is not known; it drew the match normally.
+    packet.Flammes = 0x48;
+
+    // In the same capture this flips to 8 the moment a "achieves Gate Breach status!" message goes
+    // out, and back to 0 when the breach ends.
+    packet.FlammeFlg = [&]() -> int32_t
+    {
+        if (entry->hasGateBreach)
+        {
+            return 8;
+        }
+
+        return 0;
+    }();
 }
 
 SCOUT::SCOUT(const CBaseEntity* PRook, const float distanceToRook)
