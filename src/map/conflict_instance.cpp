@@ -53,8 +53,8 @@ constexpr auto toNationBit(const xi::Allegiance allegiance) -> uint8
 
 } // namespace
 
-ConflictInstance::ConflictInstance(ConflictSettings settings, CZone* zone)
-: settings(std::move(settings))
+ConflictInstance::ConflictInstance(ConflictSettings newSettings, CZone* zone)
+: settings(std::move(newSettings))
 , zone(zone)
 {
     teams[0] = makeBox<ConflictTeam>(settings.team1);
@@ -681,10 +681,12 @@ void ConflictInstance::UpdateOpenRooks()
             continue;
         }
 
-        const auto present = std::ranges::count_if(team->entries, [](const ConflictEntry* entry)
-                                                   {
-                                                       return entry->player != nullptr;
-                                                   });
+        const auto present = std::ranges::count_if(
+            team->entries,
+            [](const ConflictEntry* entry)
+            {
+                return entry->player != nullptr;
+            });
 
         if (static_cast<float>(present) > static_cast<float>(team->entries.size()) * presentShareToContest)
         {
@@ -707,7 +709,10 @@ auto ConflictInstance::HasOpenRooks() const -> bool
 
 auto ConflictInstance::RemoveEntryAndTakeGilFromHerald(ConflictEntry* entry) -> Maybe<uint32>
 {
-    if (!entry->HasActiveEntry())
+    // Membership is checked here rather than at the removal below, because the gil is credited
+    // first: a removal that failed after the credit would pay the player and leave the entry
+    // standing for them to claim again.
+    if (!entry->HasActiveEntry() || !entries.contains(entry->charid))
     {
         return std::nullopt;
     }
@@ -717,11 +722,6 @@ auto ConflictInstance::RemoveEntryAndTakeGilFromHerald(ConflictEntry* entry) -> 
     // Counted before the entry is removed: the pot is shared between everyone who won it, not
     // between whoever has not claimed yet. Reading it afterwards pays the first claimant more.
     const auto winnerCount = std::max<std::size_t>(1, teams[teamIdx]->entries.size());
-
-    if (!RemovePlayerEntry(entry->charid))
-    {
-        return std::nullopt;
-    }
 
     auto newEntryType = ConflictEntryType::DischargedNoRefund;
     auto gilToGive    = uint32{ 0 };
@@ -766,10 +766,16 @@ auto ConflictInstance::RemoveEntryAndTakeGilFromHerald(ConflictEntry* entry) -> 
 
     gilToGive = std::min(gilToGive, gilOnHerald);
 
-    if (!entry->player || (gilToGive > 0 && !charutils::UpdateGil(entry->player, static_cast<int32>(gilToGive))))
+    // Pay before the entry is taken away. Removing it is what makes this irreversible, so a credit
+    // the player cannot take right now, with gil at the cap or an item action in the way, has to
+    // leave them able to come back to the Herald rather than forfeiting the whole payout.
+    if (gilToGive > 0 && (entry->player == nullptr || !charutils::UpdateGil(entry->player, static_cast<int32>(gilToGive))))
     {
-        gilToGive = 0;
+        return std::nullopt;
     }
+
+    // Cannot fail: membership was checked above and nothing since then touches the map.
+    std::ignore = RemovePlayerEntry(entry->charid);
 
     gilOnHerald -= gilToGive;
     PersistGilOnHerald();

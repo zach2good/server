@@ -361,43 +361,47 @@ void init(IPP mapIPP, bool isRunningInCI)
 
     // The Ballista match the calendar puts on next, which is today's if today is a match day.
     // Nations are counted from zero the way the conflict scripts count them.
-    lua.set_function("GetNextBallistaInfo", []() -> sol::table
-                     {
-                         const auto& settings = conflictutils::GetNextBallistaSettings();
+    lua.set_function(
+        "GetNextBallistaInfo",
+        []() -> sol::table
+        {
+            const auto& settings = conflictutils::GetNextBallistaSettings();
 
-                         auto info = lua.create_table();
+            auto info = lua.create_table();
 
-                         info["zoneId"]    = std::to_underlying(settings.zoneId);
-                         info["nation1"]   = toNationIndex(settings.team1);
-                         info["nation2"]   = toNationIndex(settings.team2);
-                         info["type"]      = std::to_underlying(settings.type);
-                         info["levelCap"]  = settings.levelCap;
-                         info["signupFee"] = settings.signupFee;
-                         info["startTime"] = settings.matchStart;
+            info["zoneId"]    = std::to_underlying(settings.zoneId);
+            info["nation1"]   = toNationIndex(settings.team1);
+            info["nation2"]   = toNationIndex(settings.team2);
+            info["type"]      = std::to_underlying(settings.type);
+            info["levelCap"]  = settings.levelCap;
+            info["signupFee"] = settings.signupFee;
+            info["startTime"] = settings.matchStart;
 
-                         return info;
-                     });
+            return info;
+        });
     // The Marshal's board for one location, best first, over the last ten matches held there.
-    lua.set_function("GetBallistaRanking", [](const uint16 zoneId) -> sol::table
-                     {
-                         auto board = lua.create_table();
+    lua.set_function(
+        "GetBallistaRanking",
+        [](const uint16 zoneId) -> sol::table
+        {
+            auto board = lua.create_table();
 
-                         auto place = 1;
-                         for (const auto& entry : conflictutils::GetRanking(static_cast<xi::ZoneId>(zoneId)))
-                         {
-                             auto row = lua.create_table();
+            auto place = 1;
+            for (const auto& entry : conflictutils::GetRanking(static_cast<xi::ZoneId>(zoneId)))
+            {
+                auto row = lua.create_table();
 
-                             row["charid"] = entry.charid;
-                             row["points"] = entry.points;
-                             row["job"]    = std::to_underlying(entry.job);
-                             row["place"]  = place;
+                row["charid"] = entry.charid;
+                row["points"] = entry.points;
+                row["job"]    = std::to_underlying(entry.job);
+                row["place"]  = place;
 
-                             board[place] = row;
-                             ++place;
-                         }
+                board[place] = row;
+                ++place;
+            }
 
-                         return board;
-                     });
+            return board;
+        });
     lua.set_function("VanadielDayElement", &luautils::VanadielDayElement);
     lua.set_function("VanadielMoonPhase", &luautils::VanadielMoonPhase);
     lua.set_function("VanadielMoonDirection", &luautils::VanadielMoonDirection);
@@ -2558,7 +2562,7 @@ auto ConflictGetRookIds(ConflictInstance* instance) -> std::vector<uint32>
         return {};
     }
 
-    std::vector<uint32> ids;
+    auto ids = std::vector<uint32>();
     ids.reserve(rookIds->size());
 
     for (const auto& [key, value] : *rookIds)
@@ -2587,8 +2591,12 @@ auto ConflictRedeemVouchers(CCharEntity* PChar, const uint8 levelCap) -> uint32
     TracyZoneScoped;
 
     const auto result = callConflictLuaFunction("marshalRedeemVouchers", CLuaBaseEntity(PChar), levelCap);
+    if (!result)
+    {
+        return 0;
+    }
 
-    return result ? result->get<sol::optional<uint32>>().value_or(0) : 0;
+    return result->get<sol::optional<uint32>>().value_or(0);
 }
 
 void ConflictGameHint(CCharEntity* PChar)

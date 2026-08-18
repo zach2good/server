@@ -80,4 +80,22 @@ describe('Conflict (Ballista) death', function()
 
         assert(player:hasStatusEffect(xi.effect.INVISIBLE), 'the reraised player should be covered by Invisible')
     end)
+
+    -- Dying resets allegiance so the corpse does not auto-homepoint. If the reraise leaves it
+    -- there, the player is neither a valid target nor able to target anyone for the rest of the
+    -- match, while still free to quarry and score.
+    it('puts the player back on their team after a reraise', function()
+        startMatch()
+
+        assert(player:isInConflict(), 'setup: a live participant should be fighting for a nation')
+
+        player:setHP(0)
+        xi.test.world:tick(xi.tick.ZONE)
+
+        xi.test.world:skipTime(35)
+        xi.test.world:tick(xi.tick.ZONE)
+
+        assert(player:getHP() > 0, 'setup: the player should have been revived')
+        assert(player:isInConflict(), 'the reraised player should be back on their team')
+    end)
 end)

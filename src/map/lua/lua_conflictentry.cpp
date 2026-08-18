@@ -196,7 +196,7 @@ auto CLuaConflictEntry::closestRookDistance() const -> Maybe<float>
 void CLuaConflictEntry::changeTeam(const sol::optional<uint8> teamIdx)
 {
     // With no argument, swap to the other side.
-    m_PEntry->ChangeTeam(teamIdx.value_or(static_cast<uint8>(1 - m_PEntry->teamIdx)));
+    m_PEntry->ChangeTeam(teamIdx.value_or(OtherTeamIndex(m_PEntry->teamIdx)));
 }
 
 void CLuaConflictEntry::quarry()

@@ -78,7 +78,11 @@ function xi.conflict.onEventFinish(player, csid, option, npc, cancel)
         elseif option == 2 then -- use item
             -- Used where it was dug up rather than carried, so it has to be held briefly first.
             -- useItem only reaches temporary storage, so a full one leaves nothing to use.
-            if player:getFreeSlotsCount(xi.inv.TEMPITEMS) > 0 then
+            -- The one-of-each rule applies here too: if the use is interrupted the item stays,
+            -- and the player is holding two of something the mode allows one of.
+            if player:hasItem(itemId, xi.inv.TEMPITEMS) then
+                player:messageSpecial(zoneInfo.text.FIND_BUT_THROW, itemId, 2)
+            elseif player:getFreeSlotsCount(xi.inv.TEMPITEMS) > 0 then
                 player:addTempItem(itemId)
                 player:messageSpecial(zoneInfo.text.FIND_AND_USE, itemId)
                 player:useItem(itemId)
@@ -233,10 +237,6 @@ function xi.conflict.autoBalance(entries)
     end
 end
 
--- How lopsided the sides must be before a second rook appears. Retail calls the trigger a
--- "significant difference" without giving a number, so this is a guess.
-local unevenSidesForSecondRook = 3
-
 function xi.conflict.tryConfiguringMatch(conflict, options)
     if conflict:getMaxTeamSize() ~= 0 then
         return true
@@ -260,13 +260,14 @@ function xi.conflict.tryConfiguringMatch(conflict, options)
     end
 
     if rookCount == 0 then
-        rookCount = 1
-
-        -- Any difference at all would put two rooks in nearly every match, removing the single
-        -- contested rook the mode is built around.
-        if math.abs(teamSize1 - teamSize2) >= unevenSidesForSecondRook then
-            rookCount = rookCount + 1
-        end
+        -- The Herald's rulebook: "When the total number of participants in a match is less than 40,
+        -- the location of the two camps will be adjusted. Also in this case, the number of Rooks
+        -- will be reduced to two." So the count follows the turnout, not how lopsided the sides are.
+        --
+        -- TODO: "reduced to two" implies a larger number for a match of 40 or more, and nothing
+        -- local says what it is. Two is used either way until a capture settles it. The camp
+        -- adjustment the same line describes is not implemented at all.
+        rookCount = 2
     end
 
     local maxTeamSize = math.max(teamSize1, teamSize2)

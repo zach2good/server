@@ -165,11 +165,6 @@ function xi.conflict.herald.onTrigger(player, npc)
         params[2] = params[2] + 0x80
     end
 
-    -- Refund available
-    if state == xi.conflictState.CANCELLED and entry ~= nil then
-        params[2] = params[2] + 0x400
-    end
-
     -- TODO: participated in previous Ballista
     if signupState == xi.conflictSignupState.NATIONS and false then
         params[2] = params[2] + 0x1000
@@ -557,9 +552,13 @@ function xi.conflict.herald.onEventFinish(player, csid, option, npc)
             local entry = player:getConflictEntry()
             if reward ~= 0 and entry ~= nil and entry:canLeave() then
                 player:setLocalVar('[Conflict]Reward', 0)
-                local rewardTable = {
-                    keyItem = { xi.keyItem.BALLISTA_INSTAWARP, xi.keyItem.BALLISTA_INSTAPORT },
-                }
+                local rewardTable = {}
+
+                -- The parting gifts are for a match that was played. A cancelled match refunds the
+                -- fee in full, so handing them out there is two free teleports for nothing.
+                if reward ~= 4 then
+                    rewardTable.keyItem = { xi.keyItem.BALLISTA_INSTAWARP, xi.keyItem.BALLISTA_INSTAPORT }
+                end
 
                 local gilReward = entry:leave()
                 if gilReward == nil then

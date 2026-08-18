@@ -84,11 +84,12 @@ void Timeline::Tick(const timer::time_point tick)
 
         // Advance to the next occurrence strictly in the future. An event that is past due by
         // several intervals, such as a match recovered from the database, coalesces its whole
-        // backlog into this single fire instead of announcing once per missed interval.
-        do
-        {
-            timelineEvent.time += timelineEvent.repeatInterval;
-        } while (timelineEvent.time <= tick);
+        // backlog into this single fire instead of announcing once per missed interval. The skip is
+        // computed rather than stepped so a long backlog costs one division, not one iteration per
+        // missed interval.
+        const auto missed = static_cast<uint32>((tick - timelineEvent.time) / timelineEvent.repeatInterval);
+
+        timelineEvent.time += (missed + 1) * timelineEvent.repeatInterval;
 
         timelineEvent.eventId = nextEventId++;
         events.push(std::move(timelineEvent));

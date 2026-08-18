@@ -241,8 +241,9 @@ describe('Conflict (Ballista) sign-up', function()
         assert(conflict:getState() == xi.conflictState.PREPARING, 'the match should be preparing')
         assert(conflict:getMaxTeamSize() == 3, 'max team size should match the roster')
 
-        -- Even sides are contested by a single rook.
-        assert(conflict:getRookCount() == 1, 'even sides should use one rook')
+        -- The Herald's rulebook puts two rooks in any match under 40 participants, whatever the
+        -- split between the sides.
+        assert(conflict:getRookCount() == 2, 'a small match should use two rooks')
 
         conflict:setLevelRestrictionEnabled(true)
         assert(players[1]:hasStatusEffect(xi.effect.LEVEL_RESTRICTION), 'the level cap was not applied')

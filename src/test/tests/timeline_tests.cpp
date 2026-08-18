@@ -94,8 +94,8 @@ TEST_CASE("Timeline fires events in timestamp order", "[timeline]")
 {
     const auto now = timer::now();
 
-    auto             timeline = timeutils::Timeline();
-    std::vector<int> fired;
+    auto timeline = timeutils::Timeline();
+    auto fired    = std::vector<int>();
 
     // Added out of order on purpose.
     std::ignore = timeline.AddEvent(now + 30s, record(fired, 3));
@@ -114,8 +114,8 @@ TEST_CASE("Timeline breaks timestamp ties by insertion order", "[timeline]")
 {
     const auto now = timer::now();
 
-    auto             timeline = timeutils::Timeline();
-    std::vector<int> fired;
+    auto timeline = timeutils::Timeline();
+    auto fired    = std::vector<int>();
 
     std::ignore = timeline.AddEvent(now + 10s, record(fired, 1));
     std::ignore = timeline.AddEvent(now + 10s, record(fired, 2));
@@ -130,8 +130,8 @@ TEST_CASE("Timeline runs priority events ahead of regular ones at the same time"
 {
     const auto now = timer::now();
 
-    auto             timeline = timeutils::Timeline();
-    std::vector<int> fired;
+    auto timeline = timeutils::Timeline();
+    auto fired    = std::vector<int>();
 
     std::ignore = timeline.AddEvent(now + 10s, record(fired, 1));
     std::ignore = timeline.AddPriorityEvent(now + 10s, record(fired, 0));
@@ -146,8 +146,8 @@ TEST_CASE("Timeline does not fire events that are not yet due", "[timeline]")
 {
     const auto now = timer::now();
 
-    auto             timeline = timeutils::Timeline();
-    std::vector<int> fired;
+    auto timeline = timeutils::Timeline();
+    auto fired    = std::vector<int>();
 
     std::ignore = timeline.AddEvent(now + 10s, record(fired, 1));
     std::ignore = timeline.AddEvent(now + 60s, record(fired, 2));
@@ -162,8 +162,8 @@ TEST_CASE("Timeline coalesces a past-due repeating event into a single fire", "[
 {
     const auto now = timer::now();
 
-    auto             timeline = timeutils::Timeline();
-    std::vector<int> fired;
+    auto timeline = timeutils::Timeline();
+    auto fired    = std::vector<int>();
 
     std::ignore = timeline.AddEvent(now + 1s, record(fired, 1), timeutils::ForceAdd::Yes, 1s);
 
@@ -184,8 +184,8 @@ TEST_CASE("Timeline repeats a bounded event exactly the requested number of time
 {
     const auto now = timer::now();
 
-    auto             timeline = timeutils::Timeline();
-    std::vector<int> fired;
+    auto timeline = timeutils::Timeline();
+    auto fired    = std::vector<int>();
 
     std::ignore = timeline.AddEvent(now + 1s, record(fired, 1), timeutils::ForceAdd::Yes, 1s, 3);
 
@@ -205,13 +205,15 @@ TEST_CASE("Timeline repeats an unbounded event until its action stops it", "[tim
     auto timeline = timeutils::Timeline();
     auto runs     = 0;
 
-    std::ignore = timeline.AddEvent(now + 1s, [&runs]() -> bool
-                                    {
-                                        ++runs;
-                                        return runs == 4;
-                                    },
-                                    timeutils::ForceAdd::Yes,
-                                    1s);
+    std::ignore = timeline.AddEvent(
+        now + 1s,
+        [&runs]() -> bool
+        {
+            ++runs;
+            return runs == 4;
+        },
+        timeutils::ForceAdd::Yes,
+        1s);
 
     for (auto second = 1; second <= 10; ++second)
     {
@@ -226,8 +228,8 @@ TEST_CASE("Timeline drops a skippable one-shot event that is already late", "[ti
 {
     const auto now = timer::now();
 
-    auto             timeline = timeutils::Timeline();
-    std::vector<int> fired;
+    auto timeline = timeutils::Timeline();
+    auto fired    = std::vector<int>();
 
     const auto skipped = timeline.AddEvent(now - 10s, record(fired, 1), timeutils::ForceAdd::No);
     const auto forced  = timeline.AddEvent(now - 10s, record(fired, 2), timeutils::ForceAdd::Yes);
@@ -244,8 +246,8 @@ TEST_CASE("Timeline skips a late repeating event forward instead of dropping it"
 {
     const auto now = timer::now();
 
-    auto             timeline = timeutils::Timeline();
-    std::vector<int> fired;
+    auto timeline = timeutils::Timeline();
+    auto fired    = std::vector<int>();
 
     // Due 10 intervals ago, but it repeats, so it belongs on the heap at its next future occurrence.
     REQUIRE(timeline.AddEvent(now - 10s, record(fired, 1), timeutils::ForceAdd::No, 1s).has_value());
@@ -263,8 +265,8 @@ TEST_CASE("Timeline drops a late repeating event whose repeats are exhausted", "
 {
     const auto now = timer::now();
 
-    auto             timeline = timeutils::Timeline();
-    std::vector<int> fired;
+    auto timeline = timeutils::Timeline();
+    auto fired    = std::vector<int>();
 
     // Three repeats requested, but ten intervals have already passed.
     const auto eventId = timeline.AddEvent(now - 10s, record(fired, 1), timeutils::ForceAdd::No, 1s, 3);
@@ -277,8 +279,8 @@ TEST_CASE("Timeline Clean drops pending events and is idempotent", "[timeline]")
 {
     const auto now = timer::now();
 
-    auto             timeline = timeutils::Timeline();
-    std::vector<int> fired;
+    auto timeline = timeutils::Timeline();
+    auto fired    = std::vector<int>();
 
     std::ignore = timeline.AddEvent(now + 10s, record(fired, 1));
     std::ignore = timeline.AddEvent(now + 20s, record(fired, 2));
@@ -296,8 +298,8 @@ TEST_CASE("Timeline Clean drops pending events and is idempotent", "[timeline]")
 
 TEST_CASE("Timeline schedules against the offset clock, not raw steady_clock", "[timeline]")
 {
-    auto             timeline = timeutils::Timeline();
-    std::vector<int> fired;
+    auto timeline = timeutils::Timeline();
+    auto fired    = std::vector<int>();
 
     {
         // Jump an hour forward the way the Lua test harness does.
@@ -317,8 +319,8 @@ TEST_CASE("Timeline schedules against the offset clock, not raw steady_clock", "
 
 TEST_CASE("Timeline stops draining when an action empties it", "[timeline]")
 {
-    auto             timeline = timeutils::Timeline();
-    std::vector<int> fired;
+    auto timeline = timeutils::Timeline();
+    auto fired    = std::vector<int>();
 
     const auto now = timer::now();
 
@@ -357,12 +359,14 @@ TEST_CASE("Timeline does not spin on an action that schedules past-due work", "[
         [&]() -> bool
         {
             ++fired;
-            std::ignore = timeline.AddEvent(now - 1s, [&]() -> bool
-                                            {
-                                                ++fired;
-                                                return true;
-                                            },
-                                            timeutils::ForceAdd::Yes);
+            std::ignore = timeline.AddEvent(
+                now - 1s,
+                [&]() -> bool
+                {
+                    ++fired;
+                    return true;
+                },
+                timeutils::ForceAdd::Yes);
 
             return true;
         },

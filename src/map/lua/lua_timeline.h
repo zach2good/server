@@ -52,9 +52,9 @@ public:
     auto offsetSeconds(int32 offset) -> CLuaTimeline*;
     auto resetOffset() -> CLuaTimeline*;
 
-    // Returns the scheduled event id, or no value when the event was dropped as past due.
     [[nodiscard]] auto eventTime() const -> timer::time_point;
 
+    // Returns the scheduled event id, or no value when the event was dropped as past due.
     auto addEvent(sol::function eventFunc) -> Maybe<uint32>;
     auto addSkippableEvent(sol::function eventFunc) -> Maybe<uint32>;
     auto addImportantEvent(sol::function eventFunc) -> Maybe<uint32>;

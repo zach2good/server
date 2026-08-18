@@ -99,14 +99,14 @@ private:
 };
 
 // Converts a Vana'diel timestamp to the tick clock the zone server runs on.
-auto GetTimePointFromVanaTimestamp(uint32 vanaTimestamp) -> timer::time_point;
+[[nodiscard]] auto GetTimePointFromVanaTimestamp(uint32 vanaTimestamp) -> timer::time_point;
 
-auto GetCurrentVanaTimestamp() -> uint32;
+[[nodiscard]] auto GetCurrentVanaTimestamp() -> uint32;
 
 // The given time of day, offset by whole Vana'diel days from today.
-auto GetVanaTimestampAt(uint32 hour, uint32 minute = 0, int32 addedDays = 0) -> uint32;
+[[nodiscard]] auto GetVanaTimestampAt(uint32 hour, uint32 minute = 0, int32 addedDays = 0) -> uint32;
 
 // Midnight on the given date. The year is years since 886, matching vanadiel_time::get_year().
-auto GetVanaTimestampFromDate(int32 year, uint32 month, uint32 day) -> uint32;
+[[nodiscard]] auto GetVanaTimestampFromDate(int32 year, uint32 month, uint32 day) -> uint32;
 
 } // namespace timeutils

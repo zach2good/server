@@ -172,6 +172,19 @@ void ConflictEntry::Reraise()
     ++autoRaiseCounter;
 
     player->Raise();
+
+    // Dying resets allegiance so the corpse does not auto-homepoint, and nothing else puts it
+    // back. Without this the raised player is neither a valid target nor able to target anyone
+    // for the rest of the match, while still being free to quarry and score.
+    if (instance->IsCombatEnabled())
+    {
+        const auto* team = instance->GetTeam(teamIdx);
+        if (team != nullptr)
+        {
+            player->changeAllegiance(team->allegiance);
+        }
+    }
+
     player->health.hp = player->GetMaxHP();
     player->health.mp = std::max(player->health.mp, player->GetMaxMP() / 2);
     player->updatemask |= UPDATE_HP;
@@ -306,6 +319,17 @@ void ConflictEntry::ZoneOut()
 {
     if (player != nullptr)
     {
+        // The entry stays behind so the match still knows this player, but the level cap and the
+        // nation allegiance are properties of the character and would otherwise follow them out of
+        // the zone. Nothing can reach them once the entry stops pointing at a player: the level
+        // cap cannot be cancelled and only dying clears the allegiance.
+        if (instance->IsLevelRestrictionEnabled() && instance->settings.levelCap > 0)
+        {
+            player->StatusEffectContainer->DelStatusEffectSilent(xi::StatusEffect::LevelRestriction);
+        }
+
+        player->changeAllegiance(xi::Allegiance::Player);
+
         player->conflictEntry = nullptr;
         player                = nullptr;
     }
@@ -424,6 +448,15 @@ void ConflictEntry::Quarry()
         return;
     }
 
+    // Holding an entry is not enough: it is held from the moment the fee is paid until the reward
+    // is claimed. Without this the whole sign-up window and the whole post-match collection window
+    // are open for quarrying, and a bank of petras built before the first whistle carries into the
+    // match.
+    if (!IsInActiveConflict())
+    {
+        return;
+    }
+
     const auto now = timer::now();
     if (now < nextQuarry)
     {
@@ -450,6 +483,15 @@ void ConflictEntry::Quarry()
 void ConflictEntry::Sprint()
 {
     if (player == nullptr)
+    {
+        return;
+    }
+
+    // Holding an entry is not enough: it is held from the moment the fee is paid until the reward
+    // is claimed. Without this the whole sign-up window and the whole post-match collection window
+    // are open for quarrying, and a bank of petras built before the first whistle carries into the
+    // match.
+    if (!IsInActiveConflict())
     {
         return;
     }
@@ -482,6 +524,15 @@ void ConflictEntry::Sprint()
 void ConflictEntry::Scout()
 {
     if (player == nullptr)
+    {
+        return;
+    }
+
+    // Holding an entry is not enough: it is held from the moment the fee is paid until the reward
+    // is claimed. Without this the whole sign-up window and the whole post-match collection window
+    // are open for quarrying, and a bank of petras built before the first whistle carries into the
+    // match.
+    if (!IsInActiveConflict())
     {
         return;
     }

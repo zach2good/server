@@ -46,7 +46,7 @@ end
 -- a GM command starts, skips straight to play and schedules nothing.
 xi.conflict.setupConflict = function(conflict, isScheduled)
     if isScheduled then
-        return xi.conflict.setupBallistaSignupTimeline(conflict)
+        return xi.conflict.setupBallistaSignupTimeline(conflict, isScheduled)
     end
 end
 

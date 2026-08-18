@@ -125,4 +125,27 @@ describe('Conflict (Ballista) quarry', function()
         -- player with no entry rather than erroring.
         xi.conflict.quarry(player)
     end)
+
+    -- An entry is held from the moment the fee is paid, so gating on the entry alone leaves the
+    -- whole sign-up window open: a player could bank petras before the first whistle and carry
+    -- them in. This goes through entry:quarry(), the path the action packet takes.
+    it('refuses to quarry before the match is running', function()
+        local conflict = startMatch()
+        conflict:addPlayer(player, 0)
+
+        local entry = player:getConflictEntry()
+        assert(entry ~= nil, 'setup: the player should hold an entry during sign-up')
+
+        for _ = 1, 5 do
+            entry:quarry()
+            xi.test.world:skipTime(20)
+        end
+
+        assert(entry:getHeldPetras() == 0, 'quarrying during sign-up should not bank petras')
+
+        conflict:setState(xi.conflictState.ACTIVE)
+        entry:quarry()
+
+        assert(entry ~= nil, 'the entry should survive a quarry once the match is running')
+    end)
 end)

@@ -398,14 +398,21 @@ function xi.conflict.quarry(player)
                 player:startEvent(zoneInfo.events.KEEP_TEMP_ITEM, params)
             end
         elseif itemId < 0 then
+            -- Three seconds have passed, so the entry captured above may have been freed with its
+            -- match by the cleanup tick or by a GM restarting the zone's match. Ask again.
+            local currentEntry = player:getConflictEntry()
+            if currentEntry == nil then
+                return
+            end
+
             if
-                entry:getHeldPetras() == 0 and
+                currentEntry:getHeldPetras() == 0 and
                 player:hasKeyItem(xi.keyItem.BALLISTA_BAND)
             then
                 player:prepareEventForZone()
                 player:startEvent(zoneInfo.events.KEEP_FIRST_PETRA)
             else
-                player:messageSpecial(zoneInfo.text.OBTAIN_PETRA, 1, entry:addPetras(1))
+                player:messageSpecial(zoneInfo.text.OBTAIN_PETRA, 1, currentEntry:addPetras(1))
             end
         end
     end)

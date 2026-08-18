@@ -1700,13 +1700,14 @@ void CBattleEntity::changeAllegiance(const xi::Allegiance newAllegiance)
     // forget it rather than keep chasing something they can no longer hit.
     if (loc.zone != nullptr)
     {
-        loc.zone->ForEachMob([this](CMobEntity* PMob)
-                             {
-                                 if (PMob->PEnmityContainer != nullptr)
-                                 {
-                                     PMob->PEnmityContainer->Clear(id);
-                                 }
-                             });
+        loc.zone->ForEachMob(
+            [this](CMobEntity* PMob)
+            {
+                if (PMob->PEnmityContainer != nullptr)
+                {
+                    PMob->PEnmityContainer->Clear(id);
+                }
+            });
     }
 
     if (PPet != nullptr)

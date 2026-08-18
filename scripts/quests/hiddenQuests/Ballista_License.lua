@@ -122,13 +122,13 @@ local leader =
         zone = xi.zone.CHATEAU_DORAGUILLE,
         name = '_6h4', -- The Great Hall door
 
-        -- The King has one cutscene for his own citizens and one for everyone else. Event 72
-        -- carries both the Bastokan and the Windurstian dialogue and picks between them itself,
-        -- which is why there is no third event here. Nothing in Chateau d'Oraguille answers to 71.
+        -- One cutscene per nation. A capture of a Bastokan run has this door open event 71, and a
+        -- Windurstian run opens 72. The local event dump lists only 70 and 72 for this actor, so it
+        -- is incomplete here rather than 71 being unused.
         events =
         {
             [xi.nation.SANDORIA] = 70,
-            [xi.nation.BASTOK]   = 72,
+            [xi.nation.BASTOK]   = 71,
             [xi.nation.WINDURST] = 72,
         },
     },

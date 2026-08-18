@@ -24,9 +24,11 @@ xi.conflict.ranking = xi.conflict.ranking or {}
 xi.conflict.ranking.registerWindow = 4 * 60
 xi.conflict.ranking.viewWindow     = 4 * 60 * 24
 
--- A chevron lasts one Earth week, after which the Herald wants it back before the wearer enters
--- another match. Earth seconds, because that is what GetSystemTime counts.
-xi.conflict.ranking.chevronLifetime = 7 * 24 * 60 * 60
+-- A chevron lasts half a Vana'diel year, after which the Herald wants it back before the wearer
+-- enters another match. The Marshal adds 622080 to the expiry stamp, which is 180 Vana'diel days
+-- and 7.2 Earth days; the update note's "one week Earth time" is SE rounding that off. Earth
+-- seconds, because that is what GetSystemTime counts.
+xi.conflict.ranking.chevronLifetime = 622080
 
 local chevronAwardedVar = '[Conflict]ChevronAwarded'
 
@@ -62,6 +64,8 @@ xi.conflict.ranking.jobChevrons =
     [xi.job.BLU] = { keyItem = xi.keyItem.SAPPHIRE_BALLISTA_CHEVRON,    title = xi.title.SAPPHIRE_STAR },
     [xi.job.DNC] = { keyItem = xi.keyItem.SEQUINED_BALLISTA_CHEVRON,    title = xi.title.SPRIGHTLY_STAR },
     [xi.job.SCH] = { keyItem = xi.keyItem.VELVET_BALLISTA_CHEVRON,      title = xi.title.SAGACIOUS_STAR },
+    [xi.job.GEO] = { keyItem = xi.keyItem.GOSSAMER_BALLISTA_CHEVRON,    title = xi.title.SPIRITUAL_STAR },
+    [xi.job.RUN] = { keyItem = xi.keyItem.STEEL_BALLISTA_CHEVRON,       title = xi.title.STIPPLING_STAR },
 }
 
 xi.conflict.ranking.allChevrons = {}
