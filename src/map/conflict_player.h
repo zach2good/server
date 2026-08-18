@@ -125,6 +125,10 @@ public:
 
     void SetEntryType(ConflictEntryType entryType);
 
+    // Writes the type without touching this object, so the caller can put it inside a transaction
+    // and only apply it in memory once that transaction has committed. Throws if the write fails.
+    void PersistEntryType(ConflictEntryType newEntryType) const;
+
     CCharEntity*      player   = nullptr;
     uint32            charid   = 0;
     uint8             teamIdx  = 0xFF;

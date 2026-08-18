@@ -6791,11 +6791,15 @@ void AddPoints(CCharEntity* PChar, const char* type, int32 amount, int32 max)
 {
     TracyZoneScoped;
 
-    const auto currentPointsValue = GetPoints(PChar, type);
-    // 64-bit sum so amount can't overflow, and max is sanitized: callers (including Lua's
-    // addCurrency) can pass a non-positive cap, which would otherwise invert the clamp bounds.
-    const auto newPointsValue = static_cast<int32>(std::clamp<int64>(static_cast<int64>(currentPointsValue) + amount, 0, std::max(max, 0)));
-    SetPoints(PChar, type, newPointsValue);
+    // Clamped by the database rather than read here and written back, so two writers on different
+    // connections cannot lose each other's update. The Ballista award runs on a worker thread while
+    // the map thread can be spending the same column at the Herald.
+    AddPointsByCharId(PChar->id, type, amount, max);
+
+    if (strcmp(type, "spark_of_eminence") == 0)
+    {
+        PChar->pushPacket<GP_SERV_COMMAND_UNITY>(PChar);
+    }
 
     if (strcmp(type, "unity_accolades") == 0 && amount > 0)
     {

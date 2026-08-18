@@ -84,6 +84,10 @@ commandObj.onTrigger = function(player, sub, arg)
             player:printToPlayer(string.format('Ballista: added %s to team 1.', target:getName()))
         end
 
+        -- An ad-hoc match has no timeline to drive its state, so put it straight into ACTIVE.
+        -- Anything that asks the match what it is doing, the reward branches especially, reads
+        -- the state rather than the combat flag.
+        conflict:setState(xi.conflictState.ACTIVE)
         conflict:setCombatEnabled(true)
         player:printToPlayer(string.format('Ballista: %s match started in this zone, combat enabled.',
             (ttype == xi.conflictType.BEST_OF_THREE) and 'best-of-three' or 'all-or-nothing'))

@@ -53,11 +53,13 @@ xi.conflict.marshal.shop =
     { keyItem = xi.keyItem.BARTHUNDER_OINTMENT_VOUCHER,  item = xi.item.DOSE_OF_BARTHUNDER_OINTMENT,   cost = 50 },
     { keyItem = xi.keyItem.BARWATER_OINTMENT_VOUCHER,    item = xi.item.DOSE_OF_BARWATER_OINTMENT,     cost = 50 },
     { keyItem = xi.keyItem.PETRA_EATER_VOUCHER,          item = xi.item.PETRA_EATER,                   cost = 30 },
-    { keyItem = xi.keyItem.CATHOLICON_VOUCHER,           item = xi.item.BOTTLE_OF_CATHOLICON,          cost = 100 },
     { keyItem = xi.keyItem.REMEDY_VOUCHER,               item = xi.item.REMEDY,                        cost = 100 },
     { keyItem = xi.keyItem.PANACEA_VOUCHER,              item = xi.item.FLASK_OF_PANACEA,              cost = 200 },
     { keyItem = xi.keyItem.SMELLING_SALTS_VOUCHER,       item = xi.item.CHUNK_OF_SMELLING_SALTS,       cost = 75 },
     { keyItem = xi.keyItem.HEALING_POWDER_VOUCHER,       item = xi.item.FLASK_OF_HEALING_POWDER,       cost = 100 },
+
+    -- Last in the client's own table, which pages this list fifteen at a time.
+    { keyItem = xi.keyItem.CATHOLICON_VOUCHER,           item = xi.item.BOTTLE_OF_CATHOLICON,          cost = 100 },
 }
 
 xi.conflict.marshal.shopByKeyItem = {}
@@ -114,7 +116,9 @@ function xi.conflict.marshal.purchase(player, keyItem)
     end
 
     if xi.conflict.marshal.entitledByChevron[entry.item] then
-        if xi.conflict.ranking.heldChevron(player) == nil then
+        -- Holding the key item is not the same as being entitled: an expired chevron is one the
+        -- Herald already wants back before the wearer enters another match.
+        if xi.conflict.ranking.heldChevron(player) == nil or xi.conflict.ranking.hasExpiredChevron(player) then
             return false, xi.conflict.marshal.refusal.NOT_ENTITLED
         end
     end
@@ -149,10 +153,18 @@ function xi.conflict.marshal.redeemVouchers(player, levelCap)
                 break
             end
 
-            player:delKeyItem(entry.keyItem)
-            player:addTempItem(entry.item)
+            -- The voucher is worth up to 700 Ballista Points, so it is only spent once the item
+            -- it pays for is actually held. The one-of-each rule applies here as it does to a
+            -- quarried item.
+            if not player:hasItem(entry.item, xi.inv.TEMPITEMS) then
+                player:addTempItem(entry.item)
 
-            redeemed = redeemed + 1
+                if player:hasItem(entry.item, xi.inv.TEMPITEMS) then
+                    player:delKeyItem(entry.keyItem)
+
+                    redeemed = redeemed + 1
+                end
+            end
         end
     end
 

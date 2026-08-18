@@ -400,7 +400,10 @@ function xi.conflict.setupBestOfThreeTimeline(conflict)
     -- Calculate match lengths based on start and end times with added intermissions between matchs
     local pauseMinutes = 40
     local gameLength = conflict:getEndTime() - conflict:getStartTime()
-    local matchLength = (gameLength - 2 * pauseMinutes) / 3
+
+    -- Integer minutes: these become event timestamps, which are uint32, so a fractional length
+    -- truncates on the way across and the three rounds stop lining up with the match window.
+    local matchLength = math.floor((gameLength - 2 * pauseMinutes) / 3)
 
     -- Setup each of the three matches
     for currentMatch = 1, 3 do

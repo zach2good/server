@@ -227,8 +227,8 @@ auto GetBallistaSettingsFromDate(uint8 dayOfMonth, uint8 month, int32 year) -> C
             settings.restrictNormalItems = false;
             settings.tempItemSize        = 10;
             settings.type                = xi::ConflictType::AllOrNothing;
-            settings.team1               = matchup(xi::Allegiance::SanDoria, xi::Allegiance::Bastok, xi::Allegiance::SanDoria);
-            settings.team2               = matchup(xi::Allegiance::Bastok, xi::Allegiance::Windurst, xi::Allegiance::Windurst);
+            settings.team1               = matchup(xi::Allegiance::Bastok, xi::Allegiance::Bastok, xi::Allegiance::SanDoria);
+            settings.team2               = matchup(xi::Allegiance::SanDoria, xi::Allegiance::Windurst, xi::Allegiance::Windurst);
             break;
 
         case 3:
@@ -249,8 +249,8 @@ auto GetBallistaSettingsFromDate(uint8 dayOfMonth, uint8 month, int32 year) -> C
             settings.restrictNormalItems = false;
             settings.tempItemSize        = 10;
             settings.type                = xi::ConflictType::BestOfThree;
-            settings.team1               = matchup(xi::Allegiance::SanDoria, xi::Allegiance::SanDoria, xi::Allegiance::Bastok);
-            settings.team2               = matchup(xi::Allegiance::Windurst, xi::Allegiance::Bastok, xi::Allegiance::Windurst);
+            settings.team1               = matchup(xi::Allegiance::SanDoria, xi::Allegiance::Bastok, xi::Allegiance::Bastok);
+            settings.team2               = matchup(xi::Allegiance::Windurst, xi::Allegiance::SanDoria, xi::Allegiance::Windurst);
             break;
 
         default:
@@ -344,18 +344,20 @@ auto GetRanking(const xi::ZoneId zoneId) -> std::vector<RankingEntry>
 
 void Initialize()
 {
-    // Ad-hoc matches do not survive a restart; only scheduled ones are recovered.
-    if (!db::preparedStmt("DELETE FROM conflict_instances WHERE type = 0"))
-    {
-        ShowError("conflictutils: failed to clean up ad hoc Conflict matches.");
-    }
-
     if (!IsConflictProcess())
     {
         return;
     }
 
     isConflictProcess = true;
+
+    // Ad-hoc matches do not survive a restart; only scheduled ones are recovered. This has to sit
+    // behind the process gate: run from every map process it would delete the live ad-hoc matches
+    // belonging to all the others, taking their entries with them.
+    if (!db::preparedStmt("DELETE FROM conflict_instances WHERE type = 0"))
+    {
+        ShowError("conflictutils: failed to clean up ad hoc Conflict matches.");
+    }
 
     const auto date = currentVanaDate();
 

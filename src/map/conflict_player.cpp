@@ -148,6 +148,19 @@ void ConflictEntry::Tick(const timer::time_point tick)
 
     reraiseTime.reset();
 
+    // Dying resets allegiance so the corpse does not auto-homepoint, and only the match's own
+    // reraise puts it back. A teammate's Raise, or the player's own Reraise effect, returns them
+    // alive on Allegiance::Player, which makes them untargetable by both sides while still free to
+    // quarry and score. Checked here so every way back onto their feet is covered.
+    if (instance->IsCombatEnabled())
+    {
+        const auto* team = instance->GetTeam(teamIdx);
+        if (team != nullptr && player->allegiance != team->allegiance)
+        {
+            player->changeAllegiance(team->allegiance);
+        }
+    }
+
     if (instance->IsCombatEnabled() && tick >= nextHint)
     {
         luautils::ConflictGameHint(player);
@@ -216,6 +229,11 @@ void ConflictEntry::RejoinPlayer(CCharEntity* rejoining)
                              charid);
         }
     }
+
+    // Re-pointing the two at each other is not enough: the level cap, the match allegiance, the
+    // temporary inventory and the battle communication are all set up on the character, and all of
+    // them came off when they left the zone.
+    PerformJoinUpdates();
 }
 
 void ConflictEntry::ChangeTeam(const uint8 newTeamIdx)
@@ -287,6 +305,16 @@ auto ConflictEntry::Leave() -> Maybe<uint32>
         return std::nullopt;
     }
 
+    // The payout runs first because it is the only step here that can refuse, and everything after
+    // it is teardown that cannot be undone. Detaching the player on a refused payout would strand
+    // an active entry with nobody attached: it would keep inflating the winners' divisor while the
+    // player, no longer holding an entry, is never offered the reward again.
+    const auto payout = instance->RemoveEntryAndTakeGilFromHerald(this);
+    if (!payout)
+    {
+        return std::nullopt;
+    }
+
     if (player)
     {
         if (instance->IsLevelRestrictionEnabled() && instance->settings.levelCap > 0)
@@ -301,8 +329,6 @@ auto ConflictEntry::Leave() -> Maybe<uint32>
     {
         EnableCombat(false);
     }
-
-    const auto payout = instance->RemoveEntryAndTakeGilFromHerald(this);
 
     // The match keeps this entry so the player can be recognised later, but the two stop pointing
     // at each other: the entry is freed when the match is reaped, long after the player has gone.
@@ -448,11 +474,14 @@ void ConflictEntry::Quarry()
         return;
     }
 
-    // Holding an entry is not enough: it is held from the moment the fee is paid until the reward
-    // is claimed. Without this the whole sign-up window and the whole post-match collection window
-    // are open for quarrying, and a bank of petras built before the first whistle carries into the
-    // match.
-    if (!IsInActiveConflict())
+    // Combat being live is the test, not holding an entry: an entry is held from the moment the fee
+    // is paid until the reward is claimed, which leaves the sign-up window, the line-up and the
+    // post-match collection window all open for quarrying. Petras banked before the whistle carry
+    // straight into the match, and nothing clears them on the way in.
+    //
+    // Combat rather than the state, because a GM match started with !ballista never leaves Setup
+    // and enables combat directly.
+    if (instance == nullptr || !instance->IsCombatEnabled() || !HasActiveEntry())
     {
         return;
     }
@@ -487,11 +516,8 @@ void ConflictEntry::Sprint()
         return;
     }
 
-    // Holding an entry is not enough: it is held from the moment the fee is paid until the reward
-    // is claimed. Without this the whole sign-up window and the whole post-match collection window
-    // are open for quarrying, and a bank of petras built before the first whistle carries into the
-    // match.
-    if (!IsInActiveConflict())
+    // See Quarry: combat being live is the test, not holding an entry.
+    if (instance == nullptr || !instance->IsCombatEnabled() || !HasActiveEntry())
     {
         return;
     }
@@ -528,11 +554,8 @@ void ConflictEntry::Scout()
         return;
     }
 
-    // Holding an entry is not enough: it is held from the moment the fee is paid until the reward
-    // is claimed. Without this the whole sign-up window and the whole post-match collection window
-    // are open for quarrying, and a bank of petras built before the first whistle carries into the
-    // match.
-    if (!IsInActiveConflict())
+    // See Quarry: combat being live is the test, not holding an entry.
+    if (instance == nullptr || !instance->IsCombatEnabled() || !HasActiveEntry())
     {
         return;
     }
@@ -718,6 +741,22 @@ auto ConflictEntry::HasActiveEntry() const -> bool
 auto ConflictEntry::IsInActiveConflict() const -> bool
 {
     return instance->IsActive() && HasActiveEntry();
+}
+
+void ConflictEntry::PersistEntryType(const ConflictEntryType newEntryType) const
+{
+    if (!savedToDb)
+    {
+        return;
+    }
+
+    if (!db::preparedStmt("UPDATE conflict_entries SET type = ? WHERE instanceid = ? AND charid = ?",
+                          std::to_underlying(newEntryType),
+                          instance->GetId(),
+                          charid))
+    {
+        throw std::runtime_error("Conflict: the entry type could not be written");
+    }
 }
 
 void ConflictEntry::SetEntryType(const ConflictEntryType newEntryType)

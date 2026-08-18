@@ -1263,6 +1263,15 @@ void CZone::CharZoneIn(CCharEntity* PChar)
         }
     }
 
+    // The mirror of the ZoneOut in CharZoneOut. An entry outlives the character leaving the zone
+    // precisely so a player who zoned, crashed or relogged can pick the match back up; without
+    // this they can never collect, never be discharged, and go on inflating the winners' divisor.
+    if (conflict)
+    {
+        // Nothing to decide on: a player with no entry in this match simply is not rejoining.
+        std::ignore = conflict->TryRejoinPlayer(PChar);
+    }
+
     moduleutils::OnCharZoneIn(PChar);
 }
 

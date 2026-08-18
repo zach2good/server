@@ -277,20 +277,18 @@ auto ConflictInstance::SnapshotEntries() const -> std::vector<ConflictEntry*>
     return snapshot;
 }
 
-auto ConflictInstance::RemovePlayerEntry(const uint32 charId) -> bool
+void ConflictInstance::RemovePlayerEntry(const uint32 charId)
 {
     const auto entry = entries.find(charId);
     if (entry == entries.end())
     {
-        return false;
+        return;
     }
 
     std::erase(teams[entry->second->teamIdx]->entries, entry->second.get());
 
     oldEntries[charId] = std::move(entry->second);
     entries.erase(entry);
-
-    return true;
 }
 
 auto ConflictInstance::GetId() const -> uint32
@@ -766,20 +764,60 @@ auto ConflictInstance::RemoveEntryAndTakeGilFromHerald(ConflictEntry* entry) -> 
 
     gilToGive = std::min(gilToGive, gilOnHerald);
 
-    // Pay before the entry is taken away. Removing it is what makes this irreversible, so a credit
-    // the player cannot take right now, with gil at the cap or an item action in the way, has to
+    // The gil, the pot and the entry's type land together or not at all. Written one at a time, a
+    // restart between the gil credit and the type would leave the entry recoverable as still
+    // active with the pot untouched, and the same share could be claimed a second time.
+    //
+    // Pay before the entry is taken away too: a credit the player cannot take right now has to
     // leave them able to come back to the Herald rather than forfeiting the whole payout.
-    if (gilToGive > 0 && (entry->player == nullptr || !charutils::UpdateGil(entry->player, static_cast<int32>(gilToGive))))
+    const auto payOut = [&]()
+    {
+        if (gilToGive > 0 && (entry->player == nullptr || !charutils::UpdateGil(entry->player, static_cast<int32>(gilToGive))))
+        {
+            throw std::runtime_error("Conflict: the payout could not be credited");
+        }
+
+        const auto remainingGil = gilOnHerald - gilToGive;
+        if (!db::preparedStmt("UPDATE conflict_instances SET gil_on_herald = ? WHERE instanceid = ?", remainingGil, id))
+        {
+            throw std::runtime_error("Conflict: the pot could not be written");
+        }
+
+        entry->PersistEntryType(newEntryType);
+    };
+
+    const auto committed = [&]
+    {
+        // A match that was never written has nothing to recover from, so there is no torn state to
+        // protect and nothing to roll back to.
+        if (id == 0)
+        {
+            try
+            {
+                if (gilToGive > 0 && (entry->player == nullptr || !charutils::UpdateGil(entry->player, static_cast<int32>(gilToGive))))
+                {
+                    return false;
+                }
+            }
+            catch (const std::exception&)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        return db::transaction(payOut);
+    }();
+
+    if (!committed)
     {
         return std::nullopt;
     }
 
-    // Cannot fail: membership was checked above and nothing since then touches the map.
-    std::ignore = RemovePlayerEntry(entry->charid);
+    RemovePlayerEntry(entry->charid);
 
     gilOnHerald -= gilToGive;
-    PersistGilOnHerald();
-
     entry->SetEntryType(newEntryType);
 
     return gilToGive;

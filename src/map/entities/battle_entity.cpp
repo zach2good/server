@@ -1696,18 +1696,26 @@ void CBattleEntity::changeAllegiance(const xi::Allegiance newAllegiance)
     // Allegiance drives the name colour other players see, so the name has to be resent.
     updatemask |= UPDATE_HP | UPDATE_NAME;
 
-    // Joining or leaving a match makes this entity an invalid PvE target, so nearby mobs must
-    // forget it rather than keep chasing something they can no longer hit.
-    if (loc.zone != nullptr)
+    // Joining or leaving a match makes this entity an invalid PvE target, so anything holding
+    // enmity on it must forget it rather than keep chasing something it can no longer hit.
+    //
+    // Notoriety is the reverse index of enmity, so this walks the handful of mobs actually engaged
+    // instead of every mob in the zone. That matters: a reraise runs this on every death, and
+    // CEnmityContainer::Clear also resets m_tameable, which a zone-wide sweep would do to hundreds
+    // of mobs that were never in the match. Copied first because Clear removes the mob from the
+    // very list being walked.
+    if (PNotorietyContainer != nullptr)
     {
-        loc.zone->ForEachMob(
-            [this](CMobEntity* PMob)
+        const auto enmityHolders = std::vector<CBattleEntity*>(PNotorietyContainer->begin(), PNotorietyContainer->end());
+
+        for (auto* PEnmityHolder : enmityHolders)
+        {
+            // Notoriety can hold anything that took enmity, but only mobs carry a container.
+            if (auto* PMob = dynamic_cast<CMobEntity*>(PEnmityHolder); PMob != nullptr && PMob->PEnmityContainer != nullptr)
             {
-                if (PMob->PEnmityContainer != nullptr)
-                {
-                    PMob->PEnmityContainer->Clear(id);
-                }
-            });
+                PMob->PEnmityContainer->Clear(id);
+            }
+        }
     }
 
     if (PPet != nullptr)

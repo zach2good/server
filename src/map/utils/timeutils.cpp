@@ -87,7 +87,7 @@ void Timeline::Tick(const timer::time_point tick)
         // backlog into this single fire instead of announcing once per missed interval. The skip is
         // computed rather than stepped so a long backlog costs one division, not one iteration per
         // missed interval.
-        const auto missed = static_cast<uint32>((tick - timelineEvent.time) / timelineEvent.repeatInterval);
+        const auto missed = (tick - timelineEvent.time) / timelineEvent.repeatInterval;
 
         timelineEvent.time += (missed + 1) * timelineEvent.repeatInterval;
 
@@ -140,7 +140,7 @@ auto Timeline::Schedule(TimelineEvent timelineEvent, const ForceAdd forceAdd) ->
 
         // Skip a repeating event forward to its first occurrence in the future, and charge the
         // skipped occurrences against its remaining repeats.
-        auto skipped = static_cast<uint32>((now - timelineEvent.time) / timelineEvent.repeatInterval);
+        auto skipped = (now - timelineEvent.time) / timelineEvent.repeatInterval;
         timelineEvent.time += skipped * timelineEvent.repeatInterval;
 
         // Strictly in the future: landing exactly on now would fire on the very next tick, which
@@ -153,12 +153,14 @@ auto Timeline::Schedule(TimelineEvent timelineEvent, const ForceAdd forceAdd) ->
 
         if (timelineEvent.repeatsLeft)
         {
+            // Compared in the wide type first: narrowing before this test lets a backlog larger
+            // than a uint32 wrap to a small number and keep an event that should have expired.
             if (*timelineEvent.repeatsLeft <= skipped)
             {
                 return std::nullopt;
             }
 
-            *timelineEvent.repeatsLeft -= skipped;
+            *timelineEvent.repeatsLeft -= static_cast<uint32>(skipped);
         }
     }
 

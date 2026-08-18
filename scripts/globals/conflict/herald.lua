@@ -177,7 +177,7 @@ function xi.conflict.herald.onTrigger(player, npc)
         end
 
         if entry:isTempEntry() then
-            params[2] = params[2] + 0x1000000 -- Has a temporary application
+            params[2] = params[2] + 0x100000 -- Has a temporary application
         end
     end
 
@@ -537,7 +537,7 @@ function xi.conflict.herald.onEventFinish(player, csid, option, npc)
                 player:messageSpecial(zoneInfo.text.DISCHARGE_DENIED, entry:getTeamNation())
             end
 
-        elseif option == 5 or option == 6 or option == 7 or option == 8 then -- Win, lose, draw, or cancellation refund
+        elseif option == 5 or option == 6 or option == 7 or option == 8 then -- Win, cancellation refund, draw, or loss
             local conflict = player:getConflict()
             if conflict == nil then
                 return
@@ -575,8 +575,10 @@ function xi.conflict.herald.onEventFinish(player, csid, option, npc)
                     player:messageSpecial(zoneInfo.text.CANCELLATION_REFUND, gilReward)
                 end
 
-                -- If not refunding, reward experience points based on player level
-                if reward ~= 4 then
+                -- If not refunding, reward experience points based on player level. The Herald's
+                -- rulebook gates this: "Any adventurer whose main level is over 30 will receive
+                -- EXP for participating in a Ballista match."
+                if reward ~= 4 and player:getMainLvl() > 30 then
                     local level = player:getMainLvl()
                     local expReward = nil
                     if level < 40 then

@@ -151,7 +151,7 @@ public:
     ConflictEntry* highScorer = nullptr;
 
 private:
-    [[nodiscard]] auto RemovePlayerEntry(uint32 charId) -> bool;
+    void RemovePlayerEntry(uint32 charId);
 
     // Entries as they stand right now. Anything that calls into Lua while walking them needs this:
     // a script can seat or discharge a player, and either rehashes the map out from under a
