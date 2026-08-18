@@ -16,9 +16,8 @@ the below has been seen in a live client. Grouped by what it would take to settl
 - **Reraise offers a choice on retail.** Strings 7627/7628 describe reviving in place (full HP,
   half MP, half TP kept) or returning to camp (full HP and MP, all TP lost). Only the camp version
   is implemented, and the 5 minute Weakness has no source.
-- **The scout packet's axis order.** The capture sends X, Y, Z. `0x0e6_ballista.cpp` writes X, Z, Y
-  with a comment saying the swap was needed to make the compass point correctly, which reads like a
-  live observation. Both cannot be right.
+- ~~**The scout packet's axis order.**~~ Settled from the capture: retail sends X, Y, Z, and the
+  middle float in every captured scout is the rook's height. The swap is gone.
 - **`Scoreboard[1]`.** Every scoreboard packet in the capture carries a constant `8`.
   `GetNationBits()` cannot produce 8 for any matchup. The nation-bit reading is a guess from the
   client binary and the one capture we have disagrees with it.
@@ -27,8 +26,9 @@ the below has been seen in a live client. Grouped by what it would take to settl
   appear to care, but that is untested.
 - **`ToMatchSet` doubling.** Every capture packet has the match data zeroed, so the halving the
   client is said to do is unverified.
-- **The scout distance transform** `(d - 0.5) / 0.91399997`. The sent values are known, the
-  displayed ones are not.
+- ~~**The scout distance transform**~~ Settled from the capture: the wire value is the plain 3D
+  distance, unscaled. Two captured scouts match the player-to-rook distance computed from the
+  outgoing 0x015 positions at those timestamps to four decimal places.
 
 ## Needs a capture of a live match
 
@@ -66,11 +66,16 @@ the below has been seen in a live client. Grouped by what it would take to settl
 
 ## Unverified branches of the licence quest
 
-The Bastokan and Windurstian paths are confirmed end to end from two captures. Not covered:
-Excenmille taking a San d'Orian's letter (27), the Bastokan and Windurstian leaders receiving a
-San d'Orian (828, 427), the San d'Orian leader receiving their own citizen (70), and which of
-`signUp`/`signUpAgain` is the first-visit variant for Bastok and Windurst. A single San d'Orian
-run closes all of them. The "rank 3 required" gate has no source anywhere local.
+The Bastokan and Windurstian paths are confirmed end to end from two captures. Three of the four
+remaining branches are now settled from the event dumps without a San d'Orian run: the Bastokan and
+Windurstian leaders receiving a San d'Orian (828 and 427 both set their nation word explicitly) and
+the San d'Orian leader receiving their own citizen (70). Still not covered: Excenmille taking a
+San d'Orian's letter (27), and which of `signUp`/`signUpAgain` is the first-visit variant for Bastok
+and Windurst.
+
+The "rank 3 required" gate does have a source: Ru'Lude Gardens Pursuivant event 69 branches on the
+rank the server sends and otherwise prints "Only adventurers who have achieved rank 3 or higher may
+take part in official Ballista matches."
 
 ## Known gaps, no retail question attached
 

@@ -66,12 +66,6 @@ public:
     }
 };
 
-// What the client does with RookDistance before it puts a number on screen.
-constexpr auto clientDistance(const float sent) -> float
-{
-    return sent * 0.91399997f + 0.5f;
-}
-
 constexpr auto kRookPositionOffset = 0x10;
 constexpr auto kRookDistanceOffset = 0x20;
 
@@ -83,23 +77,28 @@ TEST_CASE("Ballista scout response", "[packets][conflict]")
     // close enough.
     const auto rook = TestRook(0x1234567, 100.0f, -8.0f, -250.0f);
 
-    SECTION("carries the position as X, Z, Y")
+    // The captured scouts put the rook's height in the middle float, so the order is the ordinary
+    // one. The height here is well away from both horizontal coordinates, so a swapped axis cannot
+    // pass by landing close enough.
+    SECTION("carries the position as X, Y, Z")
     {
         const auto packet = GP_SERV_COMMAND_BALLISTA::SCOUT(&rook, 30.0f);
 
         CHECK(packet.ref<float>(kRookPositionOffset + 0) == Catch::Approx(100.0f));
-        CHECK(packet.ref<float>(kRookPositionOffset + 4) == Catch::Approx(-250.0f));
-        CHECK(packet.ref<float>(kRookPositionOffset + 8) == Catch::Approx(-8.0f));
+        CHECK(packet.ref<float>(kRookPositionOffset + 4) == Catch::Approx(-8.0f));
+        CHECK(packet.ref<float>(kRookPositionOffset + 8) == Catch::Approx(-250.0f));
     }
 
-    SECTION("pre-compensates the distance the client will rescale")
+    // Two captured scouts carry 76.5148 and 75.2739, which are the plain distances between the
+    // player positions in the outgoing 0x015 packets at those timestamps and the rook's position.
+    // Nothing is applied on the way out.
+    SECTION("sends the distance unscaled")
     {
-        for (const auto realDistance : { 1.0f, 5.5f, 30.0f, 120.0f })
+        for (const auto realDistance : { 1.0f, 5.5f, 30.0f, 76.5148f, 120.0f })
         {
             const auto packet = GP_SERV_COMMAND_BALLISTA::SCOUT(&rook, realDistance);
-            const auto sent   = packet.ref<float>(kRookDistanceOffset);
 
-            CHECK(clientDistance(sent) == Catch::Approx(realDistance));
+            CHECK(packet.ref<float>(kRookDistanceOffset) == Catch::Approx(realDistance));
         }
     }
 
