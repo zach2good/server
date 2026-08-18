@@ -91,7 +91,12 @@ public:
 
     void RejoinPlayer(CCharEntity* player);
     void ChangeTeam(uint8 newTeamIdx);
-    void PerformJoinUpdates();
+    // Restoring is for a player who has just finished a match, not for one who merely walked back
+    // into the zone: EnableCombat(false) raises the dead and refills HP and MP, which would be a
+    // free heal on every zone line for anyone holding an entry.
+    using Restore = xi::Flag<struct RestoreTag>;
+
+    void PerformJoinUpdates(Restore restore);
     void ZoneOut();
 
     // Returns the gil the Herald hands back, if the entry is owed a refund.
@@ -105,7 +110,7 @@ public:
     void Sprint();
     void Scout();
 
-    void EnableCombat(bool enable);
+    void EnableCombat(bool enable, Restore restore);
     void Reraise();
     void UpdateMusic();
     void EnsureNonAnon();

@@ -86,3 +86,21 @@ run closes all of them. The "rank 3 required" gate has no source anywhere local.
 - `conflict_rankings.collected` is declared and never read or written.
 - The three new tables have no migration under `tools/migrations/`, so an existing server gets them
   only through a full `player_data` import.
+
+## Switched off on purpose
+
+Three paths are deliberately inert rather than half-fixed. Each has a comment at the site and a
+test asserting the disabled behaviour, so re-enabling one trips a test that says what to restore.
+
+- **Herald sign-up options 14 and 15**, "only in the <nation>'s forces". The named path never
+  checks the side asked for is the player's own nation, which the nation path does, so it seats a
+  player on the other nation's side during nation sign-up. Retail offers the menu entry; we refuse
+  it until the check is written.
+- **The quarry exchange branch.** Unlike keep and use it never checks the player is not already
+  carrying the item, and it does not require that the exchange was offered, so it walks past the
+  one-of-each rule on the strong consumables. The find is thrown away instead.
+- **Ranking registration.** `conflict_rankings` is keyed on `(instanceid, charid)`, and
+  `instanceid` is an AUTO_INCREMENT that restarts from `MAX(id) + 1` once the startup cleanup has
+  deleted finished matches, so a registration can silently REPLACE an unrelated older row. The key
+  wants to be `(zoneid, matchstart, charid)`, which is what the board reads on. Nothing in game
+  reaches this yet anyway, because there is no Marshal NPC.

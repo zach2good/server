@@ -239,7 +239,7 @@ auto ConflictInstance::AddPlayer(CCharEntity* player, const Maybe<uint8> request
 
     if (state >= xi::ConflictState::Preparing)
     {
-        entryView->PerformJoinUpdates();
+        entryView->PerformJoinUpdates(ConflictEntry::Restore::No);
 
         // Joining a live match grants a grace period before the player can be attacked.
         if (state == xi::ConflictState::Active)
@@ -482,7 +482,7 @@ void ConflictInstance::SetCombatEnabled(const bool enable)
 
     for (const auto& [charid, entry] : entries)
     {
-        entry->EnableCombat(enable);
+        entry->EnableCombat(enable, ConflictEntry::Restore::Yes);
     }
 }
 
@@ -770,49 +770,48 @@ auto ConflictInstance::RemoveEntryAndTakeGilFromHerald(ConflictEntry* entry) -> 
     //
     // Pay before the entry is taken away too: a credit the player cannot take right now has to
     // leave them able to come back to the Herald rather than forfeiting the whole payout.
-    const auto payOut = [&]()
+    // Nobody to pay is a refusal, not a payout of nothing.
+    if (gilToGive > 0 && entry->player == nullptr)
     {
-        if (gilToGive > 0 && (entry->player == nullptr || !charutils::UpdateGil(entry->player, static_cast<int32>(gilToGive))))
-        {
-            throw std::runtime_error("Conflict: the payout could not be credited");
-        }
+        return std::nullopt;
+    }
 
-        const auto remainingGil = gilOnHerald - gilToGive;
-        if (!db::preparedStmt("UPDATE conflict_instances SET gil_on_herald = ? WHERE instanceid = ?", remainingGil, id))
-        {
-            throw std::runtime_error("Conflict: the pot could not be written");
-        }
-
-        entry->PersistEntryType(newEntryType);
-    };
-
-    const auto committed = [&]
+    // The claim is spent before the gil is handed over, and the two writes that say so land
+    // together. charutils::UpdateGil cannot take part: it sets the quantity in memory and tells the
+    // client as well as writing the row, and a rollback reaches none of that, so a credit inside
+    // the transaction would survive in memory after the database took it back and the entry could
+    // then be claimed again.
+    //
+    // Paying afterwards means a crash in between costs the player their payout rather than paying
+    // it twice. A match that was never written has no recovery to tear, so it skips this.
+    const auto claimSpent = [&]
     {
-        // A match that was never written has nothing to recover from, so there is no torn state to
-        // protect and nothing to roll back to.
         if (id == 0)
         {
-            try
-            {
-                if (gilToGive > 0 && (entry->player == nullptr || !charutils::UpdateGil(entry->player, static_cast<int32>(gilToGive))))
-                {
-                    return false;
-                }
-            }
-            catch (const std::exception&)
-            {
-                return false;
-            }
-
             return true;
         }
 
-        return db::transaction(payOut);
+        return db::transaction(
+            [&]()
+            {
+                const auto remainingGil = gilOnHerald - gilToGive;
+                if (!db::preparedStmt("UPDATE conflict_instances SET gil_on_herald = ? WHERE instanceid = ?", remainingGil, id))
+                {
+                    throw std::runtime_error("Conflict: the pot could not be written");
+                }
+
+                entry->PersistEntryType(newEntryType);
+            });
     }();
 
-    if (!committed)
+    if (!claimSpent)
     {
         return std::nullopt;
+    }
+
+    if (gilToGive > 0 && !charutils::UpdateGil(entry->player, static_cast<int32>(gilToGive)))
+    {
+        ShowErrorFmt("ConflictInstance: match {} spent charid {}'s claim but could not credit {} gil.", id, entry->charid, gilToGive);
     }
 
     RemovePlayerEntry(entry->charid);

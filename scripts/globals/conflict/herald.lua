@@ -458,12 +458,17 @@ function xi.conflict.herald.onEventUpdate(player, csid, option)
             end
 
             -- 14 and 15 are "only in the <nation>'s forces", naming the first and second team.
-            local requestedTeamIdx = nil
-            if option == 14 then
-                requestedTeamIdx = 0
-            elseif option == 15 then
-                requestedTeamIdx = 1
+            --
+            -- Left inert on purpose. The named path never checks that the side asked for is the
+            -- player's own nation, which the nation path does, so it is a way to be seated on the
+            -- other nation's side during nation sign-up. Refusing the option costs a menu entry
+            -- that retail offers; seating the player on the wrong side is worse. See
+            -- retail_todo.md.
+            if option == 14 or option == 15 then
+                return
             end
+
+            local requestedTeamIdx = nil
 
             -- Sign-up
             local params = handleSignupRequest(player, conflict, option == 1, requestedTeamIdx)

@@ -24,6 +24,7 @@
 #include "common/logging.h"
 #include "common/mmo.h"
 #include "common/settings.h"
+#include "data/enums/allegiance.h"
 #include "data/enums/job.h"
 
 #include <algorithm>
@@ -204,14 +205,20 @@ namespace
 // Conflict (Ballista) colours a participant by the side they are fighting for rather than their
 // nation, and marks them separately while a match is still forming. The value packed is the
 // allegiance counted from San d'Oria, which the client reads as the team colour.
+//
+// These bits sit inside the range a search request can filter on, so this has to be applied to a
+// result that has already been through the filter. Applied earlier it makes every participant
+// match any search whose flags happen to touch bits 16 to 18.
 void applyConflictOverlay(SearchEntity& player)
 {
-    if (player.allegiance == 0)
+    // Allegiance starts at San d'Oria, so subtracting it gives the 0, 1, 2 the client wants. Zero
+    // is the absent row from the outer join, not a nation.
+    if (player.allegiance < static_cast<uint8>(xi::Allegiance::SanDoria))
     {
         return;
     }
 
-    player.flags2 |= (player.allegiance - 1) << 17;
+    player.flags2 |= (player.allegiance - static_cast<uint8>(xi::Allegiance::SanDoria)) << 17;
 
     // Still preparing rather than fighting.
     if (!player.combatEnabled)
@@ -388,7 +395,6 @@ auto CDataLoader::GetPlayersList(SearchRequest sr, int* count) const -> std::vec
             player.combatEnabled = rset->getOrDefault<bool>("combat_enabled", false);
 
             player.flags2 = player.flags1;
-            applyConflictOverlay(player);
 
             if (player.mjob == static_cast<uint8>(xi::Job::MON) || player.sjob == static_cast<uint8>(xi::Job::MON))
             {
@@ -532,6 +538,9 @@ auto CDataLoader::GetPlayersList(SearchRequest sr, int* count) const -> std::vec
 
             if (visibleResults < 40)
             {
+                // Past every filter, so the team colour cannot widen what a search matches.
+                applyConflictOverlay(player);
+
                 PlayersList.emplace_back(std::move(player));
                 visibleResults++;
             }

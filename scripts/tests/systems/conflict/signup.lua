@@ -100,23 +100,20 @@ describe('Conflict (Ballista) sign-up', function()
     -- Menu 7312 offers "Only in the <nation>'s forces" twice, naming the two teams in order. The
     -- client returns 14 for the first and 15 for the second, per the Jugner event 22 and Pashhow
     -- event 18 bytecode.
-    it('honours a request for a named nation', function()
+    -- Options 14 and 15 are switched off: the named path never checks the side asked for is the
+    -- player's own nation, so it seats them on the other nation's side during nation sign-up. When
+    -- the check is written this test should go back to asserting the seating, which the git history
+    -- has. See retail_todo.md.
+    it('refuses a request for a named nation while that path is disabled', function()
         local conflict = startMatch()
         local heraldEvent = xi.conflict.getZoneInfoForEntity(players[1]).events.HERALD
 
         xi.conflict.herald.onEventUpdate(players[2], heraldEvent, 15)
 
-        local entry = players[2]:getConflictEntry()
-        assert(entry ~= nil, 'asking for the second nation by name did not seat the player')
-        assert(entry:getTeamIndex() == 1, 'the player was seated on the wrong team')
-
-        -- Left to itself the Herald would put the next entry on the thinner side, which is team 0.
-        -- Naming team 1 has to override that, not defer to it.
-        xi.conflict.herald.onEventUpdate(players[3], heraldEvent, 15)
+        assert(players[2]:getConflictEntry() == nil, 'a named request should not seat anyone')
 
         local counts1, counts2 = conflict:getTeamCounts()
-        assert(counts1 == 0, 'a named request was balanced onto the other team')
-        assert(counts2 == 2, 'the second named request did not land on the requested team')
+        assert(counts1 == 0 and counts2 == 0, 'a named request should not fill either side')
     end)
 
     -- The trigger only decides what the Herald says; the client picks which option it sends back.
@@ -280,5 +277,28 @@ describe('Conflict (Ballista) sign-up', function()
         assert(count1 == 1, 'the player should still be counted once')
         assert(count2 == 0, 'a rejoin must not seat the player on the other side')
         assert(players[1]:getConflictEntry():getTeamIndex() == 0, 'the original team should be kept')
+    end)
+
+    -- Reattaching on zone-in must not restore anything. The teardown path that runs when a match
+    -- lets a player go raises the dead and refills HP and MP, and reusing it here would make every
+    -- zone line in a Ballista zone a free cure for anyone holding an entry.
+    it('does not heal a player who zones back into their match', function()
+        local conflict = startMatch({ levelCap = 60 })
+        conflict:addPlayer(players[1], 0)
+
+        assert(players[1]:getConflictEntry() ~= nil, 'setup: the player should hold an entry')
+        assert(not conflict:isCombatEnabled(), 'setup: combat should be off during sign-up')
+
+        players[1]:setHP(math.floor(players[1]:getMaxHP() / 4))
+        local wounded = players[1]:getHP()
+
+        players[1]:gotoZone(xi.zone.BATALLIA_DOWNS)
+        players[1]:gotoZone(xi.zone.JUGNER_FOREST)
+        xi.test.world:tick(xi.tick.ZONE)
+
+        -- Equality, not "no higher": a full heal followed by the level cap clamping HP back down
+        -- could otherwise land under the wounded value and pass.
+        assert(players[1]:getHP() == wounded,
+            'zoning back in should not change HP: ' .. players[1]:getHP() .. ' vs ' .. wounded)
     end)
 end)

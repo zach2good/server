@@ -144,6 +144,17 @@ xi.conflict.ranking.refusal =
 
 -- Returns true on success, or false and a refusal reason.
 function xi.conflict.ranking.register(player, conflict)
+    -- Left inert on purpose. conflict_rankings is keyed on (instanceid, charid), and instanceid is
+    -- an AUTO_INCREMENT that restarts from MAX(id) + 1 once the startup cleanup has deleted
+    -- finished matches. When ids come round again a registration silently REPLACEs an unrelated
+    -- older row and the board mixes two matches together. The key wants to be
+    -- (zoneid, matchstart, charid), which is what the board actually reads on. Nothing in game
+    -- reaches this yet, because there is no Marshal NPC, so refusing costs nothing today.
+    -- See retail_todo.md.
+    if true then
+        return false, xi.conflict.ranking.refusal.WINDOW_CLOSED
+    end
+
     if not xi.conflict.ranking.registrationIsOpen(conflict) then
         return false, xi.conflict.ranking.refusal.WINDOW_CLOSED
     end

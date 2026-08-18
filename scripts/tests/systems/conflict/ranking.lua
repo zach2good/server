@@ -95,7 +95,11 @@ describe('Conflict (Ballista) ranking', function()
 
     -- End to end: a finished match is registered, the board reads it back, and the placing
     -- decides the chevron.
-    it('registers a match and reads it back off the board', function()
+    -- Registration is switched off: conflict_rankings is keyed on an instanceid the database
+    -- recycles, so a registration can overwrite an unrelated older row. When the key is changed to
+    -- (zoneid, matchstart, charid) these should go back to asserting a real registration and the
+    -- board read, both of which the git history has. See retail_todo.md.
+    it('refuses to register while that path is disabled', function()
         local conflict = matchEndedMinutesAgo(60)
 
         conflict:addPlayer(player, 0)
@@ -107,25 +111,10 @@ describe('Conflict (Ballista) ranking', function()
         assert(entry:getPoints() > 0, 'setup: the player should have earned points')
 
         local registered = xi.conflict.ranking.register(player, conflict)
-        assert(registered, 'the registration was refused')
+        assert(not registered, 'registration should be refused while it is disabled')
 
-        local assessment = xi.conflict.ranking.assess(player, xi.zone.JUGNER_FOREST)
-
-        assert(assessment ~= nil, 'the board did not carry the registered match')
-        assert(assessment.place == 1, 'the only registrant should be first')
-        assert(assessment.overall.keyItem == xi.keyItem.GOLD_BALLISTA_CHEVRON, 'first takes gold')
-        assert(assessment.jobChevron.keyItem == xi.keyItem.BLOODY_BALLISTA_CHEVRON, 'and the Warrior chevron')
-    end)
-
-    it('refuses a match with no points earned', function()
-        local conflict = matchEndedMinutesAgo(60)
-
-        conflict:addPlayer(player, 0)
-
-        local ok, reason = xi.conflict.ranking.register(player, conflict)
-
-        assert(not ok, 'a match with no points should not register')
-        assert(reason == xi.conflict.ranking.refusal.NO_POINTS, 'the wrong refusal was given')
+        assert(xi.conflict.ranking.assess(player, xi.zone.JUGNER_FOREST) == nil,
+            'nothing should reach the board while registration is disabled')
     end)
 
     it('takes back the chevron a player already holds', function()

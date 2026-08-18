@@ -5321,6 +5321,14 @@ void SetLevelRestriction(CCharEntity* PChar, uint8 lvl)
                                                   lvl,
                                                   0s,
                                                   0s);
+
+    // Only Conflict sets this. A zero duration means the periodic sweep writes it to char_effects,
+    // where a crash would strand it: the player comes back permanently capped on an effect flagged
+    // no_cancel. Dropping it at logout is safe because the match reapplies it on the way back in.
+    if (auto* PEffect = PChar->StatusEffectContainer->GetStatusEffect(xi::StatusEffect::LevelRestriction))
+    {
+        PEffect->SetEffectFlags(PEffect->GetEffectFlags() | xi::StatusEffectFlag::Logout);
+    }
 }
 
 void SaveCharPosition(CCharEntity* PChar)

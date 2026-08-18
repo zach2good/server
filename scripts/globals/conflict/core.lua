@@ -90,13 +90,12 @@ function xi.conflict.onEventFinish(player, csid, option, npc, cancel)
                 player:messageSpecial(zoneInfo.text.FIND_BUT_THROW, itemId, 1)
             end
         elseif option >= 1000 and option < (0xFFFF + 1000) then -- exchange
-            local removedItemId = xi.conflict.tempItemByIndex[option - 1000]
-            if removedItemId and player:delItem(removedItemId, 1, xi.inv.TEMPITEMS) then
-                player:addTempItem(itemId)
-                player:messageSpecial(zoneInfo.text.REPLACE_ITEM, removedItemId, itemId)
-            else
-                player:messageSpecial(zoneInfo.text.FIND_BUT_THROW, itemId, 1)
-            end
+            -- Left inert on purpose. Unlike the keep and use branches this never checks the player
+            -- is not already carrying the quarried item, and it does not require that the exchange
+            -- was actually offered, so it is a way past the one-of-each rule on the strong
+            -- consumables. Throwing the find away is the safe half of what the option does; the
+            -- swap itself is off until the check is written. See retail_todo.md.
+            player:messageSpecial(zoneInfo.text.FIND_BUT_THROW, itemId, 1)
         else -- throw away
             player:messageSpecial(zoneInfo.text.THROW_AWAY_ITEM, itemId)
         end

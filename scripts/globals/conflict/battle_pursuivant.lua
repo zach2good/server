@@ -32,6 +32,17 @@ function xi.conflict.pursuivant.battle.onEventFinish(player, csid, option, npc)
         return
     end
 
+    -- The client picks which option it sends, so the gate the city Pursuivant applies to the same
+    -- key item has to hold here too. This one only stands in the field during a match, so being in
+    -- the match is part of it.
+    if
+        player:getConflictEntry() == nil or
+        player:getRank(player:getNation()) < 3 or
+        not player:hasKeyItem(xi.keyItem.BALLISTA_LICENSE)
+    then
+        return
+    end
+
     if option == 1 then
         npcUtil.giveKeyItem(player, xi.keyItem.BALLISTA_EARRING)
     elseif option == 2 then

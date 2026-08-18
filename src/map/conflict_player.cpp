@@ -232,8 +232,9 @@ void ConflictEntry::RejoinPlayer(CCharEntity* rejoining)
 
     // Re-pointing the two at each other is not enough: the level cap, the match allegiance, the
     // temporary inventory and the battle communication are all set up on the character, and all of
-    // them came off when they left the zone.
-    PerformJoinUpdates();
+    // them came off when they left the zone. Nothing is restored, though: a player walking back
+    // over a zone line is not finishing a match.
+    PerformJoinUpdates(Restore::No);
 }
 
 void ConflictEntry::ChangeTeam(const uint8 newTeamIdx)
@@ -262,7 +263,7 @@ void ConflictEntry::ChangeTeam(const uint8 newTeamIdx)
     }
 }
 
-void ConflictEntry::PerformJoinUpdates()
+void ConflictEntry::PerformJoinUpdates(const Restore restore)
 {
     if (player == nullptr)
     {
@@ -270,7 +271,7 @@ void ConflictEntry::PerformJoinUpdates()
     }
 
     EnsureNonAnon();
-    EnableCombat(instance->IsCombatEnabled());
+    EnableCombat(instance->IsCombatEnabled(), restore);
 
     if (instance->IsLevelRestrictionEnabled() && instance->settings.levelCap > 0)
     {
@@ -327,7 +328,7 @@ auto ConflictEntry::Leave() -> Maybe<uint32>
 
     if (instance->IsCombatEnabled())
     {
-        EnableCombat(false);
+        EnableCombat(false, Restore::Yes);
     }
 
     // The match keeps this entry so the player can be recognised later, but the two stop pointing
@@ -343,6 +344,10 @@ auto ConflictEntry::Leave() -> Maybe<uint32>
 
 void ConflictEntry::ZoneOut()
 {
+    // Otherwise the delay a player has already earned is served while they are away, and dropping
+    // the connection after a run of deaths is cheaper than waiting it out.
+    reraiseTime.reset();
+
     if (player != nullptr)
     {
         // The entry stays behind so the match still knows this player, but the level cap and the
@@ -584,7 +589,7 @@ void ConflictEntry::Scout()
     player->pushPacket<GP_SERV_COMMAND_BALLISTA::SCOUT>(rook, distance(player->loc.p, rook->loc.p));
 }
 
-void ConflictEntry::EnableCombat(const bool enable)
+void ConflictEntry::EnableCombat(const bool enable, const Restore restore)
 {
     if (player == nullptr)
     {
@@ -623,14 +628,20 @@ void ConflictEntry::EnableCombat(const bool enable)
     }
     else
     {
-        if (player->isDead())
+        // Only when the match is actually letting them go. Reattaching a player who walked back
+        // into the zone must not raise them or refill anything, or every zone line in a Ballista
+        // zone is a free cure for anyone holding an entry, and a free raise for a corpse.
+        if (restore)
         {
-            player->Raise();
-        }
+            if (player->isDead())
+            {
+                player->Raise();
+            }
 
-        player->UpdateHealth();
-        player->health.hp = player->GetMaxHP();
-        player->health.mp = player->GetMaxMP();
+            player->UpdateHealth();
+            player->health.hp = player->GetMaxHP();
+            player->health.mp = player->GetMaxMP();
+        }
 
         // Nearby clients pick the allegiance change up from the updatemask changeAllegiance set;
         // the owning client needs to be told directly.

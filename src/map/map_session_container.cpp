@@ -21,6 +21,7 @@
 
 #include "map_session_container.h"
 
+#include "conflict_player.h"
 #include "map_session.h"
 #include "persist_batch.h"
 #include "status_effect_container.h"
@@ -249,6 +250,16 @@ void MapSessionContainer::cleanupSessions(IPP mapIPP)
                     // Player session is attached to this map process and has stopped responding.
                     if (!otherMap)
                     {
+                        // A Conflict match puts a level cap and a nation allegiance on the
+                        // character, and this flush would save both. removeCharFromZone does tear
+                        // the match down before its own flush, but only when the zone pointer is
+                        // still set, which the log line above says is not guaranteed here, and
+                        // this flush happens first either way.
+                        if (PChar->conflictEntry != nullptr)
+                        {
+                            PChar->conflictEntry->ZoneOut();
+                        }
+
                         persist::flush(PChar, IsLogout::Yes);
 
                         db::preparedStmt("DELETE FROM accounts_sessions WHERE charid = ?", map_session_data->charID);
