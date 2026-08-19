@@ -11,9 +11,11 @@
 --   petra [n]        - grant yourself n petras (default 1).
 --   score            - score the petras you are holding at your team's tally.
 --   round [teamIdx]  - award a round win to a team (default your team).
---   fastquarry [0|1] - toggle the quarry cooldown bypass (default 1/on).
+--   fastquarry [0|1] - toggle the quarry cooldown bypass (default 1/on). Applies to your
+--                      target, like the other entry-scoped subcommands, and stays set on that
+--                      character until it is switched off again.
 --   info             - print the next scheduled match + the current match state.
---   end              - force the current match into the finished state.
+--   end              - end the current match and open the reward collection window.
 -----------------------------------
 ---@type TCommand
 local commandObj = {}
@@ -41,6 +43,17 @@ local function actor(player)
     end
 
     return player
+end
+
+-- The bindings below take uint8 and int32, so a bare tonumber lets a typo or a huge value reach a
+-- sol conversion that does not define what happens to it.
+local function boundedNumber(arg, default, lowest, highest)
+    local value = tonumber(arg)
+    if value == nil then
+        return default
+    end
+
+    return math.max(lowest, math.min(highest, math.floor(value)))
 end
 
 commandObj.onTrigger = function(player, sub, arg)
@@ -103,7 +116,7 @@ commandObj.onTrigger = function(player, sub, arg)
     end
 
     if sub == 'join' then
-        local teamIdx = tonumber(arg) or 0
+        local teamIdx = boundedNumber(arg, 0, 0, 1)
         local who     = actor(player)
         conflict:addPlayer(who, teamIdx)
         player:printToPlayer(string.format('Ballista: %s joined team %d.', who:getName(), teamIdx))
@@ -120,7 +133,7 @@ commandObj.onTrigger = function(player, sub, arg)
             return
         end
 
-        local n = tonumber(arg) or 1
+        local n = boundedNumber(arg, 1, 1, 100)
         entry:addPetras(n)
         player:printToPlayer(string.format('Ballista: granted %d petra(s); now holding %d.', n, entry:getHeldPetras()))
 
@@ -137,15 +150,18 @@ commandObj.onTrigger = function(player, sub, arg)
 
     elseif sub == 'round' then
         local entry   = actor(player):getConflictEntry()
-        local teamIdx = tonumber(arg) or (entry and entry:getTeamIndex()) or 0
+        local teamIdx = boundedNumber(arg, (entry and entry:getTeamIndex()) or 0, 0, 1)
         conflict:addTeamRoundWon(teamIdx, 1)
         local r0, r1 = conflict:getTeamRounds()
         player:printToPlayer(string.format('Ballista: awarded a round to team %d. Rounds: %d / %d.', teamIdx, r0, r1))
 
     elseif sub == 'fastquarry' then
-        local on = (arg == nil or arg == '1' or arg == 'on')
-        player:setLocalVar('FastQuarry', on and 1 or 0)
-        player:printToPlayer('Ballista: FastQuarry ' .. (on and 'on (quarry cooldown bypassed).' or 'off.'))
+        local on  = (arg == nil or arg == '1' or arg == 'on')
+        local who = actor(player)
+
+        who:setLocalVar('FastQuarry', on and 1 or 0)
+        player:printToPlayer(string.format('Ballista: FastQuarry %s for %s.',
+            on and 'on (quarry cooldown bypassed)' or 'off', who:getName()))
 
     elseif sub == 'info' then
         local i = GetNextBallistaInfo()
@@ -163,11 +179,9 @@ commandObj.onTrigger = function(player, sub, arg)
         -- their look/name, and clears the Ballista scoreboard.
         conflict:setCombatEnabled(false)
 
-        -- Through the post-game rather than straight to finished. Lifting the level restriction
-        -- and collecting the temporary items only happen on that transition, so skipping it leaves
-        -- every participant capped with a match's items still in hand.
-        -- Stops at POST_GAME on purpose. FINISHED forfeits every unclaimed reward while the
-        -- Herald still offers one, so it would discharge entries and pay nothing.
+        -- Stops at the post-game rather than going on to finished. Lifting the level restriction
+        -- and collecting the temporary items happen on this transition, and finished would forfeit
+        -- every unclaimed reward while the Herald still offers one.
         conflict:setState(xi.conflictState.POST_GAME)
         player:printToPlayer('Ballista: match ended (combat disabled, players reverted, scoreboard cleared).')
 

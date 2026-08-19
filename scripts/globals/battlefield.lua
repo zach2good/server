@@ -103,6 +103,21 @@ xi.battlefield.leaveCode =
     LOST   = 4
 }
 
+-- battlefieldId = zoneBlock * 32 + menuBit
+--
+-- menuBit comes from the client. A burning circle starts event 32000 carrying a 32-bit mask of the
+-- battlefields the player can enter, and the bit the player picks returns in event 32001. The client
+-- holds the bit-to-name table, so a capture gives you the bit and never the id.
+--
+-- zoneBlock is ours, and it is not the zone id. It is a slot we gave each battlefield zone, one block
+-- of 32 ids each: Horlais Peak is block 0, Ghelsba Outpost is 1, Bearclaw Pinnacle is 20. To work out
+-- a new id, take the block from another entry in the same zone and add the new bit. Both columns are
+-- listed per zone in documentation/battlefield_ids.txt.
+--
+-- Two zones ignore this. Temenos and Apollyon share block 40 because Limbus has no menu mask, and
+-- La Vaule [S] uses block 85, which is its zone id, chosen when that fight was added.
+--
+-- An id can be listed here before anything implements it. See the Incomplete entries below.
 xi.battlefield.id =
 {
     RANK_2_MISSION_1                           = 0,   -- Converted

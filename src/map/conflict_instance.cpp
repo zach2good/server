@@ -125,6 +125,19 @@ ConflictInstance::ConflictInstance(ConflictSettings newSettings, CZone* zone)
 
             // Whether the initial items were handed out is not persisted, so assume they were.
             entryView->gotInitialItems = matchIsActive;
+
+            // The high scorer is a pointer, so it cannot be stored, but the totals it ranks on are.
+            // Left null, the first player to score after a restart is announced as today's high
+            // scorer whatever the totals say, and the closing cutscene names nobody.
+            const auto matchTotal = [](const ConflictEntry* candidate) -> uint32
+            {
+                return candidate->totalScoredPetras + candidate->score;
+            };
+
+            if (highScorer == nullptr || matchTotal(entryView) > matchTotal(highScorer))
+            {
+                highScorer = entryView;
+            }
         }
 
         return;
@@ -824,12 +837,13 @@ auto ConflictInstance::RemoveEntryAndTakeGilFromHerald(ConflictEntry* entry) -> 
 
     RemovePlayerEntry(entry->charid);
 
-    // The gates divide by the side's entry count, which just shrank. Every other membership change
-    // recomputes; without this the gates stay as they were until an unrelated join or zone line.
-    UpdateOpenRooks();
-
     gilOnHerald -= gilToGive;
     entry->SetEntryType(newEntryType);
+
+    // The gates divide by the side's entry count, which just shrank. Every other membership change
+    // recomputes; without this they stay as they were until an unrelated join or zone line. It runs
+    // last because it re-enters Lua, which must not see the entry removed but not yet retyped.
+    UpdateOpenRooks();
 
     return gilToGive;
 }

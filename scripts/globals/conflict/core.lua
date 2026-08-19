@@ -55,7 +55,7 @@ function xi.conflict.onGateBreach(entry, timeline, shortGateBreach, alreadyHadGa
     end)
 end
 
-function xi.conflict.onEventFinish(player, csid, option, npc, cancel)
+function xi.conflict.onEventFinish(player, csid, option, npc)
     local zoneInfo = xi.conflict.getZoneInfoForEntity(player)
     local entry    = player:getConflictEntry()
     if zoneInfo == nil or entry == nil then
@@ -68,7 +68,7 @@ function xi.conflict.onEventFinish(player, csid, option, npc, cancel)
 
         if option == 0 then -- accept
             if player:getFreeSlotsCount(xi.inv.TEMPITEMS) == 0 then
-                player:messageSpecial(cancel and zoneInfo.text.THROW_AWAY_ITEM or zoneInfo.text.FIND_BUT_THROW, itemId, 1)
+                player:messageSpecial(zoneInfo.text.FIND_BUT_THROW, itemId, 1)
             elseif player:hasItem(itemId, xi.inv.TEMPITEMS) then
                 player:messageSpecial(zoneInfo.text.FIND_BUT_THROW, itemId, 2)
             else
