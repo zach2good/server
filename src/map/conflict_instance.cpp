@@ -573,11 +573,19 @@ void ConflictInstance::SetPhase(const uint8 newPhase)
         entry->heldPetras = 0;
     }
 
-    // Only the even phases are round boundaries worth persisting.
-    if (id != 0 && gamePhase % 2 == 0)
+    if (id != 0)
     {
+        // Every phase is written, odd ones included. Leaving the odd phases out meant a restart
+        // during a round loaded the previous boundary, so the replayed round start was not refused
+        // and rolled the round in progress into the totals, wiping both team scores and every
+        // held petra.
         db::preparedStmt("UPDATE conflict_instances SET phase = ? WHERE instanceid = ?", gamePhase, id);
-        db::preparedStmt("UPDATE conflict_entries SET total_score = total_score + score, score = 0 WHERE instanceid = ?", id);
+
+        // Only a round boundary rolls the per-entry scores up, and that is the even phases.
+        if (gamePhase % 2 == 0)
+        {
+            db::preparedStmt("UPDATE conflict_entries SET total_score = total_score + score, score = 0 WHERE instanceid = ?", id);
+        }
     }
 }
 
@@ -815,6 +823,10 @@ auto ConflictInstance::RemoveEntryAndTakeGilFromHerald(ConflictEntry* entry) -> 
     }
 
     RemovePlayerEntry(entry->charid);
+
+    // The gates divide by the side's entry count, which just shrank. Every other membership change
+    // recomputes; without this the gates stay as they were until an unrelated join or zone line.
+    UpdateOpenRooks();
 
     gilOnHerald -= gilToGive;
     entry->SetEntryType(newEntryType);

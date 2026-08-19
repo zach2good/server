@@ -118,7 +118,10 @@ function xi.conflict.marshal.purchase(player, keyItem)
     if xi.conflict.marshal.entitledByChevron[entry.item] then
         -- Holding the key item is not the same as being entitled: an expired chevron is one the
         -- Herald already wants back before the wearer enters another match.
-        if xi.conflict.ranking.heldChevron(player) == nil or xi.conflict.ranking.hasExpiredChevron(player) then
+        if
+            xi.conflict.ranking.heldChevron(player) == nil or
+            xi.conflict.ranking.hasExpiredChevron(player)
+        then
             return false, xi.conflict.marshal.refusal.NOT_ENTITLED
         end
     end

@@ -148,6 +148,11 @@ void CLuaConflict::setSignupState(const xi::ConflictSignupState state)
     m_PConflict->signupState = state;
 }
 
+auto CLuaConflict::getPhase() const -> uint8
+{
+    return m_PConflict->gamePhase;
+}
+
 void CLuaConflict::setPhase(const uint8 phase)
 {
     m_PConflict->SetPhase(phase);
@@ -341,6 +346,7 @@ void CLuaConflict::Register()
     SOL_REGISTER("hasItemRestriction", CLuaConflict::hasItemRestriction);
     SOL_REGISTER("getSignupState", CLuaConflict::getSignupState);
     SOL_REGISTER("setSignupState", CLuaConflict::setSignupState);
+    SOL_REGISTER("getPhase", CLuaConflict::getPhase);
     SOL_REGISTER("setPhase", CLuaConflict::setPhase);
     SOL_REGISTER("addTeamRoundWon", CLuaConflict::addTeamRoundWon);
     SOL_REGISTER("addPlayer", CLuaConflict::addPlayer);

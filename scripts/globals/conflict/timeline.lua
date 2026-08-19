@@ -371,6 +371,12 @@ function xi.conflict.setupAllOrNothingTimeline(conflict)
 
     -- Setup match ending
     timeline:setTimestamp(endTime):addEvent(function()
+        -- As above: a recovered match replays a past-due end, and neither the round award nor the
+        -- conclusion timeline is idempotent. The state only moves past ACTIVE once.
+        if conflict:getState() > xi.conflictState.ACTIVE then
+            return
+        end
+
         local s1, s2 = conflict:getTeamScores()
         if s1 ~= s2 then
             conflict:addTeamRoundWon((s1 - s2 > 0) and 0 or 1)
@@ -457,6 +463,14 @@ function xi.conflict.setupBestOfThreeTimeline(conflict)
 
         if currentMatch < 3 then -- Not last match
             timeline:addEvent(function()
+                -- A recovered match rebuilds this whole timeline, and a past-due round end fires
+                -- on the next tick. setPhase below refuses to move backwards, but the round award
+                -- does not, so without this a restart adds a match point per replayed round using
+                -- the current round's scores, and Best of Three reads roundsWon to pick the winner.
+                if conflict:getPhase() >= currentMatch * 2 then
+                    return
+                end
+
                 local n1, n2 = conflict:getTeamNations()
                 local s1, s2 = conflict:getTeamScores()
 
@@ -481,6 +495,15 @@ function xi.conflict.setupBestOfThreeTimeline(conflict)
         else
             -- Last match
             timeline:addEvent(function()
+                -- The final round never calls setPhase, so it is guarded on the state instead: the
+                -- conclusion timeline this closure creates is what raises it past ACTIVE. Without
+                -- this a recovered match re-awards the deciding round with the scores still sitting
+                -- in the entry rows, which turns a 2-1 win into a 2-2 draw and refunds everyone
+                -- instead of paying the pot.
+                if conflict:getState() > xi.conflictState.ACTIVE then
+                    return
+                end
+
                 local n1, n2 = conflict:getTeamNations()
                 local s1, s2 = conflict:getTeamScores()
                 local highScorer = conflict:getHighScorer()

@@ -81,8 +81,9 @@ public:
     [[nodiscard]] auto getSignupState() const -> xi::ConflictSignupState;
     void               setSignupState(xi::ConflictSignupState state);
 
-    void setPhase(uint8 phase);
-    auto addTeamRoundWon(uint8 teamIdx, sol::optional<int32> roundsToAdd) -> bool;
+    [[nodiscard]] auto getPhase() const -> uint8;
+    void               setPhase(uint8 phase);
+    auto               addTeamRoundWon(uint8 teamIdx, sol::optional<int32> roundsToAdd) -> bool;
 
     auto               addPlayer(CLuaBaseEntity& entity, sol::optional<uint8> teamIdx) -> bool;
     [[nodiscard]] auto hasPlayerLeft(CLuaBaseEntity& entity) const -> bool;

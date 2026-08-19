@@ -528,14 +528,25 @@ function xi.conflict.herald.onEventFinish(player, csid, option, npc)
             local state = conflict:getState()
             if option == 4 and state < xi.conflictState.PREPARING then
                 -- Leave before game has started, so gil is returned.
+                -- leave() refuses on a failed write, and the entry is still standing when it does,
+                -- so saying they were discharged would be a lie the divisor then pays for.
+                local nation      = entry:getTeamNation()
                 local returnedGil = entry:leave()
-                player:messageSpecial(zoneInfo.text.DISCHARGED, entry:getTeamNation(), returnedGil)
+                if returnedGil == nil then
+                    return
+                end
+
+                player:messageSpecial(zoneInfo.text.DISCHARGED, nation, returnedGil)
 
             elseif state == xi.conflictState.PREPARING or state == xi.conflictState.ACTIVE then
                 -- Leave during game, no gil returned and notification is sent to other players in the conflict.
-                entry:leave()
-                player:messageSpecial(zoneInfo.text.NO_LONGER_MEMBER, entry:getTeamNation())
-                xi.conflict.messageSpecial(conflict, zoneInfo.text.ENTRY_CANCELLATION, entry:getTeamNation())
+                local nation = entry:getTeamNation()
+                if entry:leave() == nil then
+                    return
+                end
+
+                player:messageSpecial(zoneInfo.text.NO_LONGER_MEMBER, nation)
+                xi.conflict.messageSpecial(conflict, zoneInfo.text.ENTRY_CANCELLATION, nation)
 
             else
                 -- Unable to be discharged at the current state
@@ -556,7 +567,8 @@ function xi.conflict.herald.onEventFinish(player, csid, option, npc)
             local reward = player:getLocalVar('[Conflict]Reward')
             local entry = player:getConflictEntry()
             if reward ~= 0 and entry ~= nil and entry:canLeave() then
-                player:setLocalVar('[Conflict]Reward', 0)
+                -- Cleared only once the payout has actually happened: leave() refuses on a failed
+                -- write, and clearing first would close the retry the refusal exists to leave open.
                 local rewardTable = {}
 
                 -- The parting gifts are for a match that was played. A cancelled match refunds the
@@ -569,6 +581,8 @@ function xi.conflict.herald.onEventFinish(player, csid, option, npc)
                 if gilReward == nil then
                     return
                 end
+
+                player:setLocalVar('[Conflict]Reward', 0)
 
                 if reward == 1 then -- Win
                     player:messageSpecial(zoneInfo.text.YOUR_NATION_REWARD, gilReward)

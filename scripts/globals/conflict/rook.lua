@@ -45,8 +45,12 @@ end
 function xi.conflict.rook.onEventFinish(player, csid, option, npc)
     local zoneInfo = xi.conflict.getZoneInfoForEntity(player)
     local entry    = player:getConflictEntry()
+
+    -- This is the scoring path, so it checks which event came back rather than trusting that only
+    -- the rook can reach it. Every other handler in the system does the same.
     if
         zoneInfo == nil or
+        csid ~= zoneInfo.events.ROOK_THROW or
         entry == nil
     then
         return

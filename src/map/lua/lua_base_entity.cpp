@@ -12498,7 +12498,7 @@ auto CLuaBaseEntity::useItem(const uint16 itemId) const -> bool
             continue;
         }
 
-        for (uint8 slotId = 0; slotId <= PContainer->GetSize(); ++slotId)
+        for (int slotId = 1; slotId <= PContainer->GetSize(); ++slotId)
         {
             const auto* PItem = PContainer->GetItem(slotId);
             if (PItem == nullptr || PItem->getID() != itemId)

@@ -166,8 +166,9 @@ commandObj.onTrigger = function(player, sub, arg)
         -- Through the post-game rather than straight to finished. Lifting the level restriction
         -- and collecting the temporary items only happen on that transition, so skipping it leaves
         -- every participant capped with a match's items still in hand.
+        -- Stops at POST_GAME on purpose. FINISHED forfeits every unclaimed reward while the
+        -- Herald still offers one, so it would discharge entries and pay nothing.
         conflict:setState(xi.conflictState.POST_GAME)
-        conflict:setState(xi.conflictState.FINISHED)
         player:printToPlayer('Ballista: match ended (combat disabled, players reverted, scoreboard cleared).')
 
     else

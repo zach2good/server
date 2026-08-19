@@ -328,6 +328,8 @@ auto ConflictEntry::Leave() -> Maybe<uint32>
 
     if (instance->IsCombatEnabled())
     {
+        // The match is letting them go, so the restore is right here: this is where a player
+        // finishing or quitting a match gets put back to normal.
         EnableCombat(false, Restore::Yes);
     }
 
