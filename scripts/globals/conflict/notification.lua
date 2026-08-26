@@ -1,8 +1,6 @@
 -----------------------------------
 -- Conflict (Ballista) out-of-match notifications: tells players (in the match
 -- zone, or in cities if they hold the Ballista Earring) about the next match.
---
--- Ported from Eden. Reads the match calendar through GetNextBallistaInfo.
 -----------------------------------
 require('scripts/globals/conflict/zoneinfo')
 

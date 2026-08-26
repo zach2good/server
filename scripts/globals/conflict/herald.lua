@@ -462,8 +462,7 @@ function xi.conflict.herald.onEventUpdate(player, csid, option)
             -- Left inert on purpose. The named path never checks that the side asked for is the
             -- player's own nation, which the nation path does, so it is a way to be seated on the
             -- other nation's side during nation sign-up. Refusing the option costs a menu entry
-            -- that retail offers; seating the player on the wrong side is worse. See
-            -- retail_todo.md.
+            -- that retail offers; seating the player on the wrong side is worse.
             if option == 14 or option == 15 then
                 return
             end

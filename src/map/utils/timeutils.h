@@ -31,7 +31,7 @@
 #include <compare>
 #include <cstddef>
 
-// Event scheduling for the Conflict (Ballista) system, ported from the Eden server.
+// Event scheduling for the Conflict (Ballista) system.
 //
 // A Vana'diel timestamp here is the count of Vana'diel minutes since the start of
 // year 886, which is exactly vanadiel_clock::minutes since its epoch. It is the unit

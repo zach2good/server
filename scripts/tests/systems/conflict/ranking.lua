@@ -96,9 +96,8 @@ describe('Conflict (Ballista) ranking', function()
     -- End to end: a finished match is registered, the board reads it back, and the placing
     -- decides the chevron.
     -- Registration is switched off: conflict_rankings is keyed on an instanceid the database
-    -- recycles, so a registration can overwrite an unrelated older row. When the key is changed to
-    -- (zoneid, matchstart, charid) these should go back to asserting a real registration and the
-    -- board read, both of which the git history has. See retail_todo.md.
+    -- recycles, so a registration can overwrite an unrelated older row. Changing the key to
+    -- (zoneid, matchstart, charid) is what this waits on.
     it('refuses to register while that path is disabled', function()
         local conflict = matchEndedMinutesAgo(60)
 

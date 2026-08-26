@@ -6604,9 +6604,8 @@ auto UpdateGil(CCharEntity* PChar, int32 amount) -> bool
 {
     TracyZoneScoped;
 
-    // Item mutation lives behind a transaction now. pay() claims the stack and refuses an amount
-    // the player cannot cover, including gil reserved by a trade, and earn() reports a credit that
-    // the stack limit clamped, so both of the checks this used to make by hand are covered.
+    // pay() claims the stack and refuses an amount the player cannot cover, including gil reserved
+    // by a trade; earn() reports a credit the stack limit clamped.
     auto transaction = ItemClaimTransaction::start(PChar);
     if (transaction == nullptr)
     {

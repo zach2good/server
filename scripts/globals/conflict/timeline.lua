@@ -12,8 +12,8 @@ require('scripts/globals/conflict/zoneinfo')
 xi = xi or {}
 xi.conflict = xi.conflict or {}
 
--- Vana'diel timestamp (minutes since year 886) -> in-game epoch seconds, used by
--- the client to render match start/end times. (Eden provided this as a binding.)
+-- Vana'diel timestamp (minutes since year 886) to in-game epoch seconds, which is what the client
+-- renders match start and end times from.
 if VanadielTimestampToGameEpoch == nil then
     function VanadielTimestampToGameEpoch(vanaTimestamp)
         return math.floor(vanaTimestamp * 60 / 25)

@@ -1,13 +1,8 @@
 -----------------------------------
 -- Engine to Lua bridge for the Conflict (Ballista) system.
 --
--- luautils::Conflict* resolves these by name off the xi.conflict table and calls them. Eden
--- returns a local `this` table that its engine resolves per file; our loader requires globals, so
--- the entry points are assigned onto xi.conflict directly.
---
--- Each wrapper stays thin and delegates to the gameplay implementation. A hook whose
--- implementation has not been ported yet is simply absent here, and the engine treats a missing
--- entry point as a no-op.
+-- luautils::Conflict* resolves these by name off the xi.conflict table, so the entry points are
+-- assigned onto it directly. A missing entry point is treated as a no-op by the engine.
 -----------------------------------
 require('scripts/globals/conflict/core')
 require('scripts/globals/conflict/marshal')

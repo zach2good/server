@@ -1,8 +1,6 @@
 -----------------------------------
 -- Conflict (Ballista) field ('battle') Pursuivant: lends and takes back the Ballista Earring
 -- during a match. Placing them at the camps is xi.conflict.pursuivant.field.setup's job.
---
--- Ported from Eden; xi.ki -> xi.keyItem.
 -----------------------------------
 require('scripts/globals/conflict/zoneinfo')
 

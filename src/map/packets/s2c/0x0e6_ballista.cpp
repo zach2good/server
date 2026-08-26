@@ -120,17 +120,8 @@ SCOUT::SCOUT(const CBaseEntity* PRook, const float distanceToRook)
 
     packet.RookUniqueNo = PRook->id;
 
-    // Both settled by the 2019-12-15 Diorama Abdhaljs-Ghelsba capture rather than by inference.
-    //
-    // The position goes out as X, Y, Z like every other packet: the middle float in the captured
-    // scouts is -10.060 and -0.092, which are the rook's height in that zone, not a horizontal
-    // axis. An earlier reading here swapped Y and Z on the strength of how the compass appeared to
-    // behave; the capture does not support it.
-    //
-    // The distance is the plain 3D distance, sent unscaled. Two captured scouts carry 76.5148 and
-    // 75.2739, which are exactly the distances between the player positions in the outgoing 0x015
-    // packets at those timestamps and the rook's spawn position. Dividing by 0.914 would have put
-    // 83.7 on the wire where retail put 76.5.
+    // Position is X, Y, Z and the distance is the plain 3D distance, unscaled, both read from a
+    // capture of a retail match in Diorama Abdhaljs-Ghelsba.
     packet.RookPosition[0] = PRook->loc.p.x;
     packet.RookPosition[1] = PRook->loc.p.y;
     packet.RookPosition[2] = PRook->loc.p.z;

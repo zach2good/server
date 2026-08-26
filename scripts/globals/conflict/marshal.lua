@@ -9,8 +9,8 @@
 -- Max-Potion and Hi-Elixir, which the client's table does not have.
 --
 -- The Marshal also runs the previous match MVP board and Ballista Point Ranking. Neither is
--- implemented: both need match history this server does not keep, and the option values that drive
--- them are not confirmed. See notes.md.
+-- implemented: both need match history this server does not keep, and the option values that
+-- drive them are not confirmed.
 -----------------------------------
 
 require('scripts/globals/conflict/ranking')

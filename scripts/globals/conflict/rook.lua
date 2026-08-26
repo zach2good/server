@@ -1,8 +1,6 @@
 -----------------------------------
 -- Conflict (Ballista) Rook: scoring (throwing petras), and the 3-hour rook
 -- movement timeline.
---
--- Ported from Eden; Eden's GetTimestamp() (seconds) -> GetSystemTime().
 -----------------------------------
 require('scripts/globals/conflict/zoneinfo')
 

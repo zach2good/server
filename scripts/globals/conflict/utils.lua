@@ -1,10 +1,6 @@
 -----------------------------------
 -- Conflict (Ballista) shared helpers: broadcasting messages/animations to a
 -- match or zone, teleporting, and the pre-match invisible/sneak handling.
---
--- Ported from Eden. Two API differences worth knowing: key items are xi.keyItem rather than xi.ki,
--- and addStatusEffect takes a params table here instead of Eden's positional arguments, which fail
--- silently rather than erroring.
 -----------------------------------
 xi = xi or {}
 xi.conflict = xi.conflict or {}

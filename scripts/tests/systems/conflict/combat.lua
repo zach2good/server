@@ -43,9 +43,7 @@ describe('Conflict (Ballista) combat', function()
     end)
 
     -- A retail capture of a private match in Diorama Abdhaljs-Ghelsba (2019-12-15) has one player
-    -- killing another with a 1833 damage weaponskill. Eden scales PVP damage by (1 - damage/4000),
-    -- which cannot produce anything above 1000, so retail is not doing that and nothing else
-    -- suggests a curve of its own. Damage is passed through untouched.
+    -- killing another with a 1833 damage weaponskill, so damage is passed through untouched.
     it('does not scale damage taken inside a match', function()
         local conflict = startMatch()
 

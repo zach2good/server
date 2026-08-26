@@ -1,10 +1,8 @@
 -----------------------------------
 -- Conflict (Ballista) quarry: petra / temporary-item digging.
 --
--- Ported from Eden. The item tables and weighted determination are the bulk and
--- are zone-independent; xi.conflict.quarry itself needs the zone's zoneinfo and
--- live Rooks (for closestRookDistance), so it is exercised once a match is set
--- up in a Ballista zone.
+-- The item tables and the weighted pick are zone-independent; xi.conflict.quarry itself needs the
+-- zone's zoneinfo and live rooks for closestRookDistance.
 -----------------------------------
 require('scripts/globals/conflict/zoneinfo')
 

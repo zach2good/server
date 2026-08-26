@@ -3,10 +3,8 @@
 -- configuration, line-up, gate breach, quarry-event handling) plus the gameplay
 -- implementations the engine bridge delegates to (cleanup, onGateBreach, gameHint).
 --
--- The engine -> Lua bridge entry points themselves live in bindings.lua. Ported
--- from Eden. Enum keys adapted to this codebase's UPPERCASE generated Lua enums
--- (e.g. xi.conflictState.PREPARING). The signup/match timeline lives in
--- timeline.lua; quarry item logic in quarry.lua.
+-- The engine to Lua bridge entry points live in bindings.lua, the match timeline in timeline.lua
+-- and the quarry item logic in quarry.lua.
 -----------------------------------
 require('scripts/globals/conflict/zoneinfo')
 
@@ -93,8 +91,8 @@ function xi.conflict.onEventFinish(player, csid, option, npc)
             -- Left inert on purpose. Unlike the keep and use branches this never checks the player
             -- is not already carrying the quarried item, and it does not require that the exchange
             -- was actually offered, so it is a way past the one-of-each rule on the strong
-            -- consumables. Throwing the find away is the safe half of what the option does; the
-            -- swap itself is off until the check is written. See retail_todo.md.
+            -- consumables. Throwing the find away is the safe half of what the option
+            -- does; the swap itself is off until the check is written.
             player:messageSpecial(zoneInfo.text.FIND_BUT_THROW, itemId, 1)
         else -- throw away
             player:messageSpecial(zoneInfo.text.THROW_AWAY_ITEM, itemId)

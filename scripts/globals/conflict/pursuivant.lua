@@ -1,8 +1,6 @@
 -----------------------------------
 -- Conflict (Ballista) city Pursuivant: lends the Ballista key items, sells the
 -- Instaport teleport, and (field variant) appears at the match camps.
---
--- Ported from Eden.
 -----------------------------------
 require('scripts/globals/conflict/utils')
 

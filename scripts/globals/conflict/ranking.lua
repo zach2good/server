@@ -150,7 +150,6 @@ function xi.conflict.ranking.register(player, conflict)
     -- older row and the board mixes two matches together. The key wants to be
     -- (zoneid, matchstart, charid), which is what the board actually reads on. Nothing in game
     -- reaches this yet, because there is no Marshal NPC, so refusing costs nothing today.
-    -- See retail_todo.md.
     if true then
         return false, xi.conflict.ranking.refusal.WINDOW_CLOSED
     end

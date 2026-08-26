@@ -1,8 +1,8 @@
 -----------------------------------
 -- Per-zone data for the Conflict (Ballista) system.
 --
--- Ported from Eden. The NPC ids are this server's own, verified against npc_list; positions,
--- event ids and the message offsets are shared with Eden because both read the same client DAT.
+-- The NPC ids are verified against npc_list. The positions, event ids and message offsets are read
+-- from the client DAT.
 --
 -- Each zone's text table is filled from zones[zoneId].text.BALLISTA_OFFSET plus the offsets in
 -- `messages` below. A zone whose IDs.lua does not define that offset yet gets an empty text

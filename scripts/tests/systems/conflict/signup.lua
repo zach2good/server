@@ -101,9 +101,7 @@ describe('Conflict (Ballista) sign-up', function()
     -- client returns 14 for the first and 15 for the second, per the Jugner event 22 and Pashhow
     -- event 18 bytecode.
     -- Options 14 and 15 are switched off: the named path never checks the side asked for is the
-    -- player's own nation, so it seats them on the other nation's side during nation sign-up. When
-    -- the check is written this test should go back to asserting the seating, which the git history
-    -- has. See retail_todo.md.
+    -- player's own nation, so it seats them on the other nation's side during nation sign-up.
     it('refuses a request for a named nation while that path is disabled', function()
         local conflict = startMatch()
         local heraldEvent = xi.conflict.getZoneInfoForEntity(players[1]).events.HERALD
