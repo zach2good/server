@@ -8,7 +8,7 @@ Read [`docs/ai_agents/README.md`](docs/ai_agents/README.md) first. It sets the p
 
 - Retail FFXI is the spec. You have no access to retail or the client, so don't invent values, ids, message ids or event flow. Get them from packet captures, event dumps, the in-repo tables below, or wikis (the Japanese wiki over BG Wiki over FFXIclopedia), and say which.
 - When a value is unverified, say so in your reply and leave a `TODO:` in the code. Never present a guess as retail.
-- Copy the patterns of nearby, recently changed code. Many older files predate the current style and APIs, and so do patterns from DarkStar, Topaz, Windower or other Lua projects.
+- Copy the patterns of nearby, recently changed code. Plenty of older files predate the current style and APIs. So does anything you remember from DarkStar, Topaz, Windower or other Lua projects.
 - Keep changes small and in scope. Don't reformat or refactor code you weren't asked to touch.
 - Leave commit messages and PR descriptions to the human, or keep them to the format in [the Git guide](docs/wiki/Development-Guide-Git.md#writing-useful-commit-messages). Don't add AI attribution trailers.
 - If a change closes a hole a player could abuse, follow [Security Fixes](CONTRIBUTING.md#security-fixes). Never say "exploit", "dupe" or "vulnerability" in a commit, PR, comment or test, never write reproduction steps, and tell the user to report it privately.
@@ -86,7 +86,7 @@ Single checks, the full style rules and the tools they need are in the [Developm
 
 ## Review rules
 
-CI doesn't catch these, but reviewers do. The full list is the [Review Checklist](docs/wiki/Review-Checklist.md). Read it before you write Lua, C++ or SQL. The ones raised most often:
+CI won't catch these. Reviewers will. The full list is the [Review Checklist](docs/wiki/Review-Checklist.md). Read it before you write Lua, C++ or SQL. The ones raised most often:
 
 - No one-line Lua helpers and no function used in only one place. Inline them.
 - Return early instead of nesting. No guard the next expression already covers. No nil checks on values that always exist.

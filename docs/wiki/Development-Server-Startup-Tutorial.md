@@ -1,6 +1,6 @@
 # Server Startup Tutorial
 
-A short tour of how `xi_map` starts up and runs. The other processes share the same `Application` base but aren't covered here. Snippets are trimmed from the real code, so read the files for the full picture.
+A quick tour of how `xi_map` starts up and runs. The other processes share the same `Application` base, but you're on your own with those. The snippets are trimmed down from the real code, so go read the files for the full picture.
 
 ## Entry point
 
@@ -35,7 +35,7 @@ stateDiagram
 
 There's no hand-written main loop. `Scheduler` (`src/common/scheduler/scheduler.h`) wraps an asio event loop on the main thread and a worker thread pool. Everything after startup is a task it runs: a timer firing, a UDP packet arriving or a coroutine resuming.
 
-The main calls are:
+The ones you'll see most:
 
 - `postToMainThread`/`postToWorkerThread`: queue work to run once.
 - `intervalOnMainThread`: run work on a fixed period. It returns a token, and the timer stops when the token is destroyed.
@@ -53,13 +53,13 @@ transportToken_         = scheduler_.intervalOnMainThread(kTransportTickInterval
 pumpIPCToken_           = scheduler_.intervalOnMainThread(kIPCPumpInterval, ...);           // 100ms, messages from xi_world
 ```
 
-The intervals live in `src/map/map_constants.h`. Finally it calls `luautils::OnServerStart()` and starts the watchdog, which warns when a main thread tick runs long.
+The intervals live in `src/map/map_constants.h`. Finally it calls `luautils::OnServerStart()` and starts the watchdog, which complains when a main thread tick runs long.
 
 ## Incoming packets
 
 `MapSocket` (`src/map/map_socket.cpp`) listens for UDP and hands each datagram to `MapNetworking::handle_incoming_packet` (`src/map/map_networking.cpp`). That finds the session, decrypts the buffer and splits it into individual packets. Each packet goes to `PacketSystem::dispatch` (`src/map/packet_system.cpp`), which rate-limits it and calls the handler for that packet id. The reply goes back on the same socket.
 
-Each client packet has its own file under `src/map/packets/c2s/`, for example `0x01a_action.cpp`. A handler has a `validate` step that checks what the client sent and a `process` step that does the work.
+Each client packet has its own file under `src/map/packets/c2s/`, for example `0x01a_action.cpp`. A handler has a `validate` step, which checks what the client sent (never trust it), and a `process` step that does the work.
 
 ## Zone ticks
 
@@ -87,11 +87,11 @@ stateDiagram-v2
     e --> f
 ```
 
-The `--lazy` flag loads zones on demand, which saves time while developing.
+Pass `--lazy` to load zones on demand instead. Handy while developing, when you don't want to wait for all of Vana'diel to load.
 
 ## Lua scripting
 
-Calls to `luautils::<something>` go into the Lua scripting system. Core objects (entities, zones, items and so on) are wrapped in a Lua object and passed into scripts. The wrappers expose functions you can call on the object from Lua.
+While poking around in the core you'll see a lot of calls to `luautils::<something>`. These go into the Lua scripting system. Core objects (entities, zones, items and so on) are wrapped in a Lua object and passed into scripts. The wrappers expose functions you can call on the object from Lua.
 
 The bindings live in `src/map/lua/luautils.cpp` and `src/map/lua/lua_base_entity.cpp`, with a file per wrapper type under `src/map/lua/`.
 

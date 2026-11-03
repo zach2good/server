@@ -2,7 +2,7 @@
 
 ## Read this first: there is now an official Docker setup
 
-⚠️ **Most people should not use the examples on this page.** The server repo now carries maintained Dockerfiles under `docker/`, and our CI builds them, runs `xi_test` and startup checks inside the container, and publishes images to `ghcr.io/landsandboat/server` for `linux/amd64`.
+⚠️ **You probably don't want the examples on this page.** We maintain real Dockerfiles under `docker/` now. CI builds them, runs `xi_test` and startup checks inside the container, and publishes images to `ghcr.io/landsandboat/server` for `linux/amd64`.
 
 Start with [`docker/README.md`](https://github.com/LandSandBoat/server/blob/base/docker/README.md) in the server repo. It is the maintained reference, and it covers the published image, the `ximeshes` navmesh image, database credentials, port binding, and adjusting settings through environment variables.
 

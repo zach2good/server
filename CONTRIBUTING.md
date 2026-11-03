@@ -44,14 +44,14 @@
 
 ## Security Fixes
 
-Many live servers run this code, and not all of them can update the day a fix lands. A public fix that names the problem tells every bad actor where to look before those servers have patched. Keep the problem quiet until they've had time to update.
+Many live servers run this code, and not all of them can update the day a fix lands. A public fix that names the problem tells every bad actor where to look before those servers have patched. So keep quiet about the problem until they've had time to update.
 
-- Report it to staff privately first. Staff are easy to find on the community Discords, or through the email addresses on their commits. Never open a public issue for it.
+- Report it to staff privately first. We're easy to find on the community Discords, or through the email addresses on our commits. Never open a public issue for it.
 - Don't call it an exploit, dupe, vulnerability or crash anywhere public: commit titles and bodies, PR titles and descriptions, review comments, code comments or test names.
 - Describe the change as ordinary work. "Packets: Tidy item slot handling" is fine. "Fix item dupe via trade slot" is not.
 - Never write reproduction steps, proof-of-concept code or the packet that triggers it in public. Keep them in the private conversation.
 - Don't add a test that reproduces the problem until staff say the fix has been out long enough.
-- Keep the fix small and focused, so it reads like the change its description says it is.
+- Keep the fix small, so it looks like exactly the change its description says it is.
 
 ## Issue Report Contributions
 

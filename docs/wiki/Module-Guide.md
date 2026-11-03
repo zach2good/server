@@ -25,8 +25,8 @@ Example `modules/init.txt`
 # - cpp files are loaded and built with CMake.
 # - lua files are loaded at runtime by the main program.
 # - sql files are loaded either by dbtool, or by hand.
-# - sql under era/sql/<expansion>/ is applied by dbtool when listed; list the
-#   expansion folders you want. Listing plain 'era' includes all of them.
+# - sql under era/sql/<expansion>/ is only applied by dbtool for the expansion
+#   folders you list. Listing plain 'era' pulls in all of them.
 #
 # Examples:
 #

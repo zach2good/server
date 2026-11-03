@@ -1,10 +1,10 @@
 # Post-Install Guide
 
-Read this once the [Quick Start Guide](Quick-Start-Guide) has you logged in.
+You've followed the [Quick Start Guide](Quick-Start-Guide) and you can log in. Now what?
 
 ## Change settings
 
-The defaults live in `settings/default/`. Don't edit them. To change a setting, copy its file into `settings/` and edit the copy. The server loads the defaults first, then your files over the top, key by key, so your copy only needs the keys you change.
+The defaults live in `settings/default/`. Leave them alone. To change a setting, copy its file into `settings/` and edit the copy. The server loads the defaults first, then lays your files over the top key by key, so your copy only needs the keys you actually change.
 
 You can also set any setting with an environment variable named `XI_<FILE>_<SETTING>`, e.g. `XI_MAIN_SERVER_NAME`.
 
@@ -12,17 +12,17 @@ Restart the server after any change.
 
 ## Make yourself a GM
 
-Run this query, with your character's name, then zone or log in again:
+Run this, with your character's name, then zone or log in again:
 
 ```sql
 UPDATE chars SET gmlevel = 4 WHERE charname = 'Name';
 ```
 
-If you started `xi_map` by hand, you can type `gm Name 4` into its console instead. It applies at once. `dbtool`'s `Launch Server` runs the processes without a console, so use the query there.
+If you started `xi_map` by hand, you can type `gm Name 4` into its console instead, and it applies straight away. `dbtool`'s `Launch Server` runs the processes without a console, so you're stuck with the query there.
 
-GM commands are the scripts in [`scripts/commands/`](https://github.com/LandSandBoat/server/tree/base/scripts/commands). Each script's header describes it. In game, type `!` and the script name, e.g. `!promote` for `promote.lua`. Some to start with:
+GM commands are the scripts in [`scripts/commands/`](https://github.com/LandSandBoat/server/tree/base/scripts/commands). Each one says what it does in its header. In game, type `!` and the script name, e.g. `!promote` for `promote.lua`. Some to start with:
 
-* `!godmode`: makes you invincible, among other things.
+* `!godmode`: makes you invincible, and then some.
 * `!givegil`: gives gil to you or your target.
 * `!givexp`: gives experience points to you or your target.
 * `!togglegm`: toggles your GM icon.
@@ -32,14 +32,14 @@ GM commands are the scripts in [`scripts/commands/`](https://github.com/LandSand
 
 ## Open the server to other players
 
-Every zone's `zoneip` in the `zone_settings` table must hold the address clients connect to. `dbtool` sets it. Run `python3 ./tools/dbtool.py` (Windows: `py -3 ./tools/dbtool.py`), choose `t. Maintenance Tasks`, then `2. Set zone IP addresses`, and pick one:
+Every zone's `zoneip` in `zone_settings` has to hold the address clients connect to. `dbtool` sets it for you. Run `python3 ./tools/dbtool.py` (Windows: `py -3 ./tools/dbtool.py`), choose `t. Maintenance Tasks`, then `2. Set zone IP addresses`, and pick one:
 
 * **Local only** (`127.0.0.1`): you play on the machine that runs the server.
 * **Local network**: players are on your LAN. `dbtool` finds the host's LAN address.
 * **Public IP**: players connect over the internet. `dbtool` looks your address up through `ident.me`.
 * **Manual entry**: anything else.
 
-⚠️ `zone_settings` is not a protected table. Every database update or reset overwrites `zoneip`, and nobody can connect until you set it again. Set it from a [module](Module-Guide) so it survives updates.
+⚠️ `zone_settings` isn't a protected table. Every database update or reset overwrites `zoneip`, and nobody can connect until you set it again. Set it from a [module](Module-Guide) and you'll never have to think about it.
 
 For a public server, forward these ports on your router and open them in your firewall:
 
@@ -56,7 +56,7 @@ Add TCP 8088 only if you set `ENABLE_HTTP` in `network.lua`.
 
 ## Customise the server
 
-Editing the repo's files is fine while you learn. Once you pull updates regularly, your edits will conflict with ours. Move them into [modules](Module-Guide).
+Hacking on the repo's files is fine while you learn. Once you start pulling updates, your edits will fight with ours. Move them into [modules](Module-Guide).
 
 ## Run a public server
 

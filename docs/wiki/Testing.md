@@ -14,7 +14,7 @@ Helpers are available to simulate client interactions as if they had come from a
 ## Limitations
 
 - Multi-process tests are not yet supported. It is not possible to spawn players in a way that emulates them being on different `xi_map` processes.
-- `xi_test` runs a `WorldEngine` in the same process, linked to the map engine over in-process ZMQ. The map side doesn't pump incoming IPC in tests, so messages from the world server aren't handled yet.
+- `xi_test` runs a `WorldEngine` in the same process, linked to the map engine over in-process ZMQ. The map side doesn't pump incoming IPC in tests, so anything the world server sends is ignored for now.
 
 ## Getting Started
 
@@ -51,7 +51,7 @@ In a terminal/shell/your IDE debug configuration, target the `xi_test` binary/la
 ./xi_test --keep-going --tag 'magic' --file 'systems'
 ```
 
-C++ unit tests (Catch2, under `src/test/tests`) run first. If any of them fail, `xi_test` exits without running the Lua suite.
+C++ unit tests (Catch2, under `src/test/tests`) run first. If any fail, `xi_test` bails before the Lua suite runs.
 
 ## Arguments
 
@@ -68,7 +68,7 @@ C++ unit tests (Catch2, under `src/test/tests`) run first. If any of them fail, 
 | --output     | Test report path (*.json)                                     | --output report.ctrf.json |
 | --retry      | Retry a failed test up to N times.                            | --retry 5                 |
 
-`xi_test` also accepts `--watch`, but it isn't implemented yet.
+`xi_test` also takes `--watch`. It doesn't do anything yet.
 
 ## Output formats
 
@@ -635,7 +635,7 @@ player.events:finish()         -- finish the current event
 player.events:expectNotInEvent() -- assert we are no longer in an event
 ```
 
-**The `eventId`, `updates` and `finishOption` values must come from a real event dump; never invent them.** See the [Interaction Framework Migration guide](https://github.com/LandSandBoat/server/blob/base/docs/ai_agents/interaction-framework-migration.md) for how to obtain them.
+**The `eventId`, `updates` and `finishOption` values must come from a real event dump. Never make them up.** The [Interaction Framework Migration guide](https://github.com/LandSandBoat/server/blob/base/docs/ai_agents/interaction-framework-migration.md) says where to get them.
 
 ### BCNM (player.bcnm)
 

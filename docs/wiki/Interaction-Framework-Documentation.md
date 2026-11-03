@@ -276,7 +276,7 @@ return {
 Framework internals
 ----
 
-Put the container file in `scripts/quests/<area>/`, `scripts/missions/<expansion>/` or `scripts/battlefields/<zone>/`. The server finds every container there on startup, and the handlers from the file will automatically be hooked up to the NPCs and zones.
+Put the container file in `scripts/quests/<area>/`, `scripts/missions/<expansion>/` or `scripts/battlefields/<zone>/`. The server picks up every container in those folders on startup and hooks its handlers up to the NPCs and zones for you.
 
 Since the framework has to be backwards-compatible with existing quest logic in each NPC/zone file, it will prioritize the different events/triggers generally as follows:
 

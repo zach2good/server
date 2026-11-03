@@ -141,7 +141,7 @@ Attached to: Your instance
 ### Setting up your LSB Server
 
 - Follow the Linux section of the [Quick Start Guide](Quick-Start-Guide).
-- Since this is not a particularly powerful machine, the build step might take a while.
+- This isn't a powerful machine, so the build will take a while.
   - If it looks like it's stalled on the Linking stage, hold tight, it's a long step.
   - Don't close your original SSH window!
   - You can open a second SSH window and use `htop` to confirm that your machine is busy working, not stalled.
@@ -156,7 +156,7 @@ user    29m31.597s
 sys     3m1.356s
 ```
 
-- You need to set your zone IPs to your public IP.
+- Point your zone IPs at your public IP.
 - Activate the virtual environment from the Quick Start Guide with `source .venv/bin/activate`, then launch `python3 tools/dbtool.py`
 - `t. Maintenance Tasks`
 - `2. Set zone IP addresses`

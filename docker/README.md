@@ -37,7 +37,7 @@ To increase the efficiency and avoid a full import every time the container is r
 
 #### Port binding
 
-The server executables running within the container listen on these ports:
+Inside the container, the server listens on these ports:
 
 | Port | Protocol | Process |
 | --- | --- | --- |

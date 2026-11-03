@@ -14,7 +14,7 @@ Since a lot of things aren't loaded, these are only capable of getting the IDs o
 
 These are also available while hot-reloading these files.
 
-While doing lookup by name, use the `script` field of the entity in `data/zones/<zone>/mobs.yaml` or `data/zones/<zone>/npcs.yaml`. Instanced zones also search the zones their instances overlay.
+While doing lookup by name, use the `script` field of the entity in `data/zones/<zone>/mobs.yaml` or `data/zones/<zone>/npcs.yaml`. In an instanced zone, the lookup also searches the zones its instances sit on top of.
 
 **WARNING:** If you cache the results of these lookups somewhere and then you hot-reload the IDs file, you might get results you don't expect. Be careful!
 

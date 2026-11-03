@@ -1,57 +1,69 @@
 # Interaction Framework Migration & Verification Guide
 
 ## 1. Overview
-The project is migrating from "Old-Style" NPC scripts (hardcoded logic in `onTrigger`) to the **Interaction Framework (IF)**. This centralizes quest/mission logic, improves readability, and reduces NPC scripts to minimal stubs.
 
-## 2. Information Discovery
+We're moving old-style NPC scripts, with quest logic hardcoded in `onTrigger`, over to the **Interaction Framework (IF)**. Quest and mission logic ends up in one place, it's easier to read, and the NPC scripts shrink to stubs.
 
-## Retail Captures
-Retail packet captures are essential for accurate migrations. They provide the exact sequence of events, NPC positions, and parameters needed for the Interaction Framework. (See the [Retail Packet Captures Format Guide](retail-packet-captures.md) for detailed folder structures).
-- **`caplog` (Chat Logs):** Start here to understand the quest flow. The capturer's notes and NPC dialogue will help you identify which events correspond to which quest steps.
-- **`eventview/simple` (Simplified Events):** Use these logs to map raw packets directly to Interaction Framework calls:
-  - **`CEventPacket` (`0x032`/`0x034`):** The `EventPara` value is the Event ID. This directly maps to your IF `quest:progressEvent(id)` or `quest:event(id)` calls.
-  - **`CMessageSpecialPacket` (`0x02A`):** The `MessageNumber` value is the Text ID. This directly maps to your IF `quest:messageSpecial(id)` calls (often used for non-standard dialogues or system messages like checking doors/sarcophagi).
-  - **`CMessageNamePacket` (`0x027`):** The `MesNum` value (sometimes requiring a bitwise `& 0xFFFF` depending on the logger output) is the standard chat dialogue ID. This maps to IF `quest:messageName(id)` or standard text lookups.
-- **`npclogger/database` (NPC Data):** Use the `.lua` files here to populate or verify NPC coordinates and properties in `data/zones/<zone>/npcs.yaml` or to format your NPC script headers correctly.
-- **`packetviewer` (Raw Packets):** For complex interactions that `eventview` doesn't fully capture, you can dive into the raw packets here to understand what the client is sending and receiving.
+## 2. Where to find things
 
-### Game Data
-- **NPC IDs & Positions:** Check `data/zones/<zone>/npcs.yaml`. NPCs are keyed by their 8-digit id, with the position in `at: [x, y, z, rotation]`. Instanced zones still use `sql/npc_list.sql`.
-- **Item IDs:** Check `sql/item_basic.sql`. If an item constant is missing from Lua, find the ID here and use it directly or add it to the enum.
+### Retail captures
 
-### Global Registries (Lua Enums)
-- **Quest IDs:** `scripts/globals/quests.lua`.
-- **Mission IDs:** `scripts/globals/missions.lua`.
-- **Item Constants:** `scripts/enum/item.lua`.
-- **Key Item Constants:** `data/enums/key_item.yaml`.
-- **Zone Constants:** `data/enums/zone.yaml` (generates `xi.zone`).
+Captures give you the exact event order, NPC positions and parameters. Use them. The [Retail Packet Captures Format Guide](retail-packet-captures.md) has the folder layout.
 
-### Retail Event Dumps
-The `sruon/FFXI-EventsDump` repository is the source of truth for retail event IDs and dialogue.
-- **Nearby Repo:** If the repo is cloned next to this one, access it via `../FFXI-EventsDump/dumps/<Zone_Name>`.
-- **Remote Access:** If there's no local clone, fetch the raw markdown files from GitHub.
-- **Strings:** Each zone folder has a `strings.txt` file. Map the decimal/hex IDs in the `.md` files to these strings to verify dialogue.
+- `caplog` (chat logs): start here for the quest flow. The capturer's notes and the NPC dialogue tell you which event belongs to which step.
+- `eventview/simple` (simplified events): maps packets straight to IF calls.
+  - `CEventPacket` (`0x032`/`0x034`): `EventPara` is the event id. That's your `quest:progressEvent(id)` or `quest:event(id)`.
+  - `CMessageSpecialPacket` (`0x02A`): `MessageNumber` is the text id. That's `quest:messageSpecial(id)`, often for system messages or odd bits of dialogue like checking a door or a sarcophagus.
+  - `CMessageNamePacket` (`0x027`): `MesNum` is the normal chat dialogue id. Some loggers need a `& 0xFFFF` on it. It maps to `quest:messageName(id)` or a normal text lookup.
+- `npclogger/database` (NPC data): the `.lua` files here give you NPC coordinates and properties for `data/zones/<zone>/npcs.yaml`, and what you need for the NPC script header.
+- `packetviewer` (raw packets): for interactions `eventview` doesn't fully cover. Shows what the client sent and received.
 
-## 3. The Migration Workflow
+### Game data
 
-### Step 1: Research (The "Wiki Triangulation")
-1.  Check the [Japanese wiki](https://wiki.ffo.jp), [BG-Wiki](https://www.bg-wiki.com) and [FFXIclopedia](https://ffxiclopedia.fandom.com). When they disagree, trust them in that order and say so.
-2.  Compare steps, item requirements, and NPC dialogue descriptions.
-3.  Note any "Wait until Japanese Midnight" or "Zone out/in" requirements.
+- NPC ids and positions: `data/zones/<zone>/npcs.yaml`. NPCs are keyed by their 8-digit id, with the position in `at: [x, y, z, rotation]`. Instanced zones still use `sql/npc_list.sql`.
+- Item ids: `sql/item_basic.sql`. If the Lua enum is missing an item, take the id from here and either use it directly or add it to the enum.
 
-### Step 2: Implementation (The IF File)
-Create the appropriate file in `scripts/quests/`, `scripts/missions/`, or `scripts/quests/hiddenQuests/`.
+### Lua enums
 
-- **Choosing the Container Class:**
-    - **Quests:** `local quest = Quest:new(xi.questLog.LOG_NAME, xi.quest.id.area.QUEST_NAME)`
-    - **Missions:** `local mission = Mission:new(xi.mission.log_id.LOG_NAME, xi.mission.id.area.MISSION_NAME)`
-    - **Hidden Quests:** `local quest = HiddenQuest:new('UniqueStringName')` (Used for non-logged content like Trust acquisitions or Mog House expansions).
+- Quest ids: `scripts/globals/quests.lua`.
+- Mission ids: `scripts/globals/missions.lua`.
+- Items: `scripts/enum/item.lua`.
+- Key items: `data/enums/key_item.yaml`.
+- Zones: `data/enums/zone.yaml` (generates `xi.zone`).
 
-- **Why they are different:**
-    - **Variable Scoping:** Each class automatically prefixes variables (e.g., `Quest[1][2]Prog`, `Mission[4][10]Prog`, or `UniqueStringNameProg`). This prevents collisions across different types of content.
-    - **Check Arguments:** `Quest` and `Mission` objects automatically check their respective logs/statuses when determining if a section's `check` function should run. `HiddenQuest` relies entirely on custom variables.
+### Retail event dumps
 
-- **Basic Structure:**
+`sruon/FFXI-EventsDump` is the source of truth for retail event ids and dialogue.
+
+- If it's cloned next to this repo, look in `../FFXI-EventsDump/dumps/<Zone_Name>`.
+- If not, fetch the raw markdown files from GitHub.
+- Each zone folder has a `strings.txt`. Match the decimal or hex ids in the `.md` files against it to check the dialogue.
+
+## 3. Migrating a quest
+
+### Step 1: Research the wikis
+
+1. Check the [Japanese wiki](https://wiki.ffo.jp), [BG-Wiki](https://www.bg-wiki.com) and [FFXIclopedia](https://ffxiclopedia.fandom.com). When they disagree, trust them in that order and say so.
+2. Compare the steps, item requirements and what the NPCs say.
+3. Look out for "wait until Japanese midnight" and "zone out and back in" requirements.
+
+### Step 2: Write the IF file
+
+Create it in `scripts/quests/`, `scripts/missions/` or `scripts/quests/hiddenQuests/`.
+
+Pick the container class:
+
+- Quests: `local quest = Quest:new(xi.questLog.LOG_NAME, xi.quest.id.area.QUEST_NAME)`
+- Missions: `local mission = Mission:new(xi.mission.log_id.LOG_NAME, xi.mission.id.area.MISSION_NAME)`
+- Hidden quests: `local quest = HiddenQuest:new('UniqueStringName')`, for content that isn't in a log, like Trust acquisitions or Mog House expansions.
+
+They differ in two ways:
+
+- Each class prefixes its variables (`Quest[1][2]Prog`, `Mission[4][10]Prog`, `UniqueStringNameProg`), so different kinds of content can't collide.
+- `Quest` and `Mission` check their own log and status when deciding whether to run a section's `check` function. `HiddenQuest` relies entirely on your own variables.
+
+The basic shape:
+
 ```lua
 local quest = Quest:new(xi.questLog.LOG_NAME, xi.quest.id.area.QUEST_NAME)
 quest.reward =
@@ -74,14 +86,17 @@ quest.sections =
     },
 }
 ```
-- **Trading:** Use `onTrade` within the NPC block. Always use `npcUtil.tradeHasExactly` or `npcUtil.tradeHas`.
-- **Zoning:** Use `quest:setMustZone(player)` and `quest:getMustZone(player)`.
-- **Trigger Areas:** Handle approach-based cutscenes via `onTriggerAreaEnter`.
 
-### Step 3: NPC Script Cleanup
-1.  **Header:** Follow the [NPC Script Header Guide](npc-header-guide.md).
-2.  **Logic Removal:** Strip all `if/else` quest blocks.
-3.  **Minimal Stub:** If no non-quest logic remains, convert to:
+- Trades: use `onTrade` inside the NPC block, always with `npcUtil.tradeHasExactly` or `npcUtil.tradeHas`.
+- Zoning: `quest:setMustZone(player)` and `quest:getMustZone(player)`.
+- Cutscenes you trigger by walking up to something: `onTriggerAreaEnter`.
+
+### Step 3: Clean up the NPC script
+
+1. Fix the header. See the [NPC Script Header Guide](npc-header-guide.md).
+2. Strip out every quest `if`/`else` block.
+3. If nothing but quest logic was there, cut it down to:
+
 ```lua
 ---@type TNpcEntity
 local entity = {}
@@ -94,26 +109,33 @@ end
 
 return entity
 ```
-4.  **Preservation:** Keep patrol logic (`onSpawn`), Trust logic, or complex non-migrated quests in the script.
 
-### Step 4: Default Actions
-If an NPC has a single default interaction (e.g., `player:startEvent(200)`), move it to `scripts/zones/<Zone>/DefaultActions.lua`:
+4. Keep patrol logic (`onSpawn`), Trust logic and any complex quests that haven't been migrated yet.
+
+### Step 4: Default actions
+
+If the NPC has a single default interaction (say `player:startEvent(200)`), move it to `scripts/zones/<Zone>/DefaultActions.lua`:
+
 ```lua
 ['NPC_Name'] = { event = 200 },
 ```
 
-### Step 5: Global Marking
-Mark the quest in `scripts/globals/quests.lua` with the specific partial conversion tag:
+### Step 5: Mark the quest
+
+Tag the quest in `scripts/globals/quests.lua` as a partial conversion:
+
 ```lua
 QUEST_NAME = 123, -- + Partial conversion. TODO: This needs completing with retail caps
 ```
 
-## 4. Advanced Interaction Techniques
-- **Container Action Helpers (`event` vs `progressEvent`):** Under the hood (`scripts/globals/interaction/container.lua`), actions like `quest:progressEvent(id)` are simply syntactic sugar for creating a base Event and applying a priority modifier (e.g. `Event:new(id):progress()`). The same applies to `quest:cutscene(id)` or `quest:replaceEvent(id)`. Use `progressEvent` for critical quest progression to ensure it overrides default NPC behaviors.
-- **Event Updates:** Handle multi-choice menus via `onEventUpdate`.
-- **Bitmasks:** Use `quest:setVarBit(player, 'Prog', bit)` and `quest:isVarBitsSet(player, 'Prog', bit)`.
-- **Variables:** Prefer `quest:getVar` over `player:getCharVar` for framework-managed persistence.
-- **Timers:** Use `quest:setTimedVar(player, 'Timer', JstMidnight())` for daily repeats.
+## 4. Other techniques
 
-## 5. Verification Golden Rule
-**Never assume existing logic is correct.** Existing scripts often skip "Reminder" dialogue or "Post-Quest" flavor text. Always cross-reference the `sruon/FFXI-EventsDump` for every NPC involved in the quest to ensure 100% dialogue coverage.
+- `event` vs `progressEvent`: in `scripts/globals/interaction/container.lua`, `quest:progressEvent(id)` is just sugar for a base Event with a priority modifier (`Event:new(id):progress()`). Same for `quest:cutscene(id)` and `quest:replaceEvent(id)`. Use `progressEvent` for real quest progress so it beats the NPC's default behaviour.
+- Multi-choice menus: `onEventUpdate`.
+- Bitmasks: `quest:setVarBit(player, 'Prog', bit)` and `quest:isVarBitsSet(player, 'Prog', bit)`.
+- Variables: prefer `quest:getVar` to `player:getCharVar`, so the framework manages them.
+- Daily repeats: `quest:setTimedVar(player, 'Timer', JstMidnight())`.
+
+## 5. Don't trust the old script
+
+**Never assume existing logic is correct.** Old scripts often skip reminder dialogue and post-quest flavour text. Check `sruon/FFXI-EventsDump` for every NPC in the quest, so you cover all of the dialogue.

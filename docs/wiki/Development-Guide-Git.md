@@ -20,7 +20,7 @@ Git is important, it's important that you use it correctly.
 
 People read commit titles in `git log` and `git blame` for years after your PR merges. Write the title for them, not for your reviewer.
 
-The title is `Scope: Verb object`. The scope names the area of the code, then comes an imperative verb, a capital letter after the colon, and no full stop:
+Titles look like `Scope: Verb object`. The scope is the area of the code. After the colon comes an imperative verb with a capital letter, and there's no full stop:
 
 ```txt
 Trust: Allow trusts to heal themselves
@@ -28,9 +28,9 @@ Core: Add safety check to entity:canSee(...) binding
 DB, SQL: Add caching layer fallback
 ```
 
-Older commits use `[trust] ...`. Use the colon form for new work.
+You'll see `[trust] ...` in older commits. Don't copy it.
 
-Add a body only when the title can't carry the reason:
+Only add a body when the title can't carry the why:
 
 ```txt
 Trust: Allow trusts to heal themselves
@@ -45,9 +45,9 @@ CI (`tools/ci/sanity_checks/git.py`) rejects a title that:
 - is GitHub's default `Update file.ext`,
 - starts with a throwaway word such as `oops` or `lol`.
 
-When we ask for changes, or CI fails, amend or squash your commits and force-push. Don't add commits that only answer review.
+When we ask for changes, or CI fails, amend or squash and force-push. A commit that only answers review means nothing once it's merged.
 
-Some examples of **what not to do**:
+Some examples of **WHAT NOT TO DO**:
 
 ```txt
 Update file.txt

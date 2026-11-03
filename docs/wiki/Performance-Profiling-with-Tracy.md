@@ -1,13 +1,13 @@
 # Tracy
 
-[Tracy](https://github.com/wolfpld/tracy) is a real-time, nanosecond-resolution frame and sampling profiler. We build its client into the server, and you watch or record the results with Tracy's own tools.
+[Tracy](https://github.com/wolfpld/tracy) is a real-time, nanosecond-resolution frame and sampling profiler. We can't know how good or bad our performance is until we measure it, so we build its client into the server and you look at the results with Tracy's own tools.
 
 ![image](https://user-images.githubusercontent.com/1389729/97106613-832f0100-16cb-11eb-8452-267e406bceb9.png)
 
 Tracy has two parts:
 
-- **The client**, compiled into `xi_map` and `xi_test`. It sends profiling data over the network.
-- **The server tools**, which receive it: `tracy-profiler` (the GUI), `tracy-capture` (records to a file without a GUI) and `tracy-csvexport` (turns a recording into a CSV).
+- The client, compiled into `xi_map` and `xi_test`. It sends profiling data over the network.
+- The server tools, which receive it: `tracy-profiler` (the GUI), `tracy-capture` (records to a file without a GUI) and `tracy-csvexport` (turns a recording into a CSV).
 
 ## Build
 
@@ -21,12 +21,12 @@ Windows: `py -3 .\tools\build.py -p tracy`. To run CMake yourself, use `cmake --
 
 The build produces `xi_map_tracy` and `xi_test_tracy`, so they can sit beside your normal binaries. It also puts the server tools in the repo root:
 
-- **Windows:** CMake downloads Tracy's release zip, with `tracy-profiler.exe`, `tracy-capture.exe`, `tracy-csvexport.exe` and the rest.
-- **Linux and macOS:** CMake builds `tracy-capture` and `tracy-csvexport` from source. To use the GUI, build `tracy-profiler` yourself from the [Tracy repo](https://github.com/wolfpld/tracy), or copy the trace to a Windows machine.
+- On Windows, CMake downloads Tracy's release zip, with `tracy-profiler.exe`, `tracy-capture.exe`, `tracy-csvexport.exe` and the rest.
+- On Linux and macOS, CMake builds `tracy-capture` and `tracy-csvexport` from source. To use the GUI, build `tracy-profiler` yourself from the [Tracy repo](https://github.com/wolfpld/tracy), or copy the trace to a Windows machine.
 
-CMake fetches the Tracy client at the version pinned by `TRACY_VERSION` in `cmake/tools/Tracy.cmake`, currently 0.14.1. The GUI must be the same version as the client, or it refuses to connect. Check for `TRACY_ENABLE: ON` in the configure output.
+CMake fetches the Tracy client at the version pinned by `TRACY_VERSION` in `cmake/tools/Tracy.cmake`, currently 0.14.1. The GUI has to be the same version as the client, or it won't connect. Check for `TRACY_ENABLE: ON` in the configure output.
 
-Always profile `RelWithDebInfo`. A `Debug` build is many times slower and won't show you real runtime costs.
+Always profile `RelWithDebInfo`. A `Debug` build is many times slower, and you'll spend a week optimising code the compiler would have fixed for free.
 
 ### Visual Studio
 
@@ -48,13 +48,13 @@ Then start `tracy-profiler`, enter the address of the machine running `xi_map_tr
 
 ![image](https://github.com/LandSandBoat/server/assets/1389729/89b7bffe-a170-4398-b08c-d04e8c392fa3)
 
-The client runs on demand. It collects nothing until a profiler connects, so you can attach and detach whenever you like. Attach once startup has finished, unless startup is what you want to measure. Startup produces a huge amount of data and tells you little about runtime performance.
+The client runs on demand. It collects nothing until a profiler connects, so attach and detach whenever you like. Wait until startup has finished, unless startup is what you're after. It spews a huge amount of data and tells you very little about runtime performance.
 
 Once connected, you'll see something like this:
 
 ![image](https://user-images.githubusercontent.com/1389729/184949465-373513d3-5af2-4737-8734-3bf12e14a24f.png)
 
-To save the trace, click the Wi-Fi icon. Traces can be very large.
+To save the trace, click the Wi-Fi icon. **Traces can be very large!** Plan accordingly.
 
 ![image](https://user-images.githubusercontent.com/1389729/184949741-25c5c6a9-fa5e-4beb-80b2-3d0202058aa2.png)
 
@@ -66,7 +66,7 @@ Each Tracy-enabled process needs its own port. Set `TRACY_PORT` before you start
 TRACY_PORT=8087 ./xi_map_tracy --ip 127.0.0.1 --port 54231
 ```
 
-Don't use `8088`, which is the HTTP API's default port.
+Don't use `8088`. The HTTP API lives there by default.
 
 ## Capture without the GUI
 
@@ -125,7 +125,7 @@ Click an entry in `Statistics` to drill into that function.
 
 ## Gotchas
 
-Many things affect performance:
+Lots of things affect performance:
 
 - Platform (Windows, Linux, macOS)
 - Type of build (Debug, RelWithDebInfo, Release)

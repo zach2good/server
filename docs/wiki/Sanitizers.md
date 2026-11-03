@@ -2,7 +2,7 @@
 
 LSB supports several sanitizer build types via CMake, defined in `cmake/tools/Sanitizers.cmake`.
 
-The build types set GCC and Clang flags only. They work on Linux and, apart from `LSAN` and `MSAN`, on macOS. They do nothing with MSVC.
+The build types only set GCC and Clang flags. They work on Linux, and on macOS apart from `LSAN` and `MSAN`. With MSVC they do nothing at all.
 
 For sanitizers on Windows, see the [Microsoft documentation](https://learn.microsoft.com/en-us/cpp/sanitizers/asan?view=msvc-170). This article doesn't apply there.
 

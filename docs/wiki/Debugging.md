@@ -42,7 +42,7 @@ The loop is pretty tight, you'll have to spam CTRL+C a few times to get back to 
 
 **Example output (gdb.txt):**
 
-This sample comes from an older version of the server. Function names and file paths have changed since, but the layout of the output is the same.
+This sample is from an older server, so the names and paths have moved on. The layout of the output hasn't.
 
 ```cpp
 12074    inline int32 CLuaBaseEntity::spawnTrust(lua_State *L)

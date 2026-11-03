@@ -29,8 +29,8 @@ The dividers are exactly 35 dashes. The Lua style check rejects any other length
 
 ### Zone name and id
 
-* **Zone name**: the folder name with spaces, e.g. `scripts/zones/Windurst_Walls/` is `Windurst Walls`.
-* **Zone id**: in `data/enums/zone.yaml`, e.g. `windurst_walls: 239`. The Lua enum `xi.zone.WINDURST_WALLS` is generated from it.
+- Zone name: the folder name with spaces, so `scripts/zones/Windurst_Walls/` is `Windurst Walls`.
+- Zone id: in `data/enums/zone.yaml`, for example `windurst_walls: 239`. The Lua enum `xi.zone.WINDURST_WALLS` is generated from it.
 
 ### NPC name and position
 
@@ -43,8 +43,8 @@ NPCs live in `data/zones/<zone>/npcs.yaml`, keyed by NPC id:
     at:           [65.175, -2.499, -63.231, 76]
 ```
 
-* Use `display_name` in the header. It's the name players see.
-* `at` is `[x, y, z, rotation]`. The `!pos` line uses the first three, then the zone id.
+- Use `display_name` in the header. It's the name players see.
+- `at` is `[x, y, z, rotation]`. The `!pos` line uses the first three, then the zone id.
 
 Instanced and dynamic zones (Nyzul Isle, Ilrusi Atoll and similar) still keep their NPCs in `sql/npc_list.sql`.
 

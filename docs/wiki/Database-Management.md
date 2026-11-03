@@ -5,7 +5,7 @@ mysql -u server -ppassword xidb < server/sql/backups/custom.sql
 ```
 
 # dbtool
-The database update, backup, and restore tool is called dbtool and is located in the `server\tools\` folder. Run it from the repo root: `py -3 .\tools\dbtool.py` on Windows, or `python3 ./tools/dbtool.py` on Linux with the `.venv` from the Quick Start Guide activated. On first run it creates `tools/config.yaml`, which saves its settings.
+The database update, backup, and restore tool is called dbtool and is located in the `server\tools\` folder. Run it from the repo root: `py -3 .\tools\dbtool.py` on Windows, or `python3 ./tools/dbtool.py` on Linux with the `.venv` from the Quick Start Guide activated. The first time you run it, it creates `tools/config.yaml` to hold its settings.
 
 - Backup
   - Using the default interface, select "3. Backup" and press `y` to create a full database backup in `server\sql\backups\`.
@@ -25,10 +25,10 @@ The database update, backup, and restore tool is called dbtool and is located in
 
   **OR**
 
-  - Use the command `dbtool.py update`. This performs an express update when possible, otherwise a full one, then runs any needed migrations and updates `CLIENT_VER` in `settings/login.lua` if the release changed it.
+  - Use the command `dbtool.py update`. This does an express update when it can and a full one when it can't, then runs any needed migrations and updates `CLIENT_VER` in `settings/login.lua` if the release changed it.
     - It only backs up first if you turn on automatic backups in the "s. Settings" menu (`auto_backup` in `config.yaml`).
     - Use the command `dbtool.py update full` to skip the express update and import all files in `server\sql\` except the protected tables.
   - Use the command `dbtool.py migrate` to run migrations without importing anything.
 
 ## ⚠Protected Tables⚠
-  dbtool leaves the player data tables untouched during updates, unless a table is missing from the database. The same list is used for `dbtool.py backup lite`. It is the `player_data` list near the top of [`tools/dbtool.py`](https://github.com/LandSandBoat/server/blob/base/tools/dbtool.py), and includes `accounts`, `chars`, nearly every `char_*` table, `auction_house`, `delivery_box`, `linkshells` and `server_variables`. It is not stored in `config.yaml`, so to change it you have to edit `dbtool.py`.
+  dbtool leaves the player data tables untouched during updates, unless a table is missing from the database. The same list is used for `dbtool.py backup lite`. It is the `player_data` list near the top of [`tools/dbtool.py`](https://github.com/LandSandBoat/server/blob/base/tools/dbtool.py), and includes `accounts`, `chars`, nearly every `char_*` table, `auction_house`, `delivery_box`, `linkshells` and `server_variables`. It isn't in `config.yaml`. To change it, edit `dbtool.py`.

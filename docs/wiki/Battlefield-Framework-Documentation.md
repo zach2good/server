@@ -33,7 +33,7 @@ Once a Battlefield has been initially defined there are additional aspects that 
 
 Monsters in a battlefield are defined within groups. Each group is a set of monsters that share some commonality between them. A group can have some settings, modifiers and helpful callback handlers attached. For a full list of options see [Battlefield Group Parameters](#battlefield-group-parameters).
 
-This example and the pathing one below come from the legacy Limbus scripts kept in `docs/limbus/Apollyon/battlefields/se_apollyon.lua`.
+This example and the pathing one below are lifted from the legacy Limbus scripts in `docs/limbus/Apollyon/battlefields/se_apollyon.lua`.
 
 ```lua
 content.groups =
@@ -63,7 +63,7 @@ content:addEssentialMobs({ 'Eldertaur', 'Mindertaur' })
 
 ### Battlefield Loot
 
-Upon victory Battlefields spawn an Armoury Crate which will grant loot once opened. Loot is defined within groups where each group will only drop a single item unless a different `quantity` is specified. Each item has a `weight`. The weights are relative to each other within a group.
+Upon victory Battlefields spawn an Armoury Crate which will grant loot once opened. Loot is defined within groups where each group will only drop a single item unless a different `quantity` is specified. Each item has a `weight`, which only means something relative to the other weights in its group.
 
 ```lua
 content.loot =
@@ -210,7 +210,7 @@ In order to simplify mission battlefields there is a `BattlefieldMission` subcla
 
 ## Unimplemented Battlefields
 
-Every implemented battlefield uses this framework. Some zones still keep commented-out loot tables in `scripts/zones/<zone>/npcs/Armoury_Crate.lua` for battlefields that aren't implemented yet. They use raw `droprate` values, which need converting to `weight` when the battlefield is written.
+Every implemented battlefield uses this framework now. A few zones still have commented-out loot tables in `scripts/zones/<zone>/npcs/Armoury_Crate.lua` for battlefields nobody has written yet. Those use raw `droprate` values, so convert them to `weight` when you get round to it.
 
 ## Battlefield Modules
 

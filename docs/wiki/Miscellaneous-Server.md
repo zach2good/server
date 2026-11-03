@@ -67,7 +67,7 @@ This is also valid if you have particularly crash-prone content and want to prot
 
 ### How do I set it up?
 
-The quickest way is through dbtool. Under `t. Maintenance Tasks`, `b. Configure multi-process server (3 processes)` or `c. Configure multi-process server (7 processes)` spreads the zones by zone id over ports `54230` upwards. `l. Configure single-process server` puts them all back on `54230`. `l. Launch Server` on the main menu then starts one `xi_map` per port, alongside the other processes.
+dbtool will do it for you. Under `t. Maintenance Tasks`, `b. Configure multi-process server (3 processes)` or `c. Configure multi-process server (7 processes)` spreads the zones by zone id over ports `54230` upwards. `l. Configure single-process server` puts them all back on `54230`. `l. Launch Server` on the main menu then starts one `xi_map` per port, alongside the other processes.
 
 To do it by hand, take a look at the `multi` mode of our CI startup checks in [`tools/ci/startup_checks.py`](https://github.com/LandSandBoat/server/blob/base/tools/ci/startup_checks.py).
 
@@ -267,7 +267,7 @@ JP midnight is now coded to align with the retail JST midnight regardless of you
 
 Linux users can create several systemd services to automate the servers.
 
-`tools/install-systemd-service.sh` writes the services below for you. Run it from the `tools` folder, since it takes the server directory from the parent of the current one. It creates a user to run the services (`xi` by default), hands that user ownership of the server directory, and enables every service.
+`tools/install-systemd-service.sh` writes the services below for you. Run it from inside `tools`, because it treats the parent folder as the server directory. It creates a user to run the services (`xi` by default), hands that user ownership of the server directory, and enables every service.
 
 To write the services by hand instead, make sure to update `/path/to/lsb`, and the User/Group:
 

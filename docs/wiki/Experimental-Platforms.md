@@ -1,13 +1,13 @@
 # Experimental Platforms
 
-These platforms should work, but the development team doesn't use or test them, and may not be able to help you debug them. Read the [Quick Start Guide](Quick-Start-Guide) first. Apart from the notes below, the Ubuntu steps apply.
+These should work, but none of us use or test them, so we probably can't help you debug them. Read the [Quick Start Guide](Quick-Start-Guide) first. Apart from the notes below, the Ubuntu steps apply.
 
 _(click a section to expand it)_
 
 <details>
 <summary><b>macOS (bare metal)</b></summary>
 
-Use [Docker](https://github.com/LandSandBoat/server/blob/base/docker/README.md) if you can. On bare metal you'll be debugging any Homebrew, linker or LuaJIT problem yourself.
+Use [Docker](https://github.com/LandSandBoat/server/blob/base/docker/README.md) if you can. On bare metal, every Homebrew, linker or LuaJIT problem is yours to fix.
 
 ```sh
 brew install git pkg-config cmake ninja openssl mariadb zeromq luajit
@@ -26,7 +26,7 @@ Build with Apple Clang from the Xcode command line tools. Set up the database as
 <details>
 <summary><b>Linux (WSL)</b></summary>
 
-The Ubuntu steps work under WSL. [Working with WSL](Working-with-WSL) covers the extra points.
+The Ubuntu steps work under WSL. [Working with WSL](Working-with-WSL) has the extra gotchas.
 
 </details>
 
@@ -51,7 +51,7 @@ Arch marks its system Python as externally managed, so use a virtual environment
 
 Nobody has tried this in a long time. It's probably out of date.
 
-* **Power:** use a supply of at least 2.5 A. A yellow lightning bolt in the corner of the display means the Pi is throttling, and the build may take far longer or never finish.
+* **Power:** use a supply of at least 2.5 A. A yellow lightning bolt in the corner of the display means the Pi is throttling, and the build will crawl or never finish.
 * **RAM:** start the server processes one at a time if the Pi runs out of memory.
 * **LuaJIT:** your distribution's package may lack ARM fixes. If LuaJIT gives you trouble, build it from source:
 
@@ -87,6 +87,6 @@ sudo eselect repository add claytabase git https://github.com/claybie/claytabase
 sudo emaint sync -r claytabase
 ```
 
-Portage names don't always match PyPI names, so search with `emerge -s` when a guess fails.
+Portage names don't always match PyPI names. When a guess fails, search with `emerge -s`.
 
 </details>
