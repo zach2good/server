@@ -96,6 +96,15 @@ CI won't catch these. Reviewers will. The full list is the [Review Checklist](do
 - Every new value has a source. Mark guesses with `-- TODO: Capture needed` (Lua, SQL) or `# TODO: Capture needed` (YAML).
 - Comments go above the code they describe, and say why, not what.
 
+## Conventions
+
+There's one right tool for most jobs, listed in [Conventions](docs/wiki/Development-Guide.md#conventions). The ones agents get wrong:
+
+- Trades: `npcUtil.tradeHasExactly` or `npcUtil.tradeHas` to check, `player:confirmTrade()` in `onEventFinish` to take the items.
+- Rewards: `npcUtil.giveItem`, `npcUtil.giveKeyItem`, `npcUtil.giveCurrency`, never a bare `player:addItem`.
+- Pathing: `pathTo` and let C++ find the route. `pathThrough` only for a path copied from a capture. Never generate paths or waypoints in Lua.
+- `GetSystemTime()`, `math.randomInt`, `utils.clamp`, `utils.randomEntry`, `string.format`.
+
 ## Traps
 
 - Edit the YAML in `data/enums`, never the generated `scripts/enum/*.codegen.lua`, `data/schemas/*.schema.json` or anything under `build/generated`.

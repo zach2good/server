@@ -1,6 +1,6 @@
 # Review Checklist
 
-What maintainers keep pointing out in review. CI handles formatting and the [Development Guide](Development-Guide) handles style. This is the stuff only a person catches, so run your change past it before you open a PR.
+What maintainers keep pointing out in review. CI handles formatting, the [Development Guide](Development-Guide) handles style, and its [Conventions](Development-Guide#conventions) say which tool to use for trades, rewards, pathing and the like. This is the stuff only a person catches, so run your change past it before you open a PR.
 
 - [Before review](#before-review)
 - [Sources and values](#sources-and-values)

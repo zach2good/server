@@ -2,6 +2,7 @@
 
 - [Before you push](#before-you-push)
 - [All files](#all-files)
+- [Conventions](#conventions)
 - [C++](#c)
 - [Lua](#lua)
 - [YAML and data](#yaml)
@@ -39,6 +40,7 @@ Or one at a time:
 | Python | `black --check <file.py>` and `pylint --errors-only <file.py>` |
 | Data schema | `cmake --build <build dir> --target data_schema_check` |
 | Tests | `xi_test`, see [Testing](Testing) |
+| Markdown | `npx markdownlint-cli2 <files.md>` (not in CI yet) |
 
 clang-tidy runs in CI on a clang 22 build. To run it locally, configure with `-DENABLE_CLANG_TIDY=ON`.
 
@@ -50,6 +52,64 @@ Checked on every changed file except Python and `docs/`:
 - Spaces, never tabs.
 - End with exactly one newline. No blank line at the end of the file.
 - Never two blank lines in a row.
+
+## <a id="conventions"/>Conventions
+
+There's usually one right tool for a job. Use it, even when you can see an older script doing it another way.
+
+### <a id="conventions-trades"/>Trades
+
+- Check a trade with `npcUtil.tradeHasExactly(trade, items)` when it must be those items and nothing else, or `npcUtil.tradeHas(trade, items)` when extra items are fine. Both confirm the items they matched.
+- Take the items with `player:confirmTrade()` in `onEventFinish`. It takes only the confirmed items, so the player keeps anything extra.
+- `player:tradeComplete()` takes _everything_ in the trade window. Only use it when retail does the same.
+- If you only need to know an item is there and nothing gets consumed, `trade:getItemQty(itemId) > 0` is enough.
+
+### <a id="conventions-rewards"/>Rewards
+
+- Give items, key items and currency with `npcUtil.giveItem`, `npcUtil.giveKeyItem` and `npcUtil.giveCurrency`. They check for space and print the right message. Don't call `player:addItem` and roll your own.
+- Quests and missions give rewards through `quest.reward` and `npcUtil.completeQuest`/`npcUtil.completeMission`.
+- Check the player can take the reward before you play the cutscene, not after.
+
+### <a id="conventions-movement"/>Movement and pathing
+
+- Pathfinding happens in C++. To send an entity somewhere, call `entity:pathTo(x, y, z, flags)` and let the core find the route.
+- `entity:pathThrough(points, flags)` is for a scripted path _taken from a capture_, like an NPC's patrol route. Copy the points verbatim.
+- Don't generate paths in Lua. No building routes, picking waypoints or stepping an entity along a line from `onMobRoam` or `onMobFight`. It's slow, it fights the core's own movement, and it all has to be unpicked later.
+- Use `xi.path.flag` for path flags (`xi.pathflag` is the older copy), and `xi.path.first(points)` for a path's start position.
+
+### <a id="conventions-lookups"/>IDs and lookups
+
+- Get a zone's IDs with `local ID = zones[xi.zone.X]`. Messages come from `ID.text`, entities from `ID.mob` and `ID.npc`.
+- Find entities through `IDs.lua`, by name or by position. Never hard-code an entity id. They shift with retail updates.
+- `GetMobByID` and `GetNPCByID` can return `nil`. Check before you use the result.
+
+### <a id="conventions-helpers"/>Everyday helpers
+
+| Job | Use | Not |
+| --- | --- | --- |
+| Random number | `math.random(min, max)` or `math.randomInt(min, max)` | bare `math.random()` |
+| Random table entry | `utils.randomEntry(t)` | your own index maths |
+| Clamp a value | `utils.clamp(value, min, max)` | `math.min(math.max(...))` |
+| Current time | `GetSystemTime()` | `os.time()` |
+| Build a string | `string.format` | `..` |
+
+### <a id="conventions-mobs"/>Mobs
+
+- Use the `entity.onMob*` callbacks. Reach for `addListener` only when a callback can't do it.
+- Set modifiers with `setMod` in `onMobSpawn`. `addMod` stacks up across respawns.
+- Put modifiers that belong to a status effect on the effect (`effect:addMod`), so they go away with it.
+
+### <a id="conventions-quests"/>Quests and NPCs
+
+- Quests and missions use the [Interaction Framework](Interaction-Framework-Documentation). NPC scripts don't hold quest logic.
+- `quest:event()` for filler and reminders. `quest:progressEvent()` when the event moves the quest on.
+- An NPC's default event goes in the zone's `DefaultActions.lua`, not in its script.
+
+### <a id="conventions-cpp"/>C++
+
+- Database access goes through `db::preparedStmt`, reading columns by name.
+- Ownership through `Box`, maybe-values through `Maybe`. See [Project types](#c-types).
+- Entity downcasts use `dynamic_cast`, checked straight away.
 
 ## <a id="c"/>C++
 
