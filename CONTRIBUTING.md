@@ -29,7 +29,7 @@
 
 ## Technical Guidelines
 
-- For more specific guides on how to contribute using Git, GitHub, C++, Lua, SQL, Python, other technical changes, and how to style your code, etc. please see the [Development Guide](https://github.com/LandSandBoat/server/wiki/Development-Guide) and [Development Landing Page](https://github.com/LandSandBoat/server/wiki/Development) as well as other pages in the [Wiki](https://github.com/LandSandBoat/server/wiki).
+- For more specific guides on how to contribute using Git, GitHub, C++, Lua, SQL, Python, other technical changes, and how to style your code, etc. please see the [Development Guide](https://github.com/LandSandBoat/server/wiki/Development-Guide), the [Review Checklist](https://github.com/LandSandBoat/server/wiki/Review-Checklist) and [Development Landing Page](https://github.com/LandSandBoat/server/wiki/Development) as well as other pages in the [Wiki](https://github.com/LandSandBoat/server/wiki).
 - If you use an AI coding agent, or if you are one, read [AI Agents](docs/ai_agents/README.md) first. It sets out what we expect from AI-assisted contributions.
 - The wiki is written in [docs/wiki](docs/wiki/README.md). Edit the pages there and open a pull request; merging to `base` publishes them.
 

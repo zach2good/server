@@ -83,6 +83,18 @@ Single checks, the full style rules and the tools they need are in the [Developm
 - A new C++ Lua binding needs a matching entry in `scripts/specs`.
 - YAML under `data/` must pass `python3 tools/yaml/format.py <files> --check`.
 
+## Review rules
+
+CI doesn't catch these, but reviewers do. The full list is the [Review Checklist](docs/wiki/Review-Checklist.md). Read it before you write Lua, C++ or SQL. The ones raised most often:
+
+- No one-line Lua helpers and no function used in only one place. Inline them.
+- Return early instead of nesting. No guard the next expression already covers. No nil checks on values that always exist.
+- Tables over `if`/`elseif` chains. Enums over magic numbers. No local for a value used once.
+- Put code where it belongs: quest logic in `scripts/quests`, mob behaviour in the mob script or a mixin, no logic in zone scripts or `IDs.lua`, entity iteration in C++.
+- No new binding, setting or enum entry without a use in the same change.
+- Every new value has a source. Mark guesses with `-- TODO: Capture needed` (Lua, SQL) or `# TODO: Capture needed` (YAML).
+- Comments go above the code they describe, and say why, not what.
+
 ## Traps
 
 - Edit the YAML in `data/enums`, never the generated `scripts/enum/*.codegen.lua`, `data/schemas/*.schema.json` or anything under `build/generated`.

@@ -13,6 +13,8 @@ Read the [Contributing Guide](https://github.com/LandSandBoat/server/blob/base/C
 
 Most rules below are enforced by CI. Where a rule is a preference rather than a check, it says so. When in doubt, copy the style of recent code nearby.
 
+CI doesn't catch everything. The [Review Checklist](Review-Checklist) lists what reviewers raise most often, such as one-line helper functions, logic in the wrong file and values with no source.
+
 ## <a id="before-you-push"/>Before you push
 
 Commit first. The checks compare against a git ref and some of them read the working tree.

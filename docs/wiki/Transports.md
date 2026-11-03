@@ -2,7 +2,7 @@
 
 Ships and elevators live in the zone data files rather than in SQL or Lua, and both run off the same server tick. This page covers how to declare one and how to measure its numbers from a retail packet capture.
 
-Every value in these files should come from a capture. If you cannot measure something, leave it out and mark it `-- Capture needed` rather than filling it with a plausible number.
+Every value in these files should come from a capture. If you cannot measure something, leave it out and mark it `# TODO: Capture needed` rather than filling it with a plausible number.
 
 All figures on this page come from captures taken between 2026-08-23 and 2026-08-29 on the current retail client.
 

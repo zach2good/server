@@ -39,6 +39,7 @@ Articles in this category are general development topics relating to overall dev
 * [Contributing Guide](https://github.com/LandSandBoat/server/blob/base/CONTRIBUTING.md)
 * [Use of AI and Code Generation Tools](https://github.com/LandSandBoat/server/blob/base/docs/ai_agents/README.md)
 * [Development Guide](Development-Guide)
+* [Review Checklist](Review-Checklist)
 * [Git Guide](Development-Guide-Git)
 * [Debugging](Debugging)
 * [Testing](Testing)
