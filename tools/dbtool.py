@@ -657,7 +657,7 @@ def adjust_mysql_bin():
     global mysql_bin
     while True:
         choice = input(
-            "Please enter the path to your MySQL bin directory or press enter to check PATH.\ne.g. C:\\Program Files\\MariaDB 10.6\\bin\\\n> "
+            "Please enter the path to your MySQL bin directory or press enter to check PATH.\ne.g. C:\\Program Files\\MariaDB 10.11\\bin\\\n> "
         ).replace("\\", "/")
         if choice == "":
             mysql_file = shutil.which("mysql")
