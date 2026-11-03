@@ -100,7 +100,8 @@ transport:
       places:
         staging: [-43.000, 10.450, 190.000]
       boundary:  477
-      voyage:    kazham_jeuno_airship
+      voyage:
+        - kazham_jeuno_airship
       every:     864
       disembark: 456
       offset:    650
@@ -130,7 +131,8 @@ State `ship:` once for the zone. Several runs can share it, each taking its turn
 | `dock`      | The berth, as x, y, z and an optional facing. Omit on a decorative ship that never moves |
 | `places`    | Named spots the phases can move to. `dock` is always available without declaring it      |
 | `boundary`  | Boarding area. Whoever stands in it rides along when the ship departs                    |
-| `voyage`    | The zone passengers cross. Omit if the run carries nobody                                |
+| `voyage`    | List of zones passengers may cross. Omit if the run carries nobody                       |
+| `reverse`   | Set when the client plays the voyage zone's scenery path backwards                       |
 | `every`     | Cycle length in seconds                                                                  |
 | `offset`    | Seconds the cycle is shifted by                                                          |
 | `disembark` | Seconds into the cycle when riders in the crossing are put ashore                        |

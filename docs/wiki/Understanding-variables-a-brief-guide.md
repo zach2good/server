@@ -20,36 +20,36 @@ This is a global scoped lua var. Still in memory and not stored, but hangs out i
 <br><br>
 
 ```lua
--- Sets a "localvar" named "string" on an entity (such as player, mob, npc) to 3
-entity:setLocalVar("string", 3)
+-- Sets a "localvar" named 'string' on an entity (such as player, mob, npc) to 3
+entity:setLocalVar('string', 3)
 
 -- Returns the var we set above so we can use or compare it
-entity:getLocalVar("string")
+entity:getLocalVar('string')
 ```
 This is lost the moment the entity respawns but otherwise stays in memory. For players this means when you zone or login the localVar is gone. For monsters the distinction between "when it respawns" and "when it dies/despawns" lets you do some tricky things by setting a the var on a mob that isn't presently up or has just died and then reading it back elsewhere.
 <br><br>
 
 ```lua
--- Stores a variable in the database table char_vars named "string" to a value of 2. 
-player:setCharVar("string", 2)
+-- Stores a variable in the database table char_vars named 'string' to a value of 2.
+player:setCharVar('string', 2)
 
 -- Return the player's database var we set above so we can use or compare it
-player:getCharVar("string")
+player:getCharVar('string')
 ```
 This persists through logging out and back in and only work with player type entities. Quests and missions use a lot of these.
 <br><br>
 
 ```lua
 -- Sets a quest variable in the format 'Quest[logId#][questId#]varName'
-xi.mission.setVar(player, logId, questId, "varName", value)
+xi.quest.setVar(player, logId, questId, 'varName', value)
 
 -- Gets a quest variable in the format 'Quest[logId#][questId#]varName'
-xi.quest.getVar(player, logId, questId, "varName")
+xi.quest.getVar(player, logId, questId, 'varName')
 ```
-Interaction Framework (used for updated quests and missions) standardizes the way variables are stored.  For quests, they follow the format of a variable prefix that includes log ID (which quest area is it, such as San d'Oria, or other areas), and ID (this can be found in `scripts/globals/quests.lua`.  For example, if the variable name was `Prog`, and we wanted to set Prog for San d'Oria quest 'Waters of the Cheval' to 1, the following call and result would occur:
+Interaction Framework (used for updated quests and missions) standardizes the way variables are stored.  For quests, they follow the format of a variable prefix that includes log ID (which quest area is it, such as San d'Oria, or other areas), and ID (this can be found in `scripts/globals/quests.lua`).  For example, if the variable name was `Prog`, and we wanted to set Prog for San d'Oria quest 'Waters of the Cheval' to 1, the following call and result would occur:
 
 ```lua
--- Set Progress for A Sentry's Peril to 1 (Log ID: 0, Quest ID: 1)
+-- Set Progress for Waters of the Cheval to 1 (Log ID: 0, Quest ID: 1)
 xi.quest.setVar(player, 0, 1, 'Prog', 1)
 ```
 The resulting charVar stored would be `Quest[0][1]Prog` with a value of 1.
@@ -61,10 +61,10 @@ The resulting charVar stored would be `Quest[0][1]Prog` with a value of 1.
 
 ```lua
 -- Sets a server var in the database
-SetServerVar("string", 1)
+SetServerVariable('string', 1)
 
 -- Return value of that server var
-GetServerVar("string")
+GetServerVariable('string')
 ```
 Divides universe by zero. Don't do this. :smiley: 
 
@@ -93,4 +93,4 @@ m_PBaseEntity->SetLocalVar(varName, value);
 ```
 This is equivalent to `entity:setLocalVar(varName, value)` in Lua.
 
-As for charVar and ServerVar are both done entirely by SQL queries in their bindings, and have never had to be done in core code thus far.
+In C++, charVars are set and read with `PChar->setCharVar(varName, value)` and `PChar->getCharVar(varName)`.

@@ -1,7 +1,7 @@
 # Gotchas
 
 ### General
-We use Sol, which has a Lua 5.3 compatibility layer, on top of luajit 2.0, which acts like Lua 5.1. Given this mismatch there are a few idiosyncracies to be aware of, listed below.
+We use Sol, which has a Lua 5.3 compatibility layer, on top of LuaJIT 2.1, which acts like Lua 5.1. Given this mismatch there are a few idiosyncracies to be aware of, listed below.
 
 ### Lua types and bindings
 In order to keep the functionality of the underlying objects (entities, items etc.) separate from the logic in the bindings that are exposed to Lua, the underlying objects are "wrapped" with their Lua bindings type before being sent into Lua function calls. These are also the types that are returned from Lua, so the underlying type has to be extracted.
@@ -56,7 +56,7 @@ can be used as regular function c:pairs() to get around limitation
 
 If returning a container from C++ into Lua, it will be treated as userdata, not a container. You cannot call `pairs(container)`. Instead you must call the convenience function: `container:pairs()`. Same for `ipairs`.
 
-In the interests of keeping the Lua layer consistent, it is preferable to create a table with `auto table = luautils::lua.create_table();`, populate it, and then return that to Lua. This allows you to continue using `pairs(container)`.
+In the interests of keeping the Lua layer consistent, it is preferable to create a table with `auto table = lua.create_table();`, populate it, and then return that to Lua. This allows you to continue using `pairs(container)`.
 
 **NOTE**: Creating a raw `sol::table` doesn't work. It appears as though the table type is some sort of voodoo with no inherent link to the Lua state, unless you create it that way. Use `lua.create_table()`!
 
@@ -67,14 +67,17 @@ In the interests of keeping the Lua layer consistent, it is preferable to create
 #undef lua_tointeger
 #define lua_tointeger(L, n) static_cast<lua_Integer>(std::floor(lua_tonumber(L, n)))
 ```
-https://github.com/LandSandBoat/server/blob/base/src/map/lua/luautils.h#L37-L40
+https://github.com/LandSandBoat/server/blob/base/src/map/lua/sol_bindings.h#L26-L30
 
 ### Build flags
 ```cmake
-# Globally define SOL_ALL_SAFETIES_ON so sol can be included anywhere
-# If SOL_NO_CHECK_NUMBER_PRECISION is defined, turns off number precision and integer
-# precision fitting when pushing numbers into sol
-# add_compile_definitions() comes with CMake 3.12
-add_definitions(-DSOL_ALL_SAFETIES_ON=1 -DSOL_NO_CHECK_NUMBER_PRECISION=1)
+# Global, so sol and spdlog see the same settings from every include site.
+add_compile_definitions(
+    SOL_ALL_SAFETIES_ON=1                  # type and stack checks on every Lua call
+    SOL_NO_CHECK_NUMBER_PRECISION=1        # no precision fitting when pushing numbers into Lua
+    SOL_DEFAULT_PASS_ON_ERROR=1            # errors return to the caller instead of throwing
+    SOL_PRINT_ERRORS=0                     # we log Lua errors ourselves
+    ...
+)
 ```
-https://github.com/LandSandBoat/server/blob/base/CMakeLists.txt#L68-L72
+https://github.com/LandSandBoat/server/blob/base/cmake/settings/CompilerSettings.cmake

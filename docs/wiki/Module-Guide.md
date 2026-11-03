@@ -25,6 +25,8 @@ Example `modules/init.txt`
 # - cpp files are loaded and built with CMake.
 # - lua files are loaded at runtime by the main program.
 # - sql files are loaded either by dbtool, or by hand.
+# - sql under era/sql/<expansion>/ is applied by dbtool when listed; list the
+#   expansion folders you want. Listing plain 'era' includes all of them.
 #
 # Examples:
 #
@@ -49,7 +51,6 @@ Example `modules/init.txt`
 #
 # Live example:
 
-custom/commands/
 custom/lua/test_npcs_in_gm_home.lua
 ```
 
@@ -62,18 +63,16 @@ Lua modules are bundles of Lua code that are prepared before the whole map Lua s
 -- Old setting from settings.lua: HOMEPOINT_HEAL
 -- Set if you want Home Points to heal you like in single-player Final Fantasy games.
 -----------------------------------
-require("modules/module_utils")
-require("scripts/globals/homepoint")
+require('modules/module_utils')
+require('scripts/globals/homepoint')
 -----------------------------------
-local m = Module:new("homepoint_heal")
+local m = Module:new('homepoint_heal')
 
-m:addOverride("xi.homepoint.onTrigger", function(player, csid, index)
+m:addOverride('xi.homepoint.onTrigger', function(player, csid, index)
     player:addHP(player:getMaxHP())
     player:addMP(player:getMaxMP())
     super(player, csid, index)
 end)
-
-return m
 ```
 
 If you want to turn off NPCs at will, you can do this with any entity in the game:
@@ -107,19 +106,19 @@ If you wanted hot-reloadable onTrigger/onTrade logic for NPCs or Mobs, you'd hav
 local onTriggerFunc = function(player, npc)
     -- NOTE: We have to use getPacketName, because the regular name is modified and being used
     --     : for internal lookups
-    player:PrintToPlayer("Welcome to New GM Home!", 0, npc:getPacketName())
-end,
+    player:printToPlayer('Welcome to New GM Home!', 0, npc:getPacketName())
+end
 
-m:addOverride("xi.zones.GM_Home.Zone.onInitialize", function(zone)
+m:addOverride('xi.zones.GM_Home.Zone.onInitialize', function(zone)
     super(zone)
     zone:insertDynamicEntity({
-        objtype = xi.objType.NPC,
-        name = "Horro",
-        onTrigger = onTriggerFunc
+        objtype   = xi.objType.NPC,
+        name      = 'Horro',
+        onTrigger = onTriggerFunc,
     })
 end)
 
--- Internally, the cache entry for Dynamic Entries is prepended with "DE_"
+-- Internally, the cache entry for Dynamic Entries is prepended with 'DE_'
 -- This might get upset on startup, since `xi.zones.GM_Home.npcs.DE_Horro` probably doesn't exist when this script is first run
 xi.zones.GM_Home.npcs.DE_Horro.onTrigger = onTriggerFunc
 ```
@@ -146,22 +145,13 @@ You can then continue your build as normal, and your module files will be compil
 ```cpp
 #include "map/utils/moduleutils.h"
 
-// CPP Modules are calls synchronously, so you have safe access to the main sql connection, the Lua state,
+// CPP modules are called synchronously, so you have safe access to the database, the Lua state,
 // logging, and anything else you might regularly use.
+#include "common/database.h"
 #include "common/logging.h"
-#include "common/sql.h"
-#include "lua/luautils.h"
-#include "utils/itemutils.h"
-
-namespace
-{
-    constexpr uint16 HOURGLASS_ID = 4237;
-
-    uint32 currentEpoch()
-    {
-        return static_cast<uint32>(time(nullptr));
-    }
-};
+#include "common/tracy.h"
+#include "map/entities/base_entity.h"
+#include "map/lua/lua_base_entity.h"
 
 //       |-- Name your module something unique.
 //       v                    v-- You must inherit from CPPModule.
@@ -170,40 +160,31 @@ class TestModule : public CPPModule
     // In Lua, the ':' function calling syntax is just syntactic sugar for:
     //     function(object, param0, param1, ...)
     // This is what will be required if you want to inject your own bindings.
-    //                         v----object----v           v-param0-v    v-param1-v
-    void createHourglass(CLuaBaseEntity* PLuaBaseEntity, uint8 zoneID, uint32 token)
+    //                         v-----------object-----------v  v-------param0--------v  v---param1----v
+    static auto getServerVarOr(CLuaBaseEntity* PLuaBaseEntity, const std::string& name, uint32 fallback) -> uint32
     {
         TracyZoneScoped;
 
-        CBaseEntity* PEntity = PLuaBaseEntity->GetBaseEntity();
+        const auto* PEntity = PLuaBaseEntity->GetBaseEntity();
         if (PEntity->objtype != TYPE_PC)
         {
-            return;
+            return fallback;
         }
 
-        const auto rset = db::preparedStmt("SELECT value FROM server_variables WHERE name = '[DYNA]Token' LIMIT 1");
-        if (rset && rset->next())
+        const auto rset = db::preparedStmt("SELECT value FROM server_variables WHERE name = ? LIMIT 1", name);
+        FOR_DB_SINGLE_RESULT(rset)
         {
-            const auto res = rset->get<uint32>("value");
-            if (res == HOURGLASS_ID)
-            {
-                CItem* PItem = itemutils::GetItem(HOURGLASS_ID);
-                PItem->setQuantity(1);
-
-                ref<uint8>(PItem->m_extra,  0x02) = 1;
-                ref<uint32>(PItem->m_extra, 0x04) = PEntity->id;
-                ref<uint32>(PItem->m_extra, 0x0C) = currentEpoch();
-                ref<uint8>(PItem->m_extra,  0x10) = zoneID;
-                ref<uint32>(PItem->m_extra, 0x14) = token;
-            }
+            return rset->get<uint32>("value");
         }
+
+        return fallback;
     }
 
     //     v-- OnInit is required for all CPP modules.
     void OnInit() override // Called just before the server is ready to run.
     {
-        // player:createHourglass(zoneID, token)
-        lua["CBaseEntity"]["createHourglass"] = &TestModule::createHourglass;
+        // player:getServerVarOr('[DYNA]Token', 0)
+        lua["CBaseEntity"]["getServerVarOr"] = &TestModule::getServerVarOr;
 
         // You could also use lambdas, if you wish
         // mob:anotherFunction()
@@ -211,7 +192,7 @@ class TestModule : public CPPModule
         {
             TracyZoneScoped;
 
-            CBaseEntity* PEntity = PLuaBaseEntity->GetBaseEntity();
+            const auto* PEntity = PLuaBaseEntity->GetBaseEntity();
             if (PEntity->objtype != TYPE_PC)
             {
                 return;
@@ -222,11 +203,14 @@ class TestModule : public CPPModule
     }
 
     // The following are optional:
-    // void OnZoneTick(CZone* PZone){};           // Called at the end of Zone_Server's tick.
-    // void OnTimeServerTick(){};                 // Called at the end of time_server's tick.
-    // void OnCharZoneIn(CCharEntity* PChar){};   // Called just before a character finished zoning in.
-    // void OnCharZoneOut(CCharEntity* PChar){};  // Called just before a character starts zoning out.
-    // void OnPushPacket(CBasicPacket* packet){}; // Called just before a packet is added to the character's outgoing queue.
+    // void OnZoneTick(CZone* PZone) override;                // Called at the end of the zone's tick.
+    // void OnTimeServerTick() override;                      // Called at the end of the time server's tick.
+    // void OnCharZoneIn(CCharEntity* PChar) override;        // Called just before a character finishes zoning in.
+    // void OnCharZoneOut(CCharEntity* PChar) override;       // Called just before a character starts zoning out.
+    // void OnPushPacket(CCharEntity* PChar, const std::unique_ptr<CBasicPacket>& packet) override;
+    //                                                        // Called just before a packet is added to the character's outgoing queue.
+    // auto OnIncomingPacket(MapSession* PSession, CCharEntity* PChar, CBasicPacket& packet) -> bool override;
+    //                                                        // Called for each incoming packet. Return true to stop the server handling it.
 };
 
 // You must call this to register your module with the program!
@@ -240,7 +224,7 @@ SQL modules are additional SQL files that are run at the end of `dbtool.py` upda
 
 ```sql
 -- Setting all 2HR abilities to 2HR cooldown
-UPDATE abilities SET recastTime = "7200" WHERE name = "mighty_strikes";
-UPDATE abilities SET recastTime = "7200" WHERE name = "hundred_fists";
+UPDATE abilities SET recastTime = 7200 WHERE name = 'mighty_strikes';
+UPDATE abilities SET recastTime = 7200 WHERE name = 'hundred_fists';
 -- ...
 ```

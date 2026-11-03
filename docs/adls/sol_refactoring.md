@@ -29,7 +29,7 @@ Unlikely to ever be needed.
 
 #### Compatibility with LuaJIT
 Our use of Lua relies on LuaJIT, which functions a lot like Lua 5.1. Sol uses a series of polyfills to bring the language features up to 5.2/5.3.
-This introduces some breaking changes around number truncation. We have a reverse polyfill to undo these changes, details are available in `src/map/lua/luautils.h`.
+This introduces some breaking changes around number truncation. We undo the `lua_tointeger` change in `src/map/lua/sol_bindings.h`, and the Sol compile definitions are in `cmake/settings/CompilerSettings.cmake`.
 
 There are a few gotcha's using Sol on top of LuaJIT, the only one that we had to pay attention to was the use of the `obj:pairs()/obj:ipairs()` binding, which doesn't work. This is easily worked around by wrapping your object with the `pairs(obj)/ipairs(obj)` helper.
 

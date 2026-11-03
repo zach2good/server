@@ -3,11 +3,9 @@
 -- Holy Cow
 -- Bearclaw Pinnacle ENM, Zephyr Fan
 -- !addkeyitem ZEPHYR_FAN
--- !pos -520 25 -801
+-- !pos -520 25 -801 6
 -----------------------------------
 local ID = zones[xi.zone.BEARCLAW_PINNACLE]
-require("scripts/globals/battlefield")
-require("scripts/globals/zone")
 -----------------------------------
 
 local content = Battlefield:new({
@@ -17,36 +15,36 @@ local content = Battlefield:new({
     levelCap         = 75,
     timeLimit        = utils.minutes(30),
     index            = 4,
-    entryNpc         = "Wind_Pillar_5",
-    exitNpc          = "Wind_Pillar_Exit",
+    entryNpc         = 'Wind_Pillar_5',
+    exitNpc          = 'Wind_Pillar_Exit',
     requiredKeyItems = { xi.keyItem.ZEPHYR_FAN, message = ID.text.ZEPHYR_RIPS },
     grantXP          = 4000,
 })
 
-content:addEssentialMobs({ "Apis" })
+content:addEssentialMobs({ 'Apis' })
 
 content.loot =
 {
     {
-        { itemid = xi.items.NONE, droprate = xi.battlefield.dropChance.VERY_LOW },
-        { itemid = xi.items.SQUARE_OF_ELTORO_LEATHER, droprate = xi.battlefield.dropChance.NORMAL },
-        { itemid = xi.items.PIECE_OF_CASSIA_LUMBER, droprate = xi.battlefield.dropChance.NORMAL },
-        { itemid = xi.items.DRAGON_BONE, droprate = xi.battlefield.dropChance.NORMAL },
+        { itemId = xi.item.NONE,                     weight = 9750 },
+        { itemId = xi.item.CLOUD_EVOKER,             weight =  250 },
     },
 
     {
-        { itemid = xi.items.NONE, droprate = xi.battlefield.dropChance.EXTREMELY_HIGH },
-        { itemid = xi.items.CLOUD_EVOKER, droprate = xi.battlefield.dropChance.LOW },
+        { itemId = xi.item.NONE,                     weight = 2500 },
+        { itemId = xi.item.PIECE_OF_CASSIA_LUMBER,   weight = 2500 },
+        { itemId = xi.item.SQUARE_OF_ELTORO_LEATHER, weight = 2500 },
+        { itemId = xi.item.DRAGON_BONE,              weight = 2500 },
     },
 
     {
         quantity = 2,
-        { itemid = xi.items.NONE, droprate = xi.battlefield.dropChance.HIGH },
-        { itemid = xi.items.GIGANT_MANTLE, droprate = xi.battlefield.dropChance.LOW },
-        { itemid = xi.items.PSILOS_MANTLE, droprate = xi.battlefield.dropChance.LOW },
-        { itemid = xi.items.MARTIAL_BOW, droprate = xi.battlefield.dropChance.LOW },
-        { itemid = xi.items.MARTIAL_KNUCKLES, droprate = xi.battlefield.dropChance.LOW },
-        { itemid = xi.items.SCROLL_OF_RAISE_III, droprate = xi.battlefield.dropChance.HIGH },
+        { itemId = xi.item.NONE,                     weight = 5500 },
+        { itemId = xi.item.GIGANT_MANTLE,            weight =  700 },
+        { itemId = xi.item.PSILOS_MANTLE,            weight =  800 },
+        { itemId = xi.item.MARTIAL_BOW,              weight =  800 },
+        { itemId = xi.item.MARTIAL_KNUCKLES,         weight =  800 },
+        { itemId = xi.item.SCROLL_OF_RAISE_III,      weight = 1400 },
     },
 }
 

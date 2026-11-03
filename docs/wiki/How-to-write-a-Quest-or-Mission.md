@@ -1,8 +1,8 @@
-The purpose of this guide is to provide a brief overview of the structure used for quests and missions with the addition of the interaction framework.  For a reference of available functions, please see the documentation located in your repository, or at [in the Wiki](Interaction-Framework-Documentation).
+The purpose of this guide is to provide a brief overview of the structure used for quests and missions with the addition of the interaction framework.  For a reference of available functions, please see the documentation in your repository, or [in the Wiki](Interaction-Framework-Documentation).
 
 ## Mission/Quest Header
 Quests and Missions can have references to multiple triggers and NPCs across multiple zones.  To allow for easier testing, pos references should be included in the comments (example below):
-```
+```lua
 -----------------------------------
 -- Kazham's Chieftainess
 -- Zilart M3
@@ -14,15 +14,15 @@ Quests and Missions can have references to multiple triggers and NPCs across mul
 ```
 
 ## Mission/Quest Declaration
-Each mission or quest script must include an return an object of the `Quest` or `Mission` type.  To do this, first declare the object and call its appropriate constructor.  This will define the object with both the area/log ID, and mission/quest ID.
-```
+Each mission or quest script must return an object of the `Quest` or `Mission` type.  To do this, first declare the object and call its appropriate constructor.  This will define the object with both the area/log ID, and mission/quest ID.
+```lua
 local mission = Mission:new(xi.mission.log_id.ZILART, xi.mission.id.zilart.KAZHAMS_CHIEFTAINESS)
 ```
-Note: If a duplicate class is detected by the system, and error message will be displayed on server start or reload.
+Note: If a duplicate class is detected by the system, an error message will be displayed on server start or reload.
 
 ## Mission/Quest Reward
 Rewards in this table are given when the class `complete(player)` function is called.  This is passed into a `npcUtil` function, which will provide messaging to the player, along with rewards.
-```
+```lua
 mission.reward =
 {
     keyItem     = xi.keyItem.SACRIFICIAL_CHAMBER_KEY,
@@ -33,22 +33,22 @@ For a list of acceptable items in this table, refer to `npcUtil.completeQuest()`
 Note: `nextMission` is only supported by `npcUtil.completeMission()`
 
 ## Section Overview
-Sections are where the meat of the mission or quest is defined.  It is a table sections, which then are categorized by zone, and then lastly NPC or other triggers.  A full example will be shown at the end of this document.
+Sections are where the meat of the mission or quest is defined.  It is a table of sections, which then are categorized by zone, and then lastly NPC or other triggers.  A full example will be shown at the end of this document.
 
 At minimum, a section should contain one (1) check, and one (1) zone and trigger.
 
 ### Checks
 The check function at the beginning of each section determines if that section is relevant to the player, and will only have the potential of activating if that function returns true.
-```
+```lua
         check = function(player, currentMission, missionStatus, vars)
             return currentMission == mission.missionId
         end,
 ```
-In the above case, this section will be applicable to the player if the player's current mission is the same as the one defined in the script.  The currentMission and missionStatus parameters are defined in the `mission.lua` or `quest.lua` file, in the `getCheckArgs()` function.
+In the above case, this section will be applicable to the player if the player's current mission is the same as the one defined in the script.  The currentMission and missionStatus parameters are defined by `getCheckArgs()` in `scripts/globals/interaction/mission.lua` or `quest.lua`.
 
 ### Zone
 After a check is declared, each applicable zone should have its own block defined.  This block includes NPCs and triggers that exist for that check.
-```
+```lua
         [xi.zone.NORG] =
         {
             ['Gilgamesh'] =
@@ -65,12 +65,13 @@ In the above case, if the check is applicable to the player, and the player is i
 **IMPORTANT:** `onTrigger` events must be returned for the event to be recognized by the framework.
 
 A zone can contain multiple triggers as well!  For example, if you wish to start an event with onTrigger, and then have an onEventFinish from that, it would look something like below:
-```
-        [xi.zone.KAZHAM] = {
+```lua
+        [xi.zone.KAZHAM] =
+        {
             ['Jakoh_Wahcondalo'] =
             {
                 onTrigger = function(player, npc)
-                    return mission:event(114)
+                    return mission:progressEvent(114)
                 end,
             },
 
@@ -84,11 +85,11 @@ A zone can contain multiple triggers as well!  For example, if you wish to start
 ```
 In this case, if `onTrigger` is called, it will start event 114.  Once event 114 is completed, then `onEventFinish` will pick up 114's end, and execute the function attached to it.
 
-**IMPORTANT:** onEventFinish is not attached to the NPC's sub-section, but rather a part of the zone.  In some cases (such as picking up a BCNM's event), care must be taken to ensure its the _right_ event being triggered.
+**IMPORTANT:** onEventFinish is not attached to the NPC's sub-section, but rather a part of the zone.  In some cases (such as picking up a BCNM's event), care must be taken to ensure it's the _right_ event being triggered.
 
 ## Sections Example: Putting it all together
 The below example shows an entire sections declaration for a mission containing a single section.  Additional sections can be defined by adding more section blocks to that definition.
-```
+```lua
 mission.sections =
 {
     {
@@ -107,11 +108,12 @@ mission.sections =
             },
         },
 
-        [xi.zone.KAZHAM] = {
+        [xi.zone.KAZHAM] =
+        {
             ['Jakoh_Wahcondalo'] =
             {
                 onTrigger = function(player, npc)
-                    return mission:event(114)
+                    return mission:progressEvent(114)
                 end,
             },
 
@@ -128,7 +130,7 @@ mission.sections =
 
 ## Return the mission
 Finally, the mission or quest object defined must be returned from the file.
-```
+```lua
 return mission
 ```
 

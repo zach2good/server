@@ -2,7 +2,7 @@
 
 ## Why can't I just hard-code my IDs with the IDs from the client or database?
 
-We pin the the current retail client version - which updates every month. Every time there is a retail client update, various things in the client shift around - including entity IDs. If you hard-code something and then it shifts in a version update, your hard-coded code will break. If you do a lookup by name a load-time or run-time there is a better chance things won't break between updates since we have tooling that can (mostly) handle those ID shifts, but only in the database.
+We pin the current retail client version - which updates every month. Every time there is a retail client update, various things in the client shift around - including entity IDs. If you hard-code something and then it shifts in a version update, your hard-coded code will break. If you do a lookup by name at load-time or run-time there is a better chance things won't break between updates since we have tooling that can (mostly) handle those ID shifts, but only in the zone data files.
 
 ## Load-time
 
@@ -14,13 +14,13 @@ Since a lot of things aren't loaded, these are only capable of getting the IDs o
 
 These are also available while hot-reloading these files.
 
-While doing lookup by name, you want to use either `mobname` from `mob_spawn_points.sql` or `name` from `npc_list.sql`.
+While doing lookup by name, use the `script` field of the entity in `data/zones/<zone>/mobs.yaml` or `data/zones/<zone>/npcs.yaml`. Instanced zones also search the zones their instances overlay.
 
 **WARNING:** If you cache the results of these lookups somewhere and then you hot-reload the IDs file, you might get results you don't expect. Be careful!
 
 ### GetFirstID
 
-This will go through `mob_spawn_points` and `npc_list` and return the ID of the first entity that matches the name you provide.
+This will go through the zone's mobs and NPCs and return the ID of the first entity that matches the name you provide.
 
 ```lua
     mob =
@@ -38,52 +38,24 @@ This is the numeric ID, so you can look up one entity and then look up its neigh
     }
 ```
 
-### GetTableOfIDs (full)
+### GetTableOfIDs
 
-This will go through `mob_spawn_points` and `npc_list` and return a table of ALL THE ENTITIES that match the name you provide. Be careful if you're looking up groups of entities that might have non-functional versions used in events.
-
-```lua
-...
-    npc =
-    {
-        LOGGING = GetTableOfIDs("Logging_Point"),
-    }
-...
-```
-
-### GetTableOfIDs (range)
-
-This will go through `mob_spawn_points` and `npc_list` and return a table of entities starting at the first entity that matches the name you provide, continuing to the range you provide - inclusively.
+This will go through the zone's mobs and NPCs and return a table of ALL THE ENTITIES that match the name you provide. Be careful if you're looking up groups of entities that might have non-functional versions used in events.
 
 ```lua
 ...
     npc =
     {
-        LOGGING = GetTableOfIDs("Logging_Point", 4),
+        LOGGING = GetTableOfIDs('Logging_Point'),
     }
 ...
-```
-
-In this example you'd get back the equivalent of:
-
-```lua
-    npc =
-    {
-        LOGGING =
-        {
-            GetFirstID('Logging_Point') + 0,
-            GetFirstID('Logging_Point') + 1,
-            GetFirstID('Logging_Point') + 2,
-            GetFirstID('Logging_Point') + 3,
-        }
-    }
 ```
 
 ## Run-time
 
 Once everything is loaded and the server is ticking, you're in run-time.
 
-Since everything is loaded we no longer have to look up things from the database and hold onto their IDs for later use. We can either use IDs we've looked up from the zone IDs.lua files, or we can query current zone objects:
+Since everything is loaded we no longer have to look up things from the data files and hold onto their IDs for later use. We can either use IDs we've looked up in the zone IDs.lua files (`zones[xi.zone.X]`), or we can query current zone objects:
 
 ```lua
     local results = zone:queryEntitiesByName(name)

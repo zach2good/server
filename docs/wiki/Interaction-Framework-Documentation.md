@@ -3,7 +3,6 @@ Interaction Framework
 
 The common term used for quests and missions in this document and in the code is "containers", since they contain all the things that go into making a quest/mission/etc work.
 
-<!-- TODO: Fix link to proper file in repository -->
 See [Full Quest Example](Full-Quest-Example) quest file for a full example of how a quest can be defined.
 
 Sections
@@ -14,29 +13,34 @@ A container/quest/mission is made up of one or more "sections", which are all of
 {
     -- If this "check" function returns true, then this section will be used to determine which action should be taken
     check = function(player, status, questVars, globalVars)
-        return status == QUEST_AVAILABLE
+        return status == xi.questStatus.QUEST_AVAILABLE
     end,
 
     -- Each section is split into the different zones that each NPC/trigger is in
-    [xi.zone.SOME_AREA] = {
-        ['Some_NPC'] = {
+    [xi.zone.SOME_AREA] =
+    {
+        ['Some_NPC'] =
+        {
             onTrigger = function(player, npc)
                 return quest:progressEvent(101) -- Quest should progress when this event finishes
             end,
         },
 
-        onEventFinish = {
+        onEventFinish =
+        {
             [101] = function(player, csid, option, npc)
                 -- do something
             end,
         },
     },
 
-    [xi.zone.SOME_OTHER_AREA] = {
-        ['Another_NPC'] = {
+    [xi.zone.SOME_OTHER_AREA] =
+    {
+        ['Another_NPC'] =
+        {
             -- interactions
         },
-    }
+    },
 }
 ```
 
@@ -46,7 +50,7 @@ You can use the `questVars` argument to automatically get quest-related variable
 
 ```lua
 check = function(player, status, questVars, globalVars)
-    return status == QUEST_AVAILABLE and questVars.Prog == 0
+    return status == xi.questStatus.QUEST_AVAILABLE and questVars.Prog == 0
 end,
 ```
 
@@ -66,8 +70,15 @@ quest:event(csid)
 -- Start an important event that will progress a quest and will thus be prioritized higher than other actions
 quest:progressEvent(csid)
 
+-- Same priority as progressEvent, for an event that doesn't progress the quest but must still win
+quest:priorityEvent(csid)
+
 -- Show a message (not event) from the given NPC
 quest:message(messageId)
+
+-- Show a zone special message, or give a key item with its obtained message
+quest:messageSpecial(messageId)
+quest:keyItem(keyItemId)
 
 -- Make the priority high enough to always prefer this action over using old NPC the Lua file trigger
 quest:replaceMessage(messageId)
@@ -168,6 +179,12 @@ quest:setVar(player, 'Prog', value) -- Sets the Prog quest variable for the play
 quest:setVarBit(player, 'Prog', 3) -- Sets bit 3 in the Prog quest variable
 quest:unsetVarBit(player, 'Prog', 3) -- Unsets bit 3 in the Prog quest variable
 quest:isVarBitsSet(player, 'Prog', 1, 3) -- Returns true if the given bits are set in the Prog quest variable (bit 1 and 3 in this case)
+
+quest:setLocalVar(player, 'Timer', value) -- Same as setVar, but in a local var that isn't saved to the database
+quest:getLocalVar(player, 'Timer')
+
+quest:setMustZone(player) -- Flags that the player must zone before continuing (stored in char_var `Quest[<area>][<id>]mustZone`)
+quest:getMustZone(player) -- Returns true until the player zones somewhere else
 ```
 
 There can be other helpers too, like on quests and missions:
@@ -184,14 +201,15 @@ Below is a more-exhaustive mock example of how a section can be set up, and it t
 {
     -- If this "check" function returns true, this section will be used to determine which action should be taken
     check = function(player, status, vars)
-        return status == QUEST_AVAILABLE and vars.Prog == 0
+        return status == xi.questStatus.QUEST_AVAILABLE and vars.Prog == 0
     end,
 
     -- Each section is split into the different zones that each NPC/trigger is in
-    [xi.zone.SOME_AREA] = {
-
+    [xi.zone.SOME_AREA] =
+    {
         -- NPCs are indexed by their handlers like `onTrade`, `onTrigger`, etc
-        ['Some_NPC_Name'] = {
+        ['Some_NPC_Name'] =
+        {
             onTrigger = function(player, npc)
                 if player:getFreeSlotsCount() > 0 then
                     return quest:progressEvent(101) -- Quest will progress when this event finishes
@@ -201,14 +219,15 @@ Below is a more-exhaustive mock example of how a section can be set up, and it t
             end,
 
             onTrade = function(player, npc, trade)
-                if npcUtil.tradeHasExactly(trade, xi.items.SOME_ITEM) then
+                if npcUtil.tradeHasExactly(trade, xi.item.SOME_ITEM) then
                     return quest:progressEvent(111)
                 end
             end,
         },
 
         -- onEventFinish is indexed by the event/cutscene ID
-        onEventFinish = {
+        onEventFinish =
+        {
             [101] = function(player, csid, option, npc)
                 quest:setVar(player, 'Prog', 1)
             end,
@@ -218,24 +237,23 @@ Below is a more-exhaustive mock example of how a section can be set up, and it t
             end,
         },
 
-        -- onRegionEnter is indexed by the triggering region ID
-        onRegionEnter = {
-            [2] = function(player, csid, option, npc)
+        -- onTriggerAreaEnter is indexed by the trigger area ID
+        onTriggerAreaEnter =
+        {
+            [2] = function(player, triggerArea)
                 quest:setVar(player, 'Prog', 3)
             end,
         },
     },
 
-    [xi.zone.SOME_OTHER_AREA] = {
-
-        -- onZoneIn needs to have only one entry that will handle all the different cases,
+    [xi.zone.SOME_OTHER_AREA] =
+    {
+        -- onZoneIn is a single function that handles all the different cases,
         -- and should return the event ID to be played if any
-        onZoneIn = {
-            function(player, prevZone)
-                return 543
-            end,
-        },
-    }
+        onZoneIn = function(player, prevZone)
+            return 543
+        end,
+    },
 }
 ```
 
@@ -258,8 +276,7 @@ return {
 Framework internals
 ----
 
-<!-- TODO: Fix link to proper file in repository -->
-Add the container/quest/mission as an entry in [`interaction_containers.lua`](https://github.com/), and the handlers from the quest file will automatically be hooked up to the NPCs and zones.
+Put the container file in `scripts/quests/<area>/`, `scripts/missions/<expansion>/` or `scripts/battlefields/<zone>/`. The server finds every container there on startup, and the handlers from the file will automatically be hooked up to the NPCs and zones.
 
 Since the framework has to be backwards-compatible with existing quest logic in each NPC/zone file, it will prioritize the different events/triggers generally as follows:
 
@@ -270,17 +287,17 @@ Since the framework has to be backwards-compatible with existing quest logic in 
 Commands
 ----
 
-Reloads the specified quest. Note that it has to match exactly the name used in `interaction_containers.lua` (it's case sensitive):
+Reloads the specified quest. The name has to match the file name under `scripts/quests/<area>/` exactly (it's case sensitive):
 ```
 !reloadquest Three_Men_and_a_Closet
 ```
 
-Prints the `Prog` quest variable for the given quest:
+Reloads the whole interaction framework:
 ```
-!checkquestvar TOAU THREE_MEN_AND_A_CLOSET Prog
+!reloadinteraction
 ```
 
-Prints the bits set in the `Prog` quest variable for the given quest:
+Prints a quest variable for the given player, quest log ID and quest ID (here `Prog` for Three Men and a Closet):
 ```
-!checkquestbits TOAU ARTS_AND_CRAFTS Prog
+!getquestvar <player> 6 31 Prog
 ```

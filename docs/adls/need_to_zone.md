@@ -39,23 +39,26 @@ a drop-in replacement for existing work (See: Misc Notes)
 Wrapper functions were created in the Interaction Framework container to create a uniform way of setting these variables, and
 to serve as a middle layer should the method for storing this information change in the future.
 
-```
--- These helper functions will set or get a localVar using varPrefix to determine
--- if zoning/logout is required.  There is no clearing support at this time, outside
--- of legitimate methods.
+### Update
+The storage has since moved from a localVar to a charVar, so the flag now persists through logout. `setMustZone` stores the
+current zone ID, and `xi.player.onGameIn` in `scripts/globals/player.lua` clears every `]mustZone` charVar whose stored zone
+differs from the zone the player arrives in. The helpers in `scripts/globals/interaction/container.lua` now read:
+
+```lua
 function Container:getMustZone(player)
-    return player:getLocalVar(self.varPrefix .. "mustZone") == 1 and true or false
+    return player:getCharVar(self.varPrefix .. 'mustZone') ~= 0 and true or false
 end
 
 function Container:setMustZone(player)
-    player:setLocalVar(self.varPrefix .. "mustZone", 1)
+    player:setCharVar(self.varPrefix .. 'mustZone', player:getZoneID())
 end
-
 ```
 
-The resulting output of the above functions would create or get a variable in the following format, depending on which container
-type the function is called from:
+`scripts/globals/quests.lua` and `scripts/globals/missions.lua` have matching helpers for scripts outside the framework.
+`needToZone` itself also uses a charVar now, `[generic]mustZone`, but it's still shared by every script.
+
+The resulting variable has the following format, depending on which container type the function is called from:
 ```
 Mission[mission.areaId][mission.missionId]mustZone
-Quest[quest.areaId][mission.missionId]mustZone
+Quest[quest.areaId][quest.questId]mustZone
 ```

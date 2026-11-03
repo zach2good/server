@@ -1,6 +1,6 @@
 # Battlefield Framework
 
-A battlefield is any content where players are warped from an entrance point into a special area and receive a Battlefield effect. The goal with the Battlefield Framework is to simplify the creation of battlefield content. This new solution attempts to achieve this by reducing repeated code and unifying battlefield details into a single file. This document covers how to use the new battlefield framework as well as how to implement new and migrate existing battlefield content.
+A battlefield is any content where players are warped from an entrance point into a special area and receive a Battlefield effect. The goal with the Battlefield Framework is to simplify the creation of battlefield content. This new solution attempts to achieve this by reducing repeated code and unifying battlefield details into a single file. This document covers how to use the new battlefield framework as well as how to implement new battlefield content.
 
 See the following for a [Full Battlefield Example](Full-Battlefield-Example).
 
@@ -20,8 +20,8 @@ local content = Battlefield:new({
     levelCap         = 75,
     timeLimit        = utils.minutes(30),
     index            = 3,
-    entryNpc         = "Wind_Pillar_4",
-    exitNpc          = "Wind_Pillar_Exit",
+    entryNpc         = 'Wind_Pillar_4',
+    exitNpc          = 'Wind_Pillar_Exit',
     requiredKeyItems = { xi.keyItem.ZEPHYR_FAN, message = ID.text.ZEPHYR_RIPS },
     grantXP          = 3500,
 })
@@ -33,59 +33,61 @@ Once a Battlefield has been initially defined there are additional aspects that 
 
 Monsters in a battlefield are defined within groups. Each group is a set of monsters that share some commonality between them. A group can have some settings, modifiers and helpful callback handlers attached. For a full list of options see [Battlefield Group Parameters](#battlefield-group-parameters).
 
+This example and the pathing one below come from the legacy Limbus scripts kept in `docs/limbus/Apollyon/battlefields/se_apollyon.lua`.
+
 ```lua
 content.groups =
 {
     {
-        mobs = { "Ghost_Clot" },
+        mobs       = { 'Ghost_Clot' },
         stationary = true,
         mods =
         {
             [xi.mod.IMPACT_SDT] = 0,
-            [xi.mod.HTH_SDT] = 0,
-            [xi.mod.SLASH_SDT] = 1250,
+            [xi.mod.HTH_SDT   ] = 0,
+            [xi.mod.SLASH_SDT ] = 1250,
         },
 
         death = function(battlefield, mob, count)
-            xi.limbus.openDoor(mob:getBattlefield(), ID.SE_APOLLYON.npc.PORTAL[1])
+            content:openDoor(mob:getBattlefield(), 1)
         end,
-    }
+    },
 }
 ```
 
 Many Battlefields follow the same pattern with all monsters being spawned, stationary, superlink, and required to kill in order to spawn the Armoury Crate. This can easily be achieved with something such as the following:
 
 ```lua
-content:addEssentialMobs({ "Eldertaur", "Mindertaur" })
+content:addEssentialMobs({ 'Eldertaur', 'Mindertaur' })
 ```
 
 ### Battlefield Loot
 
-Upon victory Battlefields spawn an Armoury Crate which will grant loot once opened. Loot is defined within groups where each group will only drop a single item unless a different `quantity` is specified. For each item there is a `droperate` set to the likelihood of it dropping. These numbers are used in weighted randomness and are consequently relative to each other.
+Upon victory Battlefields spawn an Armoury Crate which will grant loot once opened. Loot is defined within groups where each group will only drop a single item unless a different `quantity` is specified. Each item has a `weight`. The weights are relative to each other within a group.
 
 ```lua
 content.loot =
 {
     {
-        { itemid = xi.items.NONE, droprate = xi.battlefield.dropChance.VERY_LOW },
-        { itemid = xi.items.SQUARE_OF_ELTORO_LEATHER, droprate = xi.battlefield.dropChance.NORMAL },
-        { itemid = xi.items.PIECE_OF_CASSIA_LUMBER, droprate = xi.battlefield.dropChance.NORMAL },
-        { itemid = xi.items.DRAGON_BONE, droprate = xi.battlefield.dropChance.NORMAL },
+        { itemId = xi.item.NONE,                     weight = 9750 },
+        { itemId = xi.item.CLOUD_EVOKER,             weight =  250 },
     },
 
     {
-        { itemid = xi.items.NONE, droprate = xi.battlefield.dropChance.EXTREMELY_HIGH },
-        { itemid = xi.items.CLOUD_EVOKER, droprate = xi.battlefield.dropChance.LOW },
+        { itemId = xi.item.NONE,                     weight = 2500 },
+        { itemId = xi.item.PIECE_OF_CASSIA_LUMBER,   weight = 2500 },
+        { itemId = xi.item.SQUARE_OF_ELTORO_LEATHER, weight = 2500 },
+        { itemId = xi.item.DRAGON_BONE,              weight = 2500 },
     },
 
     {
         quantity = 2,
-        { itemid = xi.items.NONE, droprate = xi.battlefield.dropChance.HIGH },
-        { itemid = xi.items.SCOUTERS_ROPE, droprate = xi.battlefield.dropChance.LOW },
-        { itemid = xi.items.HEDGEHOG_BOMB, droprate = xi.battlefield.dropChance.LOW },
-        { itemid = xi.items.MARTIAL_ANELACE, droprate = xi.battlefield.dropChance.LOW },
-        { itemid = xi.items.MARTIAL_LANCE, droprate = xi.battlefield.dropChance.LOW },
-        { itemid = xi.items.SCROLL_OF_RAISE_III, droprate = xi.battlefield.dropChance.HIGH },
+        { itemId = xi.item.NONE,                     weight = 5500 },
+        { itemId = xi.item.SCOUTERS_ROPE,            weight =  800 },
+        { itemId = xi.item.HEDGEHOG_BOMB,            weight =  700 },
+        { itemId = xi.item.MARTIAL_ANELACE,          weight =  800 },
+        { itemId = xi.item.MARTIAL_LANCE,            weight =  800 },
+        { itemId = xi.item.SCROLL_OF_RAISE_III,      weight = 1400 },
     },
 }
 ```
@@ -97,15 +99,15 @@ Some battlefields such as Limbus will have monsters patrolling a specific path r
 ```lua
 content.paths =
 {
-    [ID.SE_APOLLYON.mob.TIEHOLTSODI] =
+    [ID.mob.SE_TIEHOLTSODI] =
     {
-        { x = 151.0, y = 0.0, z = -528.0, wait = 10000 },
+        { x = 151.0, y = 0.0, z = -528.0,  wait = 10000 },
         { x = 147.0, y = 0.0, z = -468.05, wait = 10000 },
     },
 
-    [ID.SE_APOLLYON.mob.ADAMANTSHELL[1]] =
+    [ID.mob.SE_ADAMANTSHELL_OFFSET] =
     {
-        { x = 138.0, y = -2.0, z = -496.0, wait = 2500 },
+        { x = 138.0, y = -2.0,  z = -496.0, wait = 2500 },
         { x = 142.0, y = -1.11, z = -500.0, wait = 2500 },
     },
 
@@ -115,10 +117,10 @@ content.paths =
 
 ### Overriding Battlefield Logic
 
-Nearly all of Battlefield logic can be overridden by providing a function override for the created content. For a full list of functions that can be overridden check out `globals/battlefields.lua`.
+Nearly all of Battlefield logic can be overridden by providing a function override for the created content. For a full list of functions that can be overridden check out `scripts/globals/battlefield.lua`.
 
 ```lua
-function content:checkRequirements(player, npc, registrant, trade)
+function content:checkRequirements(player, npc, isRegistrant, trade)
     -- Always allow entry into the battlefield
     return true
 end
@@ -134,15 +136,19 @@ end
 - **levelCap**: Level cap imposed upon the battlefield. Defaults to 0 - no level cap. (optional)
 - **area**: Some battlefields have multiple areas (Burning Circles) while others have fixed areas (Apollyon). Set to have a fixed area. (optional)
 - **entryNpc**: The name of the NPC used for entering (required)
-- **exitNpc**: The name of the NPC used for exiting
+- **exitNpc**: The name of the NPC used for exiting (optional)
+- **exitNpcs**: The names of the NPCs used for exiting (optional)
 - **allowSubjob**: Determines if character subjobs are enabled or disabled upon entry. Defaults to true. (optional)
 - **hasWipeGrace**: Grants players a 3 minute grace period on a full wipe before ejecting them. Defaults to true. (optional)
 - **canLoseExp**: Determines if a character loses experience points upon death while inside the battlefield. Defaults to true. (optional)
+- **cleanupDebuffs**: Removes negative status effects from players upon victory. Defaults to false. (optional)
+- **showTimer**: Shows the time remaining in the battlefield in the player's UI. Defaults to true. (optional)
 - **delayToExit**: Amount of time to wait before exiting the battlefield. Defaults to 5 seconds. (optional)
 - **requiredItems**: Items required to be traded to enter the battlefield. Needs to be in the format of `{ itemid, quantity, useMessage = ID.text.*, wearMessage = ID.text.*, wornMessage = ID.text.* }`. (optional)
-- **requiredKeyItems**: Key items required to be able to enter the battlefield - these are removed upon entry (optional)
+- **requiredKeyItems**: Key items required to be able to enter the battlefield. These are removed upon entry unless `keep = true`. Set `onlyInitiator = true` to only require them from the initiator. (optional)
 - **title**: Title given to players upon victory (optional)
 - **grantXP**: Amount of XP to grant upon victory (optional)
+- **grantXPLockout**: If true, players can only receive `grantXP` once per day, resetting at JST midnight. (optional)
 - **lossEventParams**: Parameters given to the loss event (32002). Defaults to none. (optional)
 
 #### BattlefieldMission Parameters
@@ -153,6 +159,7 @@ end
 - **missionStatus**: The optional extra status information xi.mission.status (optional)
 - **requiredMissionStatus**: The required mission status to enter
 - **skipMissionStatus**: The required mission status to skip the cutscene. Defaults to the required mission status.
+- **canLoseExp**: As above, but defaults to false.
 
 ### Battlefield Group Parameters
 
@@ -164,13 +171,13 @@ end
 - **mods**: A table mapping `xi.mod.*` to a value which will be set for every monster in the group.
 - **mobMods**: A table mapping `xi.mobMod.*` to a value which will be set for every monster in the group.
 - **setup**: A callback `function(battlefield, mobs)` is called after initializing the group.
-- **death**: A callback `function(battlefield, mob)` is called whenever a monster in the group dies.
+- **death**: A callback `function(battlefield, mob, count)` is called whenever a monster in the group dies. `count` is the number of the group's monsters that have died so far.
 - **allDeath**: A callback `function(battlefield, mob)` is called whenever all monsters in the group die. The `mob` parameter is the last monster to have died.
 - **randomDeath**: A callback `function(battlefield, mob)` called whenever a chosen random monster, determined during initialization, in the group dies.
 
 ## Battlefield Creation
 
-Creating a new battlefield is much more streamlined than it was previously. Nearly all data pertaining to the battlefield is contained within the single battlefield script. New battlefields belong in `scripts/battlefields/<zone>/<name>.lua`. The only other place battlefield data exists is within `bcnm_info.sql` where the following values are needed: `bcnmId`, `zoneId`, `name`, `fastestName`, `fastestPartySize`, `fastestTime`. All other values are made redundant with this new solution.
+Creating a new battlefield is much more streamlined than it was previously. Nearly all data pertaining to the battlefield is contained within the single battlefield script. New battlefields belong in `scripts/battlefields/<zone>/<name>.lua`. The only other place battlefield data exists is the `bcnm_records` table in `sql/bcnm_info.sql`, where the following values are needed: `bcnmId`, `zoneId`, `name`, `fastestName`, `fastestPartySize`, `fastestTime`. All other values are made redundant with this new solution.
 
 Here is a checklist of things to do when creating a battlefield.
 
@@ -178,12 +185,12 @@ Here is a checklist of things to do when creating a battlefield.
 - A new `xi.battlefield.id` entry needs to be made for the battlefield.
 - Determine the proper Battlefield `index` which is used for communicating with the client.
 - Properly [setup](#battlefield-setup) the battlefield with the appropriate [parameters](#battlefield-parameters).
-- Provide the [monster groups](#battlefield-groups). Often this can be solved with something such as `content:addEssentialMobs({ "Apis" })`.
+- Provide the [monster groups](#battlefield-groups). Often this can be solved with something such as `content:addEssentialMobs({ 'Apis' })`.
 - Implement the monster scripts if they need any unique behavior/logic that cannot be handled within monster groups. (not covered)
 - Implement any missing mobskills (not covered)
-- Provide a [loot table](#battlefield-loot) using `xi.items.*` and `xi.battlefield.dropChance.*`
+- Provide a [loot table](#battlefield-loot) using `xi.item.*` and `weight`
 - Be sure to include a `return content:register()` at the bottom of the script
-- Ensure the following `ID.text.*` values are available for the zone `IDs.lua` script
+- Ensure the following `ID.text.*` values are available in the zone's `scripts/zones/<zone>/IDs.lua`
 
 ```lua
 PARTY_MEMBERS_ARE_ENGAGED
@@ -201,48 +208,9 @@ GIL_OBTAINED
 
 In order to simplify mission battlefields there is a `BattlefieldMission` subclass that has several [additional parameters](#battlefieldmission-parameters) that it can take.
 
-## Battlefield Migration
+## Unimplemented Battlefields
 
-There are a significant number of existing battlefields that need to be migrated over to this new solution. This is a fairly straightforward process as it is primarily taking existing data and unifying it in a single script. Please read [Battle Creation](#battlefield-creation) before continuing. The following covers where to find all of the different battlefield details.
-
-The first thing to do is identify the battlefield ID that is associated with the battlefield being migrating.
-
-Within `bcnm_info.sql` the values `timeLimit`, `levelCap`, and `partySize` can be found that need to be provided during battlefield creation.
-
-Inside `scripts/globals/bcnms.lua` the battlefield **index** can be found inside `local battlefields` table as the first value for the battlefield table. In the same table the required entry item (if any) can be found.
-
-Down below inside `checkReqs()` the requirements for entry are specified. This can vary significantly from having to provide a `requiredKeyItems` to missions using a `BattlefieldMission` to having to [override](#overriding-battlefield-logic) `Battlefield:checkRequirements()`.
-
-Continuing below, `checkSkip()` contains details on the requirements to be able to skip the entry cutscene. This is generally for missions and handled automatically with `BattlefieldMission`.
-
-Within `bcnm_battlefield.sql` the mob IDs for the battlefield can be found along with if they are spawned at the start and if they are required to spawn the Armoury Crate. This is used to set up `content.groups`.
-
-Sometimes there is logic within the mob scripts that should be brought over into the monster groups. Group callbacks can be used for many things and the `setup` callback can be used to set up event handlers for other logic.
-
-Within `scripts/zones/<zone>/npc/Armoury_Crate.lua` the existing loot table can be found. Generally they use raw itemids and raw droprates that need to be converted to `xi.items.*` and `xi.battlefield.dropChance.*` respectively.
-
-One important thing to note is that all Battlefields within a zone should be migrated at once otherwise there entrance triggers and other events will be handled twice - once by the Battlefield Framework and once by the entrance npc script.
-
-Once all of the battlefields within a zone have been migrated then the old scripts in the zone can be cleaned up.
-
-Once all of the battlefields have been migrated then the previous battlefield solution can be torn down. Here is a list of tasks to be done that is by no means exhaustive.
-
-- Remove m_RequiredEnemyList from Battlefield
-- Remove SpawnLoot
-- Remove bcnm_battlefield.sql
-- Remove bcnm_treasure_chests.sql
-- Remove globals/bcnm.lua
-- Remove xi.battlefield.* lua functions
-- Remove bcnm_info usage from CBattlefieldHandler::LoadBattlefield
-- Remove CLuaBattlefield::loadMobs
-- Remove Battlefield::getMobs
-- Simplify Battlefield::rules (only using loseexp and allowsubjob)
-- Remove BATTLEFIELDMOBCONDITION and just spawn when inserting if set to spawn
-- Cleanup CLuaBaseEntity::registerBattlefield
-- Remove ZoneType::BATTLEFIELD_OLD
-- Remove CBattlefield::isInteraction()
-- Remove xi.battlefield.HandleLootRolls
-- Remove xi.battlefield.HandleWipe
+Every implemented battlefield uses this framework. Some zones still keep commented-out loot tables in `scripts/zones/<zone>/npcs/Armoury_Crate.lua` for battlefields that aren't implemented yet. They use raw `droprate` values, which need converting to `weight` when the battlefield is written.
 
 ## Battlefield Modules
 
@@ -257,7 +225,7 @@ With the `content` object you can change any existing variables such as the `lev
 ```lua
 content.levelCap = 75
 
-function content:checkRequirements(player, npc, registrant, trade)
+function content:checkRequirements(player, npc, isRegistrant, trade)
     -- Always allow entry into the battlefield
     return true
 end
