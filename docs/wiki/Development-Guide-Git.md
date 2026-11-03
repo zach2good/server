@@ -18,46 +18,44 @@ Git is important, it's important that you use it correctly.
 
 ## Writing useful commit messages
 
-When you make a commit, you're adding a collection of changes with a title describing them to the codebase. These commits and messages are being constantly read and checked against as others do work on the codebase. It is vitally important that the messages you assign to your commits are a clear representation of the work you're submitting - in the context of the entire codebase, not just your pull request!
+People read commit titles in `git log` and `git blame` for years after your PR merges. Write the title for them, not for your reviewer.
 
-There are no hard or fast rules for what a good commit message should look like, but it:
-- Shouldn't be too short or long
-- If you need to explain more, consider leaving notes in the code, or make the commit multiline
-- It should describe what's changing, possibly also why - if it makes sense to mention that
-
-For example: If your changes are adding a feature to trusts, your commit message should look like:
+The title is `Scope: Verb object`. The scope names the area of the code, then comes an imperative verb, a capital letter after the colon, and no full stop:
 
 ```txt
-[trust] Allow trusts to heal themselves
+Trust: Allow trusts to heal themselves
+Core: Add safety check to entity:canSee(...) binding
+DB, SQL: Add caching layer fallback
 ```
 
-Or multiline:
+Older commits use `[trust] ...`. Use the colon form for new work.
+
+Add a body only when the title can't carry the reason:
 
 ```txt
-[trust] Allow trusts to heal themselves
+Trust: Allow trusts to heal themselves
 
-Trusts didn't have context for how hurt they were relative to other party members. This adds a structure to the CParty* that lets them track whats going on with the rest of the party.
+Trusts couldn't see how hurt they were relative to the party. Track party HP on CParty.
 ```
 
-If you submit some code and we ask you to make changes to it you should ammend your previous commits rather than adding new commits to address our requests.
+CI (`tools/ci/sanity_checks/git.py`) rejects a title that:
 
-This is also the case if you have to make changes to your code to get it to pass our CI checks.
+- is under 10 or over 72 characters,
+- contains `|`,
+- is GitHub's default `Update file.ext`,
+- starts with a throwaway word such as `oops` or `lol`.
 
-Some examples of **WHAT NOT TO DO**:
+When we ask for changes, or CI fails, amend or squash your commits and force-push. Don't add commits that only answer review.
+
+Some examples of **what not to do**:
 
 ```txt
 Update file.txt
-```
-
-```txt
 Remove debug logging because maintainers asked me to
-```
-
-```txt
 Align comments to pass CI
 ```
 
-If (once your PR is merged) the content of your message loses all meaning - then it's a bad message.
+If the title means nothing once the PR is merged, it's a bad title.
 
 ## Example of making changes (command line)
 
@@ -69,7 +67,7 @@ If (once your PR is merged) the content of your message loses all meaning - then
 - `git status`
 
 ```ps
-PS C:\ffxi\lsb-wiki> git status
+PS C:\ffxi\server> git status
 On branch main
 Your branch is up to date with 'origin/main'.
 
@@ -79,10 +77,10 @@ nothing to commit, working tree clean
 - `git checkout -b`
 
 ```ps
-PS C:\ffxi\lsb-wiki> git checkout -b add_new_files_for_tutorial
+PS C:\ffxi\server> git checkout -b add_new_files_for_tutorial
 Switched to a new branch 'add_new_files_for_tutorial'
 
-PS C:\ffxi\lsb-wiki> git status
+PS C:\ffxi\server> git status
 On branch add_new_files_for_tutorial
 nothing to commit, working tree clean
 ```
@@ -90,7 +88,7 @@ nothing to commit, working tree clean
 - `git status` with changes
 
 ```ps
-PS C:\ffxi\lsb-wiki> git status
+PS C:\ffxi\server> git status
 On branch add_new_files_for_tutorial
 Untracked files:
   (use "git add <file>..." to include in what will be committed)
@@ -102,9 +100,9 @@ nothing added to commit but untracked files present (use "git add" to track)
 - `git add`
 
 ```ps
-PS C:\ffxi\lsb-wiki> git add .\New_File.md
+PS C:\ffxi\server> git add .\New_File.md
 
-PS C:\ffxi\lsb-wiki> git status
+PS C:\ffxi\server> git status
 On branch add_new_files_for_tutorial
 Changes to be committed:
   (use "git restore --staged <file>..." to unstage)
@@ -114,12 +112,12 @@ Changes to be committed:
 - `git commit`
 
 ```ps
-PS C:\ffxi\lsb-wiki> git commit --message "Add New File for git tutorial"
+PS C:\ffxi\server> git commit --message "Add New File for git tutorial"
 [add_new_files_for_tutorial 590ed78] Add New File for git tutorial
  1 file changed, 3 insertions(+)
  create mode 100644 New_File.md
 
-PS C:\ffxi\lsb-wiki> git status
+PS C:\ffxi\server> git status
 On branch add_new_files_for_tutorial
 nothing to commit, working tree clean
 ```
@@ -127,7 +125,7 @@ nothing to commit, working tree clean
 - `git push`
 
 ```ps
-PS C:\ffxi\lsb-wiki> git push
+PS C:\ffxi\server> git push
 fatal: The current branch add_new_files_for_tutorial has no upstream branch.
 To push the current branch and set the remote as upstream, use
 
@@ -137,7 +135,7 @@ To push the current branch and set the remote as upstream, use
 - `git push --set-upstream`
 
 ```ps
-PS C:\ffxi\lsb-wiki> git push --set-upstream origin add_new_files_for_tutorial
+PS C:\ffxi\server> git push --set-upstream origin add_new_files_for_tutorial
 Enumerating objects: 4, done.
 Counting objects: 100% (4/4), done.
 Delta compression using up to 16 threads
@@ -147,9 +145,9 @@ Total 3 (delta 1), reused 0 (delta 0), pack-reused 0
 remote: Resolving deltas: 100% (1/1), completed with 1 local object.
 remote:
 remote: Create a pull request for 'add_new_files_for_tutorial' on GitHub by visiting:
-remote:      https://github.com/LandSandBoat/lsb-wiki/pull/new/add_new_files_for_tutorial
+remote:      https://github.com/YourName/server/pull/new/add_new_files_for_tutorial
 remote:
-To github.com:LandSandBoat/lsb-wiki.git
+To github.com:YourName/server.git
  * [new branch]      add_new_files_for_tutorial -> add_new_files_for_tutorial
 Branch 'add_new_files_for_tutorial' set up to track remote branch 'add_new_files_for_tutorial' from 'origin'.
 ```
@@ -157,7 +155,7 @@ Branch 'add_new_files_for_tutorial' set up to track remote branch 'add_new_files
 - You notice a mistake, or you're asked to make changes in your PR
 
 ```ps
-PS C:\ffxi\lsb-wiki> git status
+PS C:\ffxi\server> git status
 On branch add_new_files_for_tutorial
 Your branch is up to date with 'origin/add_new_files_for_tutorial'.
 
@@ -170,9 +168,9 @@ no changes added to commit (use "git add" and/or "git commit -a")
 ```
 
 ```ps
-PS C:\ffxi\lsb-wiki> git add .\Home.md
+PS C:\ffxi\server> git add .\Home.md
 
-PS C:\ffxi\lsb-wiki> git status
+PS C:\ffxi\server> git status
 On branch add_new_files_for_tutorial
 Your branch is up to date with 'origin/add_new_files_for_tutorial'.
 
@@ -182,11 +180,11 @@ Changes to be committed:
 ```
 
 ```ps
-PS C:\ffxi\lsb-wiki> git commit --message "Forgot to add link to new file, oops!"
-[add_new_files_for_tutorial 9518095] Forgot to add link to new file, oops!
+PS C:\ffxi\server> git commit --message "Add link to new file"
+[add_new_files_for_tutorial 9518095] Add link to new file
  1 file changed, 4 insertions(+)
 
-PS C:\ffxi\lsb-wiki> git status
+PS C:\ffxi\server> git status
 On branch add_new_files_for_tutorial
 Your branch is ahead of 'origin/add_new_files_for_tutorial' by 1 commit.
   (use "git push" to publish your local commits)
@@ -195,7 +193,7 @@ nothing to commit, working tree clean
 ```
 
 ```ps
-PS C:\ffxi\lsb-wiki> git push
+PS C:\ffxi\server> git push
 Enumerating objects: 5, done.
 Counting objects: 100% (5/5), done.
 Delta compression using up to 16 threads
@@ -203,10 +201,10 @@ Compressing objects: 100% (3/3), done.
 Writing objects: 100% (3/3), 349 bytes | 349.00 KiB/s, done.
 Total 3 (delta 2), reused 0 (delta 0), pack-reused 0
 remote: Resolving deltas: 100% (2/2), completed with 2 local objects.
-To github.com:LandSandBoat/lsb-wiki.git
+To github.com:YourName/server.git
    590ed78..9518095  add_new_files_for_tutorial -> add_new_files_for_tutorial
 
-PS C:\ffxi\lsb-wiki> git status
+PS C:\ffxi\server> git status
 On branch add_new_files_for_tutorial
 Your branch is up to date with 'origin/add_new_files_for_tutorial'.
 
@@ -214,8 +212,8 @@ nothing to commit, working tree clean
 ```
 
 ```ps
-PS C:\ffxi\lsb-wiki> git log --oneline
-9518095 (HEAD -> add_new_files_for_tutorial, origin/add_new_files_for_tutorial) Forgot to add link to new file, oops!
+PS C:\ffxi\server> git log --oneline
+9518095 (HEAD -> add_new_files_for_tutorial, origin/add_new_files_for_tutorial) Add link to new file
 590ed78 Add New File for git tutorial
 bcf5ad4 (origin/main, origin/HEAD, main) Merge pull request #44 from LandSandBoat/onmobdeath-optparam
 ad6a6b9 Update How to Script a Mob to reflect onMobDeath optParams change
@@ -223,18 +221,18 @@ e4d3011 Merge pull request #43 from WinterSolstice8/main
 ...
 ```
 
-- Reviewers ask you to fix your commits, since "Forgot to add link to new file, oops!" is not a great commit message
+- Reviewers ask you to squash the fix-up commit, since it means nothing on its own in the history
 - How many commits are you going to walk back? We have 2, so we'll walk back from our current place (HEAD) to 2 commit behind (HEAD~2).
 
 ```ps
-PS C:\ffxi\lsb-wiki> git rebase --interactive HEAD~2
+PS C:\ffxi\server> git rebase --interactive HEAD~2
 ```
 
 - The text editor `vim` will pop up
 
 ```ps
 pick 590ed78 Add New File for git tutorial
-pick 9518095 Forgot to add link to new file, oops!
+pick 9518095 Add link to new file
 
 # Rebase bcf5ad4..9518095 onto bcf5ad4 (2 commands)
 #
@@ -270,7 +268,7 @@ pick 9518095 Forgot to add link to new file, oops!
 
 ```ps
 pick 590ed78 Add New File for git tutorial
-squash 9518095 Forgot to add link to new file, oops!
+squash 9518095 Add link to new file
 ```
 
 - Press `ESC` to exit `--INSERT--` mode.
@@ -287,7 +285,7 @@ Add New File for git tutorial
 
 # This is the commit message #2:
 
-Forgot to add link to new file, oops!
+Add link to new file
 
 # Please enter the commit message for your changes. Lines starting
 # with '#' will be ignored, and an empty message aborts the commit.
@@ -297,7 +295,7 @@ Forgot to add link to new file, oops!
 # interactive rebase in progress; onto bcf5ad4
 # Last commands done (2 commands done):
 #    pick 590ed78 Add New File for git tutorial
-#    squash 9518095 Forgot to add link to new file, oops!
+#    squash 9518095 Add link to new file
 # No commands remaining.
 # You are currently rebasing branch 'add_new_files_for_tutorial' on 'bcf5ad4'.
 ## Changes to be committed:
@@ -322,7 +320,7 @@ Add New File for git tutorial
 # interactive rebase in progress; onto bcf5ad4
 # Last commands done (2 commands done):
 #    pick 590ed78 Add New File for git tutorial
-#    squash 9518095 Forgot to add link to new file, oops!
+#    squash 9518095 Add link to new file
 # No commands remaining.
 # You are currently rebasing branch 'add_new_files_for_tutorial' on 'bcf5ad4'.
 #
@@ -333,7 +331,7 @@ Add New File for git tutorial
 ```
 
 ```ps
-PS C:\ffxi\lsb-wiki> git log --oneline
+PS C:\ffxi\server> git log --oneline
 e00d94a (HEAD -> add_new_files_for_tutorial) Add New File for git tutorial
 bcf5ad4 (origin/main, origin/HEAD, main) Merge pull request #44 from LandSandBoat/onmobdeath-optparam
 ```
@@ -341,34 +339,34 @@ bcf5ad4 (origin/main, origin/HEAD, main) Merge pull request #44 from LandSandBoa
 - Now the commits on your local branch are different to the commits on your remote branch
 
 ```ps
-PS C:\ffxi\lsb-wiki> git status
+PS C:\ffxi\server> git status
 On branch add_new_files_for_tutorial
 Your branch and 'origin/add_new_files_for_tutorial' have diverged,
 and have 1 and 2 different commits each, respectively.
   (use "git pull" to merge the remote branch into yours)
 
 nothing to commit, working tree clean
-PS C:\ffxi\lsb-wiki>
+PS C:\ffxi\server>
 ```
 
 - If you try to push, you'll be rejected because git doesn't know how you want to resolve these differences.
 
 ```ps
-PS C:\ffxi\lsb-wiki> git push
-To github.com:LandSandBoat/lsb-wiki.git
+PS C:\ffxi\server> git push
+To github.com:YourName/server.git
  ! [rejected]        add_new_files_for_tutorial -> add_new_files_for_tutorial (non-fast-forward)
-error: failed to push some refs to 'github.com:LandSandBoat/lsb-wiki.git'
+error: failed to push some refs to 'github.com:YourName/server.git'
 hint: Updates were rejected because the tip of your current branch is behind
 hint: its remote counterpart. Integrate the remote changes (e.g.
 hint: 'git pull ...') before pushing again.
 hint: See the 'Note about fast-forwards' in 'git push --help' for details.
-PS C:\ffxi\lsb-wiki>
+PS C:\ffxi\server>
 ```
 
 - You know your local branch is correct, so you can `--force` push it onto your remote, replacing the remote commits with your local commits.
 
 ```ps
-PS C:\ffxi\lsb-wiki> git push --force
+PS C:\ffxi\server> git push --force
 Enumerating objects: 6, done.
 Counting objects: 100% (6/6), done.
 Delta compression using up to 16 threads
@@ -376,9 +374,9 @@ Compressing objects: 100% (3/3), done.
 Writing objects: 100% (4/4), 432 bytes | 432.00 KiB/s, done.
 Total 4 (delta 2), reused 0 (delta 0), pack-reused 0
 remote: Resolving deltas: 100% (2/2), completed with 2 local objects.
-To github.com:LandSandBoat/lsb-wiki.git
+To github.com:YourName/server.git
  + 9518095...e00d94a add_new_files_for_tutorial -> add_new_files_for_tutorial (forced update)
-PS C:\ffxi\lsb-wiki>
+PS C:\ffxi\server>
 ```
 
 ## Amending the previous commit
@@ -386,20 +384,20 @@ PS C:\ffxi\lsb-wiki>
 If you've made a small mistake and need to quickly amend it, or your work is only a single commit, you can skip the full rebase process and just use `git commit --amend`.
 
 ```ps
-PS C:\ffxi\lsb-wiki> git status
+PS C:\ffxi\server> git status
 On branch add_new_files_for_tutorial
 Your branch is up to date with 'origin/add_new_files_for_tutorial'.
 
 nothing to commit, working tree clean
 
-PS C:\ffxi\lsb-wiki> git log --oneline
+PS C:\ffxi\server> git log --oneline
 e00d94a (HEAD -> add_new_files_for_tutorial, origin/add_new_files_for_tutorial) Add New File for git tutorial
 bcf5ad4 (origin/main, origin/HEAD, main, git_guide) Merge pull request #44 from LandSandBoat/onmobdeath-optparam
 ...
 ```
 
 ```ps
-PS C:\ffxi\lsb-wiki> git status
+PS C:\ffxi\server> git status
 On branch add_new_files_for_tutorial
 Your branch is up to date with 'origin/add_new_files_for_tutorial'.
 
@@ -412,9 +410,9 @@ no changes added to commit (use "git add" and/or "git commit -a")
 ```
 
 ```ps
-PS C:\ffxi\lsb-wiki> git add .\New_File.md
+PS C:\ffxi\server> git add .\New_File.md
 
-PS C:\ffxi\lsb-wiki> git status
+PS C:\ffxi\server> git status
 On branch add_new_files_for_tutorial
 Your branch is up to date with 'origin/add_new_files_for_tutorial'.
 
@@ -448,22 +446,22 @@ Add New File for git tutorial
  Date: Thu Oct 6 10:10:50 2022 +0300
  2 files changed, 9 insertions(+)
  create mode 100644 New_File.md
-PS C:\ffxi\lsb-wiki>
+PS C:\ffxi\server>
 ```
 
 - Notice that the commit hash is different for this new modified commit.
 
 ```ps
-PS C:\ffxi\lsb-wiki> git log --oneline    
+PS C:\ffxi\server> git log --oneline    
 7c7869e (HEAD -> add_new_files_for_tutorial) Add New File for git tutorial
 bcf5ad4 (origin/main, origin/HEAD, main, git_guide) Merge pull request #44 from LandSandBoat/onmobdeath-optparam
 ```
 
 ```ps
-PS C:\ffxi\lsb-wiki> git push
-To github.com:LandSandBoat/lsb-wiki.git
+PS C:\ffxi\server> git push
+To github.com:YourName/server.git
  ! [rejected]        add_new_files_for_tutorial -> add_new_files_for_tutorial (non-fast-forward)
-error: failed to push some refs to 'github.com:LandSandBoat/lsb-wiki.git'
+error: failed to push some refs to 'github.com:YourName/server.git'
 hint: Updates were rejected because the tip of your current branch is behind
 hint: its remote counterpart. Integrate the remote changes (e.g.
 hint: 'git pull ...') before pushing again.
@@ -471,7 +469,7 @@ hint: See the 'Note about fast-forwards' in 'git push --help' for details.
 ```
 
 ```ps
-PS C:\ffxi\lsb-wiki> git push --force
+PS C:\ffxi\server> git push --force
 Enumerating objects: 6, done.
 Counting objects: 100% (6/6), done.
 Delta compression using up to 16 threads
@@ -479,7 +477,7 @@ Compressing objects: 100% (4/4), done.
 Writing objects: 100% (4/4), 481 bytes | 481.00 KiB/s, done.
 Total 4 (delta 2), reused 0 (delta 0), pack-reused 0
 remote: Resolving deltas: 100% (2/2), completed with 2 local objects.
-To github.com:LandSandBoat/lsb-wiki.git
+To github.com:YourName/server.git
  + e00d94a...7c7869e add_new_files_for_tutorial -> add_new_files_for_tutorial (forced update)
 ```
 

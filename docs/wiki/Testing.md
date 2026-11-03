@@ -64,6 +64,7 @@ In a terminal/shell/your IDE debug configuration, target the `xi_test` binary/la
 | --tag        | Only execute test cases containing tag.                       | --tag 'ci'                |
 | --no-tag     | Execute every test cases but the ones containing tag.         | --no-tag 'long'           |
 | --output     | Test report path (*.json)                                     | --output report.ctrf.json |
+| --retry      | Retry a failed test up to N times.                            | --retry 5                 |
 
 ## Output formats
 
@@ -160,9 +161,9 @@ Create subfolders as needed so that individual test files remain relatively shor
 Examples:
 
 - `scripts/tests/missions/cop.lua`
-- `scripts/tests/jobs/brd.lua`
-- `scripts/tests/systems/magic/immunobreak.lua`
-- `scripts/tests/systems/magic/magicburst.lua`
+- `scripts/tests/jobs/war/abilities/`
+- `scripts/tests/systems/combat/interrupt.lua`
+- `scripts/tests/systems/elements.lua`
 
 ## Test structure
 
@@ -171,9 +172,9 @@ A test suite must contain an arbitrary number of nested `describe` blocks, and a
 ```lua
 -- Minimally viable test
 describe('True', function()
-  it('is true', function()
-    assert(true)
-  end)
+    it('is true', function()
+        assert(true)
+    end)
 end)
 ```
 
@@ -187,10 +188,10 @@ Test names are a concatenation of the file path and of each `describe` block. Ca
 -- scripts/tests/magic/magic_burst.lua
 
 describe('Magic burst', function()
-  it('should increase damage', function()
-    -- magic::Magic burst::should increase damage
-    -- Actual code to cast a magic burst and assert
-  end)
+    it('should increase damage', function()
+        -- magic::Magic burst::should increase damage
+        -- Actual code to cast a magic burst and assert
+    end)
 end)
 ```
 
@@ -200,17 +201,17 @@ It is also acceptable to describe tests using the naming convention of the syste
 -- scripts/tests/bindings/CBaseEntity.lua
 
 describe('CBaseEntity', function()
-  describe('getItems', function()
-    it('should find owned items', function()
-      -- bindings::CBaseEntity::getItems::should find owned items
-      -- Test code goes here
-    end)
+    describe('getItems', function()
+        it('should find owned items', function()
+            -- bindings::CBaseEntity::getItems::should find owned items
+            -- Test code goes here
+        end)
 
-    it('should not find unowned items', function()
-      -- bindings::CBaseEntity::getItems::should not find unowned items
-      -- Test code goes here
+        it('should not find unowned items', function()
+            -- bindings::CBaseEntity::getItems::should not find unowned items
+            -- Test code goes here
+        end)
     end)
-  end)
 end)
 ```
 
@@ -222,13 +223,13 @@ These can be used to selectively include or exclude a group of loosely related t
 
 ```lua
 describe('Tagged tests', function()
-  describe('', function()
-    it('is very #long #ci', function()
-    end)
+    describe('', function()
+        it('is very #long #ci', function()
+        end)
 
-    it('magic related #magic', function()
+        it('magic related #magic', function()
+        end)
     end)
-  end)
 end)
 ```
 
@@ -283,52 +284,52 @@ Examples:
 ```lua
 -- Retrieve Fafnir once and check some stats
 describe('Fafnir', function()
-  local fafnir
-  local player
+    local fafnir
+    local player
 
-  setup(function()
-    player = xi.test.world:spawnPlayer()
+    setup(function()
+        player = xi.test.world:spawnPlayer()
 
-    -- Only retrieve Fafnir once
-    fafnir = player.entities:get(zones[xi.zone.DRAGONS_AERY].mob.FAFNIR)
-    assert(fafnir)
-    fafnir:spawn()
-  end)
+        -- Only retrieve Fafnir once
+        fafnir = player.entities:get(zones[xi.zone.DRAGONS_AERY].mob.FAFNIR)
+        assert(fafnir)
+        fafnir:spawn()
+    end)
 
-  it('is spawned', function()
-    assert(fafnir:isSpawned())
-  end)
+    it('is spawned', function()
+        assert(fafnir:isSpawned())
+    end)
 
-  it('has a lot of HP', function()
-    assert(fafnir:getHP() > 10000)
-  end)
+    it('has a lot of HP', function()
+        assert(fafnir:getHP() > 10000)
+    end)
 end)
 
 -- Another example with nested setup()
 describe('Fafnir', function()
-  local fafnir
-  local player
+    local fafnir
+    local player
 
-  setup(function()
-    player = xi.test.world:spawnPlayer()
-
-    -- Only retrieve Fafnir once
-    fafnir = player.entities:get(zones[xi.zone.DRAGONS_AERY].mob.FAFNIR)
-    assert(fafnir)
-    fafnir:spawn()
-  end)
-
-  describe('Test Fafnir drops', function()
     setup(function()
-      -- Any setup code specific to this nested suite
-    end)
-  end)
+        player = xi.test.world:spawnPlayer()
 
-  describe('Test Fafnir resistance', function()
-    setup(function()
-      -- Different setup code specific to this nested suite
+        -- Only retrieve Fafnir once
+        fafnir = player.entities:get(zones[xi.zone.DRAGONS_AERY].mob.FAFNIR)
+        assert(fafnir)
+        fafnir:spawn()
     end)
-  end)
+
+    describe('Test Fafnir drops', function()
+        setup(function()
+            -- Any setup code specific to this nested suite
+        end)
+    end)
+
+    describe('Test Fafnir resistance', function()
+        setup(function()
+            -- Different setup code specific to this nested suite
+        end)
+    end)
 end)
 ```
 
@@ -630,7 +631,7 @@ player.events:finish()         -- finish the current event
 player.events:expectNotInEvent() -- assert we are no longer in an event
 ```
 
-**The `eventId`, `updates` and `finishOption` values must come from a real event dump; never invent them.** See the [Interaction Framework Migration guide](interaction-framework-migration.md) for how to obtain them.
+**The `eventId`, `updates` and `finishOption` values must come from a real event dump; never invent them.** See the [Interaction Framework Migration guide](https://github.com/LandSandBoat/server/blob/base/docs/ai_agents/interaction-framework-migration.md) for how to obtain them.
 
 ### BCNM (player.bcnm)
 
@@ -768,28 +769,28 @@ Spies allow the observation of specified functions, in order to assert if they w
 ```lua
 -- Boilerplate left out
 describe('xi.spells.damage.calculateDayAndWeather', function()
-  local player = ...
-  local mob = ...
+    local player = ...
+    local mob = ...
 
-  it('increases damage with matching weather', function()
-    -- Create a new spy and temporarily replace the global
-    -- The global is automatically reverted when the case ends
-    local s = spy('xi.spells.damage.calculateDayAndWeather')
-    player:setMod(xi.mod.FORCE_EARTH_DWBONUS, 1)
-    player:setWeather(xi.weather.SAND_STORM)
-    
-    -- This sends a packet.
-    player.actions:useSpell(mob, xi.magic.spell.STONE)
+    it('increases damage with matching weather', function()
+        -- Create a new spy and temporarily replace the global
+        -- The global is automatically reverted when the case ends
+        local s = spy('xi.spells.damage.calculateDayAndWeather')
+        player:setMod(xi.mod.FORCE_EARTH_DWBONUS, 1)
+        player:setWeather(xi.weather.SAND_STORM)
+        
+        -- This sends a packet.
+        player.actions:useSpell(mob, xi.magic.spell.STONE)
 
-    -- Assert that the function was called. Optional parameter specify count.
-    s:called()
-    
-    -- Assert that the function was called with the following parameters
-    s:calledWith(player, xi.magic.spell.STONE)
+        -- Assert that the function was called. Optional parameter specify count.
+        s:called()
+        
+        -- Assert that the function was called with the following parameters
+        s:calledWith(player, xi.magic.spell.STONE)
 
-    -- Individual calls can be inspected
-    assert(s.calls[1].returned == 1.25, 'Expected return to be 1.25')
-  end)
+        -- Individual calls can be inspected
+        assert(s.calls[1].returned == 1.25, 'Expected return to be 1.25')
+    end)
 end)
 ```
 

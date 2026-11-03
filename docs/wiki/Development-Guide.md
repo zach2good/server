@@ -1,411 +1,118 @@
-# <a id="table-of-contents"/>Table of Contents
+# <a id="table-of-contents"/>Development Guide
 
-- [AI, LLMs, etc.](#ai)
+- [Before you push](#before-you-push)
+- [All files](#all-files)
 - [C++](#c)
 - [Lua](#lua)
+- [YAML and data](#yaml)
 - [SQL](#sql)
 - [Python](#python)
 - [Git](Development-Guide-Git)
 
-## <a id="contributing"/>Contributing
+Read the [Contributing Guide](https://github.com/LandSandBoat/server/blob/base/CONTRIBUTING.md) first. If you use an AI agent, read [AI Agents](https://github.com/LandSandBoat/server/blob/base/docs/ai_agents/README.md) too.
 
-It is assumed you've read the [Contributing Guide](https://github.com/LandSandBoat/server/blob/base/CONTRIBUTING.md).
+Most rules below are enforced by CI. Where a rule is a preference rather than a check, it says so. When in doubt, copy the style of recent code nearby.
+
+## <a id="before-you-push"/>Before you push
+
+Commit first. The checks compare against a git ref and some of them read the working tree.
+
+```sh
+./tools/ci/sanity_checks.sh origin/base
+```
+
+This runs the same checks as the PR job: commit messages, whitespace, licence headers, C++ formatting, cppcheck, Lua style, luacheck, SQL and Python. It needs `clang-format` 22, `cppcheck`, `luacheck`, `black`, `pylint` and `tools/requirements.txt` installed. It writes `sanity_checks_summary.md` and `changed-files.txt` to the repo root. Both are git-ignored.
+
+To run one check:
+
+| What | Command |
+| --- | --- |
+| C++ formatting (fix) | `python3 tools/run_clang_format.py` |
+| C++ formatting (check) | `python3 tools/run_clang_format.py --check` |
+| Lua style | `python3 tools/ci/sanity_checks/lua_stylecheck.py <file.lua>` |
+| luacheck | `bash tools/ci/sanity_checks/lua.sh <files...>` |
+| Commit messages | `python3 tools/ci/sanity_checks/git.py origin/base` |
+| YAML data (fix) | `python3 tools/yaml/format.py <files...>` |
+| YAML data (check) | `python3 tools/yaml/format.py <files...> --check` |
+| Python | `black --check <file.py>` and `pylint --errors-only <file.py>` |
+| Data schema | `cmake --build <build dir> --target data_schema_check` |
+| Tests | `xi_test`, see [Testing](Testing) |
+
+clang-tidy runs in CI on a clang 22 build. To run it locally, configure with `-DENABLE_CLANG_TIDY=ON`.
+
+## <a id="all-files"/>All files
+
+Checked on every changed file except Python and `docs/`:
+
+- No byte order mark.
+- Spaces, never tabs.
+- End with exactly one newline. No blank line at the end of the file.
+- Never two blank lines in a row.
 
 ## <a id="c"/>C++
 
-### <a id="c-naming-misc"/>Naming & Misc
+### <a id="c-formatting"/>Formatting
 
-- The STL is your friend, don't be afraid to use it.
-- Be careful with `auto`, it can mask important type details.
-- Be as `const` as you reasonably can.
-- `UpperCamelCase` for namespaced functions and classes.
-- `UPPER_SNAKE_CASE` for enums (exception for enum classes: style as classes).
+`.clang-format` defines the layout and CI checks it with **clang-format 22**. Other versions format differently. Run `python3 tools/run_clang_format.py` and don't hand-format. The main points, so the code you write looks right before you run it:
+
+- Allman braces, 4-space indent, no tabs.
+- `Type* name`, not `Type *name`.
+- Consecutive assignments and declarations are aligned on `=` and on the name.
+- No function, `if`, loop or lambda body on one line.
+- Spaces inside braced lists: `{ 1, 2, 3 }`.
+- Constructor initialisers start each line with `:` or `,`.
+- Includes are sorted for you.
+
+### <a id="c-naming-misc"/>Naming
+
+- `UpperCamelCase` for classes and namespaced functions.
+- `UPPER_SNAKE_CASE` for plain enum values. Style enum classes like classes.
 - `lowerCamelCase` for everything else.
-- You should use exceptions only in exceptional circumstances:
-  - If player/server data is at risk of being lost or corrupted, this is probably a good time to throw an exception and take down the server.
-  - If you're encountering a situation that shouldn't ever be happening, best to kill it with an exception.
-  - (Begrudgingly) If the STL, a third party lib, or legacy code relies on throwing exceptions as part of regular operation (LuaJIT does this) - wrap them in try/catch and move on with your life.
+- Entity pointers take a `P` prefix: `PChar`, `PMob`, `PTarget`.
 
-### <a id="c-styling"/>Styling
+### <a id="c-types"/>Project types
 
-We keep a `.clang-format` file in the root of the repo, but accept it can be difficult to set up for use on _just your changes_, as opposed to entire files that you're working with that might have legacy styling you don't want to mess with.
+Use the aliases in `src/common` over the raw types:
 
-Here are the points from `.clang-format` explained:
+| Use | Instead of | Header |
+| --- | --- | --- |
+| `uint8` ... `uint64`, `int8` ... `int64` | `uint32_t` etc. | `cbasetypes.h` |
+| `Maybe<T>` | `std::optional<T>` | `types/maybe.h` |
+| `Box<T>` | `std::unique_ptr<T>` | `types/box.h` |
+| `ErrorOr<T, E>` | `std::expected<T, E>` | `types/error_or.h` |
+| `Fn<Sig>` | `std::function<Sig>` | `types/fn.h` |
+| `HashMap<K, V>` | `std::unordered_map<K, V>` | `types/hash_map.h` |
+| `FlatHashMap<K, V>` | a hand-rolled flat map | `types/flat_hash_map.h` |
 
-#### <a id="c-basedonstyle"/>BasedOnStyle: WebKit
+Free owned raw pointers with `destroy(ptr)` or `destroy_arr(ptr)` from `cbasetypes.h`, never a naked `delete`. Better still, own them with `Box`.
 
-When in doubt, defaulting to `WebKit style with Allman braces` is _seemingly_ a safe option.
+### <a id="c-auto-const"/>auto and const
 
-#### <a id="c-accessmodifieroffset"/>AccessModifierOffset: -4
+Declare most variables with `auto`, with the type on the right when it isn't obvious: `const auto x = static_cast<uint16>(y);`. Bind as tightly as you can: `constexpr`, then `const auto` (or `const auto&`), and plain `auto` only when you reassign. Mark member functions `const` when they don't change the object.
 
-```cpp
-// Correct ✔️ 
-class Classname
-{
-public:
-    Classname();
+### <a id="c-ternaries"/>Ternaries
 
-private:
-    int member;
-}
-
-// Wrong ❌
-class Classname
-{
-    public:
-    Classname();
-
-    private:
-    int member;
-}
-```
-
-#### <a id="c-allowshortfunctionsonasingleline"/>AllowShortFunctionsOnASingleLine: Empty
+New code uses an immediately-invoked lambda instead of `?:`. Older code still has ternaries. Don't churn them, but don't add more, and never nest them.
 
 ```cpp
-// Correct ✔️ 
-void f()
-{ 
-    foo(); 
-}
-
-// Wrong ❌
-void f() { foo(); }
-```
-
-#### <a id="c-breakbeforebraces"/>BreakBeforeBraces: Allman
-
-Braces should _almost always_ be on a new line.
-
-```cpp
-// Correct ✔️ 
-if (x == 5)
+// Correct ✔️
+const auto delay = [&]
 {
-    function();
-}
-
-// Wrong ❌
-if (x == 5) {
-    function();
-}
-```
-
-#### <a id="c-breakconstructorinitializers-constructorinitializerindentwidth"/>BreakConstructorInitializers: BeforeComma & ConstructorInitializerIndentWidth: 0
-
-```cpp
-// Correct ✔️ 
-Constructor(int param0, int param1)
-: member0(param0)
-, member1(param1)
-{
-}
-
-// Wrong ❌
-Constructor(int param0, int param1)
-    : member0(param0), member1(param1){}
-```
-
-#### <a id="c-compactnamespaces"/>CompactNamespaces: 'false'
-
-```cpp
-// Correct ✔️ 
-namespace Foo
-{
-    namespace Bar
+    if (isRanged)
     {
+        return rangedDelay;
     }
-}
+
+    return meleeDelay;
+}();
 
 // Wrong ❌
-namespace Foo { namespace Bar {
-}}
+const auto delay = isRanged ? rangedDelay : meleeDelay;
 ```
 
-#### <a id="c-cpp11bracedliststyle"/>Cpp11BracedListStyle: 'false'
+### <a id="c-trailing-return-types"/>Trailing return types for non-void functions
 
-```cpp
-// Correct ✔️ 
-std::vector<int> x{ 1, 2, 3, 4 };
-
-// Wrong ❌
-std::vector<int> x{1, 2, 3, 4};
-```
-
-#### <a id="c-indentcaselabels"/>IndentCaseLabels: 'true'
-
-```cpp
-// Correct ✔️ 
-switch(x)
-{
-    case 0:
-    {
-        break;
-    }  
-}
-
-// Wrong ❌
-switch(x)
-{
-case 0:
-{
-    break;
-}  
-}
-```
-
-- **Note**: It doesn't matter if your `break;` is inside or outside the body of your case statement - as long as it's there (if you indend it to be).
-
-#### <a id="c-indentwidth"/>IndentWidth: 4
-
-```cpp
-// Correct ✔️ 
-if (func())
-{
-    reaction();  
-}
-
-// Wrong ❌
-if (func())
-{
-  reaction();  
-}
-```
-
-#### <a id="c-keepemptylinesatthestartofblocks"/>KeepEmptyLinesAtTheStartOfBlocks: 'false'
-
-```cpp
-// Correct ✔️ 
-void function(int x)
-{
-    doSomething(x);
-}
-
-// Wrong ❌
-void function(int x)
-{
-
-    doSomething(x);
-}
-```
-
-#### <a id="c-language"/>Language: Cpp
-
-Yup.
-
-#### <a id="c-pointeralignment"/>PointerAlignment: Left
-
-```cpp
-// Correct ✔️ 
-void function(CBigType* type);
-void function(CBigType& type);
-
-// Wrong ❌
-void function(CBigType *type);
-void function(CBigType &type);
-
-// Wrong ❌
-void function(CBigType * type);
-void function(CBigType & type);
-```
-
-#### <a id="c-sortincludes-sortusingdeclarations"/>SortIncludes: 'true' & SortUsingDeclarations: 'true'
-
-- Try to keep your `include` and `using` statements organised alphabetically, in logical blocks.
-
-#### <a id="c-spacebeforeparens"/>SpaceBeforeParens: ControlStatements
-
-```cpp
-// Correct ✔️ 
-if (true)
-{
-    doThing();
-}
-
-// Wrong ❌
-if(true)
-{
-    doThing();
-}
-```
-
-#### <a id="c-standard"/>Standard: Cpp11
-
-```cpp
-// Correct ✔️ 
-A<A<int>>
-
-// Wrong ❌
-A<A<int> >
-```
-
-#### <a id="c-usetab"/>UseTab: Never
-
-```cpp
-// Correct ✔️
-<4 spaces>
-
-// Wrong ❌
-<a tab>
-
-// Wrong ❌
-<a half-tab>
-```
-
-#### <a id="c-braces-around-statements"/>Braces Around Statements
-
-`readability-braces-around-statements`
-
-```cpp
-// Correct ✔️ 
-if (x == 5)
-{
-    function();
-}
-
-// Wrong ❌
-if (x == 5)
-    function();
-
-// Wrong ❌
-if (x == 5)
-    function(21);
-else
-{
-    function(42);
-}
-```
-
-#### <a id="c-breaks-between-consecutive-conditional-statements"/>Breaks between consecutive conditional statements
-
-```cpp
-// Correct ✔️ 
-if (thisThing())
-{
-
-}
-else
-{
-
-}
-
-if (thatThing())
-{
-
-}
-
-// Correct ✔️ 
-if (thisThing())
-{
-
-}
-
-if (thatThing())
-{
-
-}
-
-// Wrong ❌
-if (thisThing())
-{
-
-}
-else
-{
-
-}
-if (thatThing())
-{
-
-}
-
-// Wrong ❌
-if (thisThing())
-{
-
-}
-if (thatThing())
-{
-
-}
-```
-
-#### <a id="c-breaks-to-split-wide-conditional-lines-after-the-operator"/>Breaks to split wide conditional lines - after the operator
-
-- There is no hard rule about how wide is too wide at this time.
-- Use your best judgement, but nobody likes left/right scrolling.
-
-```cpp
-// Correct ✔️
-if (lotsOfStuff &&
-    evenMoreStuff &&
-    evenMoreStuff &&
-    evenMoreStuff &&
-    evenMoreStuff &&
-    evenMoreStuff)
-{
-
-}
-
-// Wrong ❌
-if (lotsOfStuff
-    && evenMoreStuff
-    && evenMoreStuff
-    && evenMoreStuff
-    && evenMoreStuff
-    && evenMoreStuff)
-{
-
-}
-
-// Wrong ❌ (this is 102 chars wide)
-if (lotsOfStuff && evenMoreStuff && evenMoreStuff && evenMoreStuff && evenMoreStuff && evenMoreStuff)
-{
-
-}
-```
-
-#### <a id="c-casting-static-cast-over-c-style"/>Casting - static_cast over C-Style
-
-`cppcoreguidelines-pro-type-cstyle-cast`
-
-```cpp
-// Correct ✔️ 
-uint32 param = static_cast<uint32>(input);
-
-// Wrong ❌
-uint32 param = (uint32)input;
-```
-
-#### <a id="c-dont-use-static-cast-to-downcast"/>Don't use static_cast to downcast: Use dynamic_cast instead
-
-`cppcoreguidelines-pro-type-static-cast-downcast`
-
-**NOTE**: There is a good reason for this. If you use `static_cast` and it fails, the returned pointer will **NOT NECESSARILY** be `nullptr` and any blocks checking against for `nullptr` might incorrectly succeed. `dynamic_cast` will return a `nullptr` if it fails.
-
-```cpp
-// Correct ✔️ 
-if (auto PChar = dynamic_cast<CCharEntity*>(baseEntity))
-{
-    PChar->DoSomething()
-}
-
-// Wrong ❌
-auto PChar = static_cast<CCharEntity*>(baseEntity)
-PChar->DoSomething()
-
-// Wrong ❌
-if (auto PChar = static_cast<CCharEntity*>(baseEntity))
-{   
-    // The cast is forced, so PChar will _always_ be populated here....
-    PChar->DoSomething()
-}
-```
-
-#### <a id="c-trailing-return-types"/>Trailing return types for non-void functions
-
-`modernize-use-trailing-return-type`
-
-Functions that return a value use a trailing return type, in both the declaration and the definition. Functions returning `void` keep the plain form, and lambdas are left alone.
+Enforced by clang-tidy (`modernize-use-trailing-return-type`). Functions that return a value use a trailing return type in both declaration and definition. `void` functions and lambdas keep the plain form.
 
 ```cpp
 // Correct ✔️
@@ -418,122 +125,203 @@ void setName(const std::string& name);
 
 // Wrong ❌
 const std::string& getName() const;
-uint16 Classname::getValue() const
-{
-    return value;
-}
 auto setName(const std::string& name) -> void;
 ```
 
-#### <a id="c-arg-param-spacing"/>Arg/Param spacing
+### <a id="c-braces-around-statements"/>Braces around every statement
 
 ```cpp
-// Correct ✔️ 
-auto f(0, 1, 2, 3, 4, 5, 6);
+// Correct ✔️
+if (x == 5)
+{
+    function();
+}
 
 // Wrong ❌
-auto f(0,1,2,3,4,5,6);
+if (x == 5)
+    function();
 ```
 
-#### <a id="c-lambdas"/>Lambdas
-
-Formatting tools have a famously difficult time with lamdas, so we tend to wrap them in `// clang-format on/off` to ensure we can format them how we'd like.
+### <a id="c-breaks-between-consecutive-conditional-statements"/>Blank line between consecutive `if` blocks
 
 ```cpp
-// Correct ✔️ 
-// clang-format off
-auto isEntityAlive = [&](CBigEntity* entity) -> bool
+// Correct ✔️
+if (thisThing())
 {
-    return entity->isAlive;
-};
-// clang-format on
+}
 
-// Correct ✔️ 
-// clang-format off
-static_cast<CCharEntity>(PPlayer)->ForParty([&](CBattleEntity* entity)
+if (thatThing())
 {
-    entity->doStuff();
-});
-// clang-format off
+}
 
 // Wrong ❌
-auto isEntityAlive =
-[&](CBigEntity* entity)
+if (thisThing())
+{
+}
+if (thatThing())
+{
+}
+```
+
+### <a id="c-breaks-to-split-wide-conditional-lines-after-the-operator"/>Split wide conditions after the operator
+
+There's no hard column limit. Avoid sideways scrolling.
+
+```cpp
+// Correct ✔️
+if (lotsOfStuff &&
+    evenMoreStuff &&
+    evenMoreStuff)
+{
+}
+
+// Wrong ❌
+if (lotsOfStuff
+    && evenMoreStuff
+    && evenMoreStuff)
+{
+}
+```
+
+### <a id="c-casting-static-cast-over-c-style"/>Casts
+
+Use `static_cast`, never a C-style cast. When you aren't certain of an entity's type, downcast with `dynamic_cast` and check the result. A failed `static_cast` doesn't give you `nullptr`, so a null check after it proves nothing.
+
+```cpp
+// Correct ✔️
+const auto param = static_cast<uint32>(input);
+
+if (auto* PChar = dynamic_cast<CCharEntity*>(PEntity))
+{
+    PChar->doSomething();
+}
+
+// Wrong ❌
+uint32 param = (uint32)input;
+
+if (auto* PChar = static_cast<CCharEntity*>(PEntity)) // Always true
+{
+    PChar->doSomething();
+}
+```
+
+### <a id="c-lambdas"/>Lambdas
+
+When a lambda is a function argument, start it on its own line after the open parenthesis and let clang-format indent it. Don't wrap lambdas in `// clang-format off` guards.
+
+```cpp
+// Correct ✔️
+PChar->ForParty(
+    [&](CBattleEntity* PMember)
     {
-        return entity->isAlive;
-    };
+        PMember->doStuff();
+    });
+
+// Wrong ❌
+// clang-format off
+PChar->ForParty([&](CBattleEntity* PMember)
+{
+    PMember->doStuff();
+});
+// clang-format on
 ```
+
+### <a id="c-misc"/>Other rules
+
+- Every `.cpp` and `.h` under `src/` carries the GPLv3 licence header. Copy it from a neighbouring file.
+- No `#include "../..."`. Include from the source root.
+- Put a blank line after `TracyZoneScoped;`.
+- A new `triggerListener("NAME")` must be listed in `docs/AI_Events.txt`.
+- clang-tidy also flags uninitialised variables, `malloc`, `goto`, missing `override`, `NULL` instead of `nullptr`, and `push_back` where `emplace_back` fits. See `.clang-tidy`.
+- Prefer the standard library to hand-rolled code.
+- Throw exceptions only when something has gone badly wrong, such as a risk of corrupt player data. Catch the ones that third-party code throws in normal use (LuaJIT does), and move on.
+- Heavy work belongs in C++, not Lua. See [Programming for Performance](Programming-for-Performance).
 
 [Back to Top](#table-of-contents)
 
 ## <a id="lua"/>Lua
 
-A lot of the styling rules from the C++ guide can and should be applied to Lua code. Here are the important points to remember when styling your Lua:
+`tools/ci/sanity_checks/lua_stylecheck.py` and luacheck enforce most of this. LuaLS also type-checks the scripts in CI.
 
 ### <a id="lua-naming-and-misc"/>Naming and Misc
 
-- Our lua functions and members are typically `lowerCamelCased`, with few exceptions.
-- Make sure you check out `scripts/globals/npc_util.lua` for useful tools and helpers.
-- If you're going to cache a long table entry into a var with a shorter name, make sure that name still conveys the original meaning.
+- `lowerCamelCase` for functions, locals and table members. No capitals or underscores in local names, except `ID`.
+- Use `local` for everything. Globals are a luacheck error.
+- Strings take single quotes.
+- Indent with 4 spaces.
+- Build strings with `string.format`, not `..`.
+- Use enums (`xi.item.X`, `xi.effect.X`, `xi.mission.id.X`), not numbers. The style check rejects literal ids in calls such as `addItem`, `messageSpecial` and `addStatusEffect`.
+- Get a zone's IDs with `local ID = zones[xi.zone.X]`. Don't `require` an `IDs` file.
+- Use `math.random(lo, hi)` with both bounds, or `math.randomInt`/`math.randomFloat`.
+- No `== true` or `== false`.
+- `scripts/globals/npc_util.lua` has helpers for common NPC work.
+- A shortened name must keep its meaning:
 
 ```lua
 -- Correct ✔️
-local copCurrentMission = player:getCurrentMission(xi.mission.log_id.COP)
-local copMissionStatus = player:getCharVar("PromathiaStatus")
-local sandyQuests = xi.quest.id.sandoria
+local copMissionStatus = player:getCharVar('PromathiaStatus')
+local sandyQuests      = xi.quest.id.sandoria
 
 -- Wrong ❌
-local currentMission = player:getCurrentMission(xi.mission.log_id.COP)
-local missionStatus = player:getCharVar("PromathiaStatus")
-local quests = xi.quest.id.sandoria
+local missionStatus = player:getCharVar('PromathiaStatus')
+local quests        = xi.quest.id.sandoria
 ```
 
-### <a id="lua-local-vars-are-almost-always-preferred"/>Local vars are (almost) always preferred
+### <a id="lua-header"/>File headers
+
+Script headers and section dividers are lines of exactly 35 dashes. The NPC header layout is in the [NPC header guide](https://github.com/LandSandBoat/server/blob/base/docs/ai_agents/npc-header-guide.md).
 
 ```lua
--- Correct ✔️ 
-local var = 0
-
--- Wrong ❌
-var = 0
+-----------------------------------
+-- Area: Port Bastok
+--  NPC: Example
+-----------------------------------
 ```
 
-### <a id="lua-table-formatting"/>Table Formatting
+### <a id="lua-allman-braces"/><a id="lua-table-formatting"/>Table formatting
+
+Multi-line tables open their brace on a new line and end every entry with a comma. Align `=` across consecutive fields and assignments.
 
 ```lua
--- Correct (Allman style for multi-line tables) ✔️ 
+-- Correct ✔️
 local table =
 {
-    one = 1,
-    two = 2,
+    one   = 1,
+    three = 3,
 }
 
--- Correct (Oneliner style for small, single-line tables) ✔️ 
+-- Correct (small tables) ✔️
 local table = { 1, 2, 3, 4 }
 
 -- Wrong ❌
 local table = {
-    content = 1,
-}
-
--- Wrong ❌
-local table =
-{ one = 1,
-    two = 2,
+    one = 1,
+    three = 3
 }
 ```
 
-**NOTE:** The final entry in a multi-line table should have a comma after it.
-
-### <a id="lua-no-parentheses-unless-needed-to-clarify-order-of-operations"/>No parentheses unless needed to clarify order of operations
+The one exception is a table passed as the only argument to a call:
 
 ```lua
--- Correct ✔️ 
-if condition1 == 1 then
-    trigger()
-end
+-- Correct ✔️
+xi.func({
+    entry = 1,
+    other = 2,
+})
 
--- Correct ✔️ 
+-- Wrong ❌
+xi.func(
+    {
+        entry = 1,
+        other = 2,
+    }
+)
+```
+
+### <a id="lua-no-parentheses-unless-needed-to-clarify-order-of-operations"/>Parentheses only where they clarify precedence
+
+```lua
+-- Correct ✔️
 if condition1 and (condition2 or condition3) then
     trigger()
 end
@@ -547,37 +335,30 @@ end
 ### <a id="lua-no-semicolons"/>No semicolons
 
 ```lua
--- Correct ✔️ 
+-- Correct ✔️
 local x = 42
 trigger(42)
 
 -- Wrong ❌
 local x = 42;
-trigger(42);
-
--- Wrong ❌
-local x = 42; trigger(42);
 ```
 
-### <a id="lua-formatting-conditional-blocks"/>Formatting Conditional Blocks
+### <a id="lua-formatting-conditional-blocks"/>Conditional blocks
+
+Nothing follows `then` on the same line. A long condition (over 72 characters with `and`/`or`) goes on its own lines, with `if` and `then` alone. Put `not` before a term and `and`/`or` at the end of a line.
 
 ```lua
--- Short - Correct ✔️
+-- Correct ✔️
 if condition then
     bla()
 end
 
--- Long or many multiple conditions - Correct ✔️
+-- Correct ✔️
 if
     condition1 and
     condition2 or
     not condition3
 then
-    bla()
-end
-
--- Wrong ❌
-if  condition1 then
     bla()
 end
 
@@ -588,258 +369,100 @@ if condition1 and condition2 and
 end
 
 -- Wrong ❌
-if condition1 and condition2 and
-    not condition3
-then
-    bla()
-end
-```
-
-### <a id="lua-placement-of-logical-operators-in-long-blocks"/>Placement of logical operators in long blocks
-
-- `not` before, `and/or` after
-
-```lua
--- Correct ✔️
-if
-    condition1 and
-    condition2 or
-    not condition3
-then
-    bla()
-end
-
--- Wrong ❌
 if
     condition1
     and condition2
-    or not condition3
 then
     bla()
 end
 ```
 
-### <a id="lua-no-excess-whitespace"/>No excess whitespace inside of parentheses or solely for alignment
+### <a id="lua-no-excess-whitespace"/>Whitespace
 
-```lua
--- Correct ✔️ 
-if condition1 and (condition2 or condition3) then
-    trigger()
-end
-
--- Wrong ❌
-if condition1 and ( condition2 or condition3 ) then
-    trigger()
-end
-
--- Wrong ❌
-if
-      condition1 and 
-    ( condition2 or condition3 )
-then
-    trigger()
-end
-```
-
-### <a id="lua-no-whitespace-between-function-name-and-parameters-space-between-parameters"/>No whitespace between function name and parameters; Space between parameters
+- No padding inside parentheses: `(a or b)`, not `( a or b )`.
+- No space between a function name and its `(`. One space after each comma.
+- One space either side of operators: `a = b + c`.
+- A blank line after `end` when more code follows at the same level.
+- No blank line straight after a function header or straight before its `end`.
+- No one-line functions or `if` blocks.
 
 ```lua
 -- Correct ✔️
-local function myFunction(param1, param2, param3)
+local function myFunction(param1, param2)
+    if param1 == param2 then
+        return param1 + param2
+    end
+
+    return 0
 end
 
 -- Wrong ❌
-local function myFunction (param1,param2,param3)
+local function myFunction (param1,param2)
+
+    if param1==param2 then return param1+param2 end
+    return 0
 end
 ```
 
-### <a id="lua-logical-and-mathematical-operators-should-have-one-space-padding"/>Logical and mathematical operators should have one space padding
+### <a id="lua-tests"/>Tests
 
-```lua
--- Correct ✔️
-if a == b then
-    a = b + c
-end
+Lua tests live in `scripts/tests`. See [Testing](Testing).
 
--- Wrong ❌
-if a==b then
-    a = b+c
-end
-```
+[Back to Top](#table-of-contents)
 
-### <a id="lua-code-following-end-on-same-indentation-level-should-have-a-newline-inbetween"/>Code following `end` on same indentation level should have a newline inbetween
+## <a id="yaml"/>YAML and data
 
-```lua
--- Correct ✔️
-if a == b then
-    a = b + c
-end
+Game data lives in `data/`: zone, mob, NPC and region data in `data/zones/<zone>/`, enums in `data/enums/`, and shared tables in `data/*.yaml`. Code generators turn the enums into `scripts/enum/*.codegen.lua` and C++ headers. Edit the YAML, never the generated files.
 
-return a
-
--- Wrong ❌
-if a == b then
-    a = b + c
-end
-return a
-```
-
-### <a id="lua-no-empty-newlines-after-function-declaration-or-prior-to-end"/>No empty newlines after function declaration, or prior to end
-
-```lua
--- Correct ✔️
-local function myFunction(param1, param2, param3)
-    return param1 + param2
-end
-
--- Wrong ❌
-local function myFunction(param1, param2, param3)
-
-    return param1 + param2
-end
-
-local function myFunction(param1, param2, param3)
-    return param1 + param2
-
-end
-```
-
-### <a id="lua-no-single-line-functions-or-conditions"/>No single-line functions or conditions
-
-```lua
--- Correct ✔️
-if a == b then
-    a = b + c
-end
-
-local function myFunction(param1, param2, param3)
-    return param1 + param2
-end
-
--- Wrong ❌
-if a == b then a = b + c end
-
-local function myFunction(param1, param2, param3) return param1 + param2 end
-```
-
-#### <a id="lua-inline-tables"/>Inline tables
-
-##### <a id="lua-this-is-the-one-exception-to-the-global-newline-brace-rules"/>THIS IS THE ONE EXCEPTION TO THE GLOBAL NEWLINE-BRACE RULES
-
-```lua
--- Correct ✔️ 
-xi.func({
-  entry = 1,
-  entry = 2,
-})
-
--- Wrong ❌
-xi.func(
-    {
-        entry = 1,
-        entry = 2,
-    }
-)
-```
+- Format with `python3 tools/yaml/format.py <files>`: 2-space indent, single quotes, aligned values and comments. CI runs it with `--check`.
+- Every file starts with its `# yaml-language-server: $schema=` line.
+- A change under `data/` or `tools/codegen` runs the `data_schema_check` build target in CI.
+- JSON under `data/` is formatted with Prettier 3 (`.prettierrc`).
 
 [Back to Top](#table-of-contents)
 
 ## <a id="sql"/>SQL
 
-- Don't put single quotes around non string fields:
+- Don't quote numbers: `42,0`, not `'42','0'`.
+- One statement per line. Don't break an `INSERT` across lines.
+- Keywords in upper case: `INSERT INTO`, not `insert into`.
+- Names use underscores for spaces. Hyphens are allowed. Strip most other symbols from item, mob and NPC names, except in `polutils_name` and `packet_name`, where you escape them.
+- Skill, spell, pet and ability names are lower case.
+- `--` comments need a space after them, and a line can't start with `--- `.
+- Schema changes need a migration in `tools/migrations`.
 
-  ```sql
-  42,0
-  ```
+### <a id="sql-commenting-in-sql"/>Comments
 
-  not:
-
-  ```sql
-  '42','0'
-  ```
-
-- No line breaks in the middle of a statement:
-
-  ```sql
-  INSERT INTO table_name VALUES (a,b,c,x,y,z);
-  ```
-
-  not:
-
-  ```sql
-  INSERT INTO table_name VALUES (a,b,c,
-  x,y,z);
-  ```
-
-- Spaces in names get replaced with an underscore. Hyphens are allowed. Most other symbols are removed from item/mob/npc names _except_ for polutils_name or packet_name columns, where they must be escaped.
-- Full lower case skill/spell/pet/ability things.
-- Don't change SQL keywords to lowercase:
-
-  ```sql
-  INSERT INTO table_name
-  ```
-
-  not:
-
-  ```sql
-  insert into table_name
-  ```
-
-### <a id="sql-commenting-in-sql"/>Commenting in SQL
-
-Our SQL tables are big and confusing, and they are also modified by hand. It can be very helpful to leave _short_ comments on your additions and modifications to highlight what they are.
-
-#### <a id="sql-example"/>Example
-
-Without a comment, this entry is not easily human-readable:
-
-```sql
-INSERT INTO `mob_droplist` VALUES (504,0,0,1000,888,340);
-```
-
-So we instead store it as:
+Add a short trailing comment when a row isn't readable on its own. Don't use `;` inside the comment.
 
 ```sql
 INSERT INTO `mob_droplist` VALUES (504,0,0,1000,888,340); -- (Colossal Calamari) seashell
 ```
 
-Conversely, the `Mighty Strikes` ability doesn't need any additional comments because it has a name field:
+A row with a name column needs no comment:
 
 ```sql
 INSERT INTO `abilities` VALUES (16,'mighty_strikes',1,0,1,3600,0,0,0,33,2000,0,6,0,0,0,1,300,0,0,NULL);
 ```
 
-The format of the comment isn't massively important, but it is preferred not to use ';' as a seperator in the middle of your comment. This is a little confusing, as it's the statement-terminator in SQL.
+### <a id="sql-placeholder-data-in-table-rows"/>Placeholder data
 
-### <a id="sql-placeholder-data-in-table-rows"/>Placeholder Data in table rows
-
-In general, it is preferred to comment out the entire row rather than only leaving a comment about still needing to capture it. Examples include item and NPC models. Use your best judgment and if you aren't sure you can always ask.
-
-- If it "works" there is an unfortunate chance nobody will come back to finish it later, including the original author. Life happens, people come and go, take breaks etc.
-- If its "wrong" we're likely to still get issue reports on it **because** of that partial implementation, more so than if it were completely missing.
-- Experience has shown people don't often read those comments before complaining that "we" got it wrong.
-- By having the partial data but commenting it out, it remains obviously incomplete and the next editor can more easily see what needs to happen.
-- Example:
+Comment out a row whose data you haven't captured (a guessed model, say) rather than committing it with a note. A row that "works" won't get finished, and players report it as our bug. A commented-out row is plainly incomplete.
 
 ```sql
--- Missing model, looks like a fish. Just kidding this doesn't exist and is only a made up example
+-- Missing model
 -- INSERT INTO `item_equipment` VALUES (65534,'holy_moly_mace',43,0,1048645,???,0,0,3,0,0);
 ```
 
-**_And absolutely never substitute item modifiers!_**
-
-### <a id="sql-sql-migrations-for-schema-changes"/>SQL Migrations for Schema changes
-
-- Going forward schema changes should be accompanied by a migration script.
+Never substitute item modifiers.
 
 [Back to Top](#table-of-contents)
 
 ## <a id="python"/>Python
 
-Python is primarily used for support scripts.
+Python is for tools, under `tools/`.
 
-### <a id="python-naming-and-misc"/>Naming and Misc
-
-- Python uses `lower_snake_case`
+- `lower_snake_case` names.
+- Format with Black's defaults. CI runs `black --check` and `pylint --errors-only` on changed files.
 
 [Back to Top](#table-of-contents)
