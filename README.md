@@ -16,7 +16,7 @@ An open-source server emulator for FFXI.
 
 ## Getting Started
 
-A [quick start guide](https://github.com/LandSandBoat/server/wiki/Quick-Start-Guide), the [frequently asked questions](https://github.com/LandSandBoat/server/wiki/Frequently-Asked-Questions), and a table of "[what works](https://github.com/LandSandBoat/server/wiki/What-Works)" are all available on [our wiki](https://github.com/LandSandBoat/server/wiki).
+A [quick start guide](https://github.com/LandSandBoat/server/wiki/Quick-Start-Guide), the [frequently asked questions](https://github.com/LandSandBoat/server/wiki/Frequently-Asked-Questions), and [what works](https://github.com/LandSandBoat/server/wiki/Frequently-Asked-Questions#what-works-is-quest-x-implemented) are all on [our wiki](https://github.com/LandSandBoat/server/wiki).
 
 ## Interacting with LandSandBoat
 
@@ -28,7 +28,7 @@ Please create a new issue in the [issues tab](https://github.com/LandSandBoat/se
 
 ### AI Agents and their use
 
-If you're a human using AI agents or an AI agent you should go read `./docs/ai_agents/README.md`.
+If you use an AI agent, read [`docs/ai_agents/README.md`](docs/ai_agents/README.md). Agents start at [`AGENTS.md`](AGENTS.md).
 
 ## LICENSE
 

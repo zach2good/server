@@ -7,7 +7,7 @@ This guide assumes you've managed to download, build, and run the server correct
 - [Using GitHub](Using-GitHub)
 - [Contribution Guide](https://github.com/LandSandBoat/server/blob/base/CONTRIBUTING.md)
 - [Development Landing Page](Development)
-- [Our License](https://github.com/LandSandBoat/server/blob/release/LICENSE)
+- [Our License](https://github.com/LandSandBoat/server/blob/base/LICENSE)
 
 ### Whatever your skill level
 
