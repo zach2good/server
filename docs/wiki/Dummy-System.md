@@ -8,6 +8,6 @@ It was never merged and isn't in the codebase. The patch below is kept for refer
 
 **Old PR:**
 
-https://github.com/LandSandBoat/server/pull/608
+<https://github.com/LandSandBoat/server/pull/608>
 
 ![image](https://user-images.githubusercontent.com/1389729/156880495-96230eb1-be3b-45ac-8a91-ab58d8ff0768.png)

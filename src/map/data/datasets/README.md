@@ -12,7 +12,9 @@ datasets/<name>/
 Use plural, snake-case names such as `status_effects` and `ecosystems`.
 
 ## Files
+
 ### `dataset.h`
+
 - `dataset.h` contains the types used by gameplay code and the `Dataset` descriptor.
 - Keep this header free of Glaze includes.
 - Forward-declare the root YAML type and expose:
@@ -32,6 +34,7 @@ struct Dataset
 ```
 
 ### `yaml.h`
+
 - `yaml.h` contains the wire types read from YAML and their Glaze schema annotations.
 - YAML-facing fields use snake case.
 - Use `yaml::EnumToken<T>` for named enums and `std::optional` where omission or explicit `null` has meaning.
@@ -40,6 +43,7 @@ struct Dataset
   maps keyed by record name with ordinary `glz::schema` annotations.
 
 ### `dataset.cpp`
+
 - `dataset.cpp` performs the explicit wire-to-gameplay conversion.
 - This is where defaults, enum resolution, key/ID checks, duplicate-ID checks, and any dataset-specific validation belong.
 

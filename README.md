@@ -1,5 +1,5 @@
 <p align="center">
-    <img width="256" height="256" src="res/lsb_logo_circle.png">
+    <img width="256" height="256" src="res/lsb_logo_circle.png" alt="LandSandBoat logo">
     <h1 align="center">LandSandBoat</h1>
 </p>
 
@@ -8,10 +8,10 @@ An open-source server emulator for FFXI.
 </p>
 
 <p align="center">
-<a href="https://github.com/LandSandBoat/server/actions/workflows/build.yml"><img src="https://github.com/LandSandBoat/server/actions/workflows/build.yml/badge.svg?branch=base"/></a>
-<a href="https://github.com/LandSandBoat/server/actions/workflows/test.yml"><img src="https://github.com/LandSandBoat/server/actions/workflows/test.yml/badge.svg?branch=base"/></a>
-<a href="https://www.gnu.org/licenses/gpl-3.0"><img src="https://img.shields.io/badge/License-GPLv3-blue.svg"/></a>
-<a href="https://github.com/LandSandBoat/server/pulls"><img src="https://img.shields.io/badge/Contributions-welcome-brightgreen.svg?style=flat"/></a>
+<a href="https://github.com/LandSandBoat/server/actions/workflows/build.yml"><img src="https://github.com/LandSandBoat/server/actions/workflows/build.yml/badge.svg?branch=base" alt="Build status"/></a>
+<a href="https://github.com/LandSandBoat/server/actions/workflows/test.yml"><img src="https://github.com/LandSandBoat/server/actions/workflows/test.yml/badge.svg?branch=base" alt="Test status"/></a>
+<a href="https://www.gnu.org/licenses/gpl-3.0"><img src="https://img.shields.io/badge/License-GPLv3-blue.svg" alt="License: GPL v3"/></a>
+<a href="https://github.com/LandSandBoat/server/pulls"><img src="https://img.shields.io/badge/Contributions-welcome-brightgreen.svg?style=flat" alt="Contributions welcome"/></a>
 </p>
 
 ## Getting Started
@@ -20,11 +20,11 @@ A [quick start guide](https://github.com/LandSandBoat/server/wiki/Quick-Start-Gu
 
 ## Interacting with LandSandBoat
 
-### Crashes, warnings, errors, bugs, gameplay issues, visual issues, questions, documentation issues, build problems, etc.
+### Crashes, warnings, errors, bugs, gameplay issues, visual issues, questions, documentation issues, build problems, etc
 
 Please create a new issue in the [issues tab](https://github.com/LandSandBoat/server/issues) after searching to see if your issue is already logged.
 
-*If you are encountering an issue, please open an issue!* It's easier for us to track and you're more likely to get resolution through an issue than any other means.
+_If you are encountering an issue, please open an issue!_ It's easier for us to track and you're more likely to get resolution through an issue than any other means.
 
 ### AI Agents and their use
 

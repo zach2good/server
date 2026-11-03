@@ -430,7 +430,7 @@ Game data lives in `data/`: zone, mob, NPC and region data in `data/zones/<zone>
 - Keywords in upper case: `INSERT INTO`, not `insert into`.
 - Names use underscores for spaces. Hyphens are allowed. Strip most other symbols from item, mob and NPC names, except in `polutils_name` and `packet_name`, where you escape them.
 - Skill, spell, pet and ability names are lower case.
-- `--` comments need a space after them, and a line can't start with `--- `.
+- `--` comments need a space after them, and a line can't start with `---`.
 - Schema changes need a migration in `tools/migrations`.
 
 ### <a id="sql-commenting-in-sql"/>Comments

@@ -529,4 +529,4 @@ git rev-list --count --after="Jan 1 2021" --all --no-merges
 
 ## Other Guides
 
-- https://www.sitepoint.com/git-interactive-rebase-guide/
+- <https://www.sitepoint.com/git-interactive-rebase-guide/>

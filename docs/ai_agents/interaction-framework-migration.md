@@ -97,18 +97,18 @@ quest.sections =
 2. Strip out every quest `if`/`else` block.
 3. If nothing but quest logic was there, cut it down to:
 
-```lua
----@type TNpcEntity
-local entity = {}
+   ```lua
+   ---@type TNpcEntity
+   local entity = {}
 
-entity.onTrade = function(player, npc, trade)
-end
+   entity.onTrade = function(player, npc, trade)
+   end
 
-entity.onTrigger = function(player, npc)
-end
+   entity.onTrigger = function(player, npc)
+   end
 
-return entity
-```
+   return entity
+   ```
 
 4. Keep patrol logic (`onSpawn`), Trust logic and any complex quests that haven't been migrated yet.
 

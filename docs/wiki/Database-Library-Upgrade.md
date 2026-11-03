@@ -9,11 +9,11 @@
 >- Add an API on top of `mariadb-connector-cpp` that can be used alongside our current SQL usage.
 >- All instances of `sql` global object are replaced with `_sql` because of clashing symbols in the new library. These have since been replaced with the `db` namespace.
 >- The new API provides:
->    - Thread-safe usage.
->    - Protection from clobbering your results by interleaving queries.
->    - Option to extract column results of queries by column name rather than by index.
->    - Additional safety through use of prepared statements.
->    - Equivalent-or-better performance.
+>   - Thread-safe usage.
+>   - Protection from clobbering your results by interleaving queries.
+>   - Option to extract column results of queries by column name rather than by index.
+>   - Additional safety through use of prepared statements.
+>   - Equivalent-or-better performance.
 
 ## Introduction
 

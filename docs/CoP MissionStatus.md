@@ -3,7 +3,8 @@
 uint32 at 0x14 in the 0x56 packet (CQuestMissionLogPacket)
 
 MISSIONSTATUS INDEX FOR COP LOG (log id 6)
-```
+
+```txt
   76543210   Index
 0x00000000
   ||||||||_0 = 3-3 San d'Oria Bits
@@ -18,7 +19,8 @@ MISSIONSTATUS INDEX FOR COP LOG (log id 6)
 
 >index 0 = 3-3 San d'Oria Bits
 `player:setMissionStatus(COP, 0, x)`
-```
+
+```txt
 0x1 - SAN D'ORIA CS #1 (Northern San d'Oria)
 0x2 - SAN D'ORIA CS #2 (Arnau)
 0x5 - SAN D'ORIA CS #3 (Chasalvige)
@@ -28,7 +30,8 @@ MISSIONSTATUS INDEX FOR COP LOG (log id 6)
 
 >index 1 = 3-3 Windurst Bits
 `player:setMissionStatus(COP, 1, x)`
-```
+
+```txt
 0x1 - WINDURST CS #1 (Windurst Waters)
 0x2 - WINDURST CS #2 (Ohbiru-Dohbiru)
 0x3 - WINDURST CS #3 (Yoran-Oran)
@@ -43,7 +46,8 @@ MISSIONSTATUS INDEX FOR COP LOG (log id 6)
 
 >index 2 = 5-3 Louverance's Path Bits
 `player:setMissionStatus(COP, 2, x)`
-```
+
+```txt
 0x2 - LOUVERANCE PATH CS #1 (Despachiaire)
 0x3 - LOUVERANCE PATH CS #2 (Perih Vashai)
 0x6 - LOUVERANCE PATH CS #3 (Warmachine)
@@ -56,7 +60,8 @@ MISSIONSTATUS INDEX FOR COP LOG (log id 6)
 
 >index 3 = 5-3 Tenzen's Path Bits
 `player:setMissionStatus(COP, 3, x)`
-```
+
+```txt
 0x2 - TENZEN PATH CS #1 (La Theine ???)
 0x3 - TENZEN PATH CS #2 (Avatar Gate)
 0x5 - TENZEN PATH CS #3 (Monberaux)
@@ -70,7 +75,8 @@ MISSIONSTATUS INDEX FOR COP LOG (log id 6)
 
 >index 4 = 5-3 Ulmia's Path Bits
 `player:setMissionStatus(COP, 4, x)`
-```
+
+```txt
 0x2 - ULMIA PATH CS #1 (Hinaree)
 0x3 - ULMIA PATH CS #2 (Port San d'Oria)
 0x4 - ULMIA PATH CS #3 (Chasalvige)
@@ -83,7 +89,8 @@ MISSIONSTATUS INDEX FOR COP LOG (log id 6)
 
 >index 5 = 1-2/3 Promyvion Bits
 `player:setMissionStatus(COP, 5, x)`
-```
+
+```txt
 x = y IF player:getMissionStatus(COP, 5) == 0
 x = bit.lshift(y, 2) IF 0 < player:getMissionStatus(COP, 5) < 4
 x = bit.bor(player:getMissionStatus(COP, 5), z) IF player:getMissionStatus(COP, 5) >= 4
@@ -102,7 +109,8 @@ Example:
 
 >index 6 = 7-4 3 NM Bits
 `player:setMissionStatus(COP, 6, bit.bor(player:getMissionStatus(COP, 6), x))`
-```
+
+```txt
 0x1 = Boggelmann CS
 0x2 = Cryptonberry Executor CS
 0x4 = Dalham CS
@@ -111,7 +119,8 @@ Example:
 
 >index 7 = 8-1 Rubious Crystals Bits
 `player:setMissionStatus(COP, 6, x)`
-```
+
+```txt
 0x2 - second rubious crystal
 0x3 - third rubious crystal
 ```

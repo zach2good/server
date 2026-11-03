@@ -10,7 +10,7 @@ CI builds `ASAN` and `TSAN` with Clang every night and runs `xi_test` under each
 
 ## Why use sanitizers
 
-Some bugs slip through code review and static analysis (use-after-free, buffer overflows, undefined behavior) and cause crashes or corruption that are hard to reproduce and harder to diagnose. 
+Some bugs slip through code review and static analysis (use-after-free, buffer overflows, undefined behavior) and cause crashes or corruption that are hard to reproduce and harder to diagnose.
 
 Sanitizers catch these at runtime with detailed stack traces, turning what could be weeks of investigation into a quick fix.
 
@@ -25,7 +25,9 @@ Sanitizers catch these at runtime with detailed stack traces, turning what could
 | `UBSAN`    | Signed integer overflow, null pointer dereference, bad casts, misaligned access, shift UB     |
 
 ## Warnings
+
 You should be aware that running sanitizers comes with certain downsides:
+
 - Performance will be impacted by 2 to 5x depending on the sanitizer used
 - Sanitizers inject custom instrumentation into the code that may present security issues of their own and/or have bad interactions with LSB code.
 - Failing to disable `halt_on_error` will cause sanitizers to abort on severe issues.
@@ -60,7 +62,7 @@ Output binaries are placed in the repo root, same as all other build types.
 
 Run any target normally. The sanitizer runtime is linked into the binary and prints reports to stderr when issues are detected.
 
-Depending on the severity of the issue, ASan may elect to abort the process. 
+Depending on the severity of the issue, ASan may elect to abort the process.
 See `halt_on_error` documentation below.
 
 If the process exits naturally, a report about memory leaks will be printed.
@@ -204,7 +206,8 @@ Shadow byte legend (one shadow byte represents 8 application bytes):
 ```
 
 #### Memory leaks example
-```
+
+```txt
 ASAN_OPTIONS="halt_on_error=0" ./xi_map
 
 [...]
@@ -279,6 +282,7 @@ UBSAN_OPTIONS="print_stacktrace=1:halt_on_error=0" ./xi_map
 | `log_path`      | stderr      | Write reports to `<path>.<pid>` files        |
 
 ### References
+
 - [Clang documentation](https://clang.llvm.org/docs/AddressSanitizer.html)
 - [GCC documentation](https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html)
 - [MSVC documentation](https://learn.microsoft.com/en-us/cpp/sanitizers/asan?view=msvc-170)

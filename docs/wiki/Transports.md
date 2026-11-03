@@ -19,9 +19,9 @@ Declare an elevator on the platform NPC, since the platform, both doors and the 
 
 ---
 
-# Elevators
+## Elevators
 
-## Declaring one
+### Declaring one
 
 ```yaml
 17748035:
@@ -51,7 +51,7 @@ The platform's `animation` sets its starting floor. `elevator_up` starts it at t
 
 A lift with a `lever` waits to be pulled and needs no `period`. A lift with no `lever` runs on a timer and must have one, or the server refuses to start.
 
-## Reading it from a capture
+### Reading it from a capture
 
 Everything comes from `0x00E` packets for the platform entity.
 
@@ -69,7 +69,7 @@ Everything comes from `0x00E` packets for the platform entity.
 
 `TransportTimestamp` holds whole seconds, so a fractional period shows up as two adjacent gap values in a fixed ratio, not one number:
 
-```
+```txt
 psoxja tower A    19s x1266   20s x187    period 19.129s    period: 19129
 psoxja tower B    20s x445    21s x899    period 20.669s    period: 20669
 psoxja tower C    23s x962    24s x236    period 23.197s    period: 23197
@@ -86,9 +86,9 @@ Check `period` minus `travel` afterwards. That is the wait at the floor, and a n
 
 ---
 
-# Ships
+## Ships
 
-## Declaring one
+### Declaring one
 
 ```yaml
 transport:
@@ -138,7 +138,7 @@ State `ship:` once for the zone. Several runs can share it, each taking its turn
 | `disembark` | Seconds into the cycle when riders in the crossing are put ashore                        |
 | `phases`    | The cycle in order, starting at the offset                                               |
 
-### Phases
+#### Phases
 
 A phase says what the ship is doing for a stretch of the cycle. The states are `arriving`, `docked`, `closing` and `departing`, plus `cycling` and `holding` for decorative ships.
 
@@ -153,7 +153,7 @@ Phases run back to back and must total exactly `every`. Leave `seconds` off exac
 
 `moves` and `hide` sit apart from the state on purpose. Retail moves a ship partway through an animation under the same timestamp, and hides it partway into `departing` instead of at a phase boundary. A phase with no `moves` leaves the ship where the last one put it.
 
-## Reading it from a capture
+### Reading it from a capture
 
 Same packet as the lifts, and the same `SendFlg` warning. A packet with `SendFlg = 0` carries no position block, and its position bytes read as a false `(0, 0, 0)`.
 
@@ -168,41 +168,41 @@ Same packet as the lifts, and the same `SendFlg` warning. A packet with `SendFlg
 | `0x34`               | `DoorId`             |                                                   |
 | `0x38`               | `TransportTimestamp` | Phase start                                       |
 
-### Getting the schedule
+#### Getting the schedule
 
 1. **`every`.** Take the gaps between phase stamps carrying the same animation. Ferries and airships are Vana'diel-aligned: 864s is 360 vana minutes, 1152s is 480, 3456s is a full vana day.
 2. **`offset`.** `stamp % every` for the first phase. Every capture should give the same value. Drift means the cycle length is wrong.
 3. **Phase lengths.** The gap between one phase stamp and the next.
 4. **`docked` and `closing`.** These two share the arriving animation and get no stamp of their own. Time them off the boarding door, which opens when `docked` begins and shuts when `closing` begins. Filter the door entity to animations 8 (open) and 9 (shut).
 
-### Getting `moves`
+#### Getting `moves`
 
 For each phase, take every position-bearing packet during it and subtract the phase stamp from the packet's wall-clock time. That gives the offset into the phase at which the ship was put there.
 
-```
+```txt
 jeuno   anim 19   +0s berth(-68, 117)     +1s staging(-29, 190)
 barge   anim 23   +0s hidden(0, 100, 0)   +1s berth   +54s outbound   +77s hidden
 ```
 
 Most ships move only at the phase start. Only the barge needs several waypoints in one phase.
 
-### Getting `hide`
+#### Getting `hide`
 
 Track `flags1` bit 1 across the phase. The client draws the ship at the start of `departing` and drops it some seconds in, once the animation has carried it out of sight:
 
-```
+```txt
 windurst 29s   jeuno 33s   sandoria 35s   bastok 37s   kazham 38s   manaclipper 41s
 ```
 
 The barge never sets `HideFlag`. It ducks under the map to `(0, 100, 0)` instead, which is why it uses `moves` where the others use `hide`.
 
-### Getting `disembark`
+#### Getting `disembark`
 
 Ride the crossing with a capture running. The `0x00A` zone-in packet marks the moment you land, and its position in the run's cycle is `disembark`.
 
 Do not infer it from the ship's schedule. Two of the three manaclipper legs held another leg's value and carried riders to the wrong stop, until four captured rides corrected them.
 
-## Common mistakes
+### Common mistakes
 
 **Both directions share a crossing.** The outbound and return legs use one zone, which empties only when neither has anyone aboard. Check one leg alone and each direction throws the other's passengers out the moment they board.
 

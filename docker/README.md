@@ -7,13 +7,14 @@
 ```sh
 docker run --rm -v navmeshes:/navmeshes -v ximeshes:/ximeshes ghcr.io/landsandboat/ximeshes:latest
 ```
+
 Once the volumes are created, you can delete the image.
 
 ## Database
 
 **A DATABASE IS NOT INCLUDED WITH THIS IMAGE!** Database connection credentials are required to run the executables, you can set these through environment variables:
 
-```
+```txt
 XI_NETWORK_SQL_HOST
 XI_NETWORK_SQL_PORT
 XI_NETWORK_SQL_DATABASE or MARIADB_DATABASE
@@ -79,7 +80,7 @@ There is no database in this configuration. You can install MariaDB Server throu
 
 You can use environment variables to adjust individual settings in the following format:
 
-```
+```sh
 -e XI_{file}_{setting}=value
 ```
 
@@ -87,7 +88,7 @@ You can use environment variables to adjust individual settings in the following
 
 Mount settings for more extensive changes.
 
-```
+```sh
 --mount type=bind,src="$(pwd)"/settings/map.lua,dst=/server/settings/map.lua
 ```
 
@@ -95,7 +96,7 @@ Mount settings for more extensive changes.
 
 Mount Lua and SQL runtime modules for further customization.
 
-```
+```sh
 --mount type=bind,src="$(pwd)"/modules,dst=/server/modules
 ```
 
@@ -239,7 +240,7 @@ docker build -f docker/ubuntu.Dockerfile .
 
 The Dockerfiles support a few [build args](https://docs.docker.com/build/building/variables/#arg-usage-example), use these if you want to use a different compiler/version/user/etc:
 
-```
+```sh
 BASE_TAG=26.04
 UNAME=xiadmin
 UGROUP=xiadmin

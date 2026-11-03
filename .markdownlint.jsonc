@@ -1,0 +1,16 @@
+// markdownlint defaults, minus the rules the wiki can't follow, with one style for every file.
+{
+    "default": true,
+    // Prose isn't hard-wrapped.
+    "MD013": false,
+    // Wiki pages need <details>, <a id> anchors and sized <img> tags.
+    "MD033": false,
+    // _Sidebar and the issue/PR templates have no heading by design.
+    "MD041": false,
+    // Per-platform sections repeat headings like "1. Install the tools".
+    "MD024": { "siblings_only": true },
+    "MD003": { "style": "atx" },
+    "MD004": { "style": "dash" },
+    "MD049": { "style": "underscore" },
+    "MD050": { "style": "asterisk" }
+}

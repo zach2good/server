@@ -126,7 +126,7 @@ If the server (LandSandBoat) and the client (Final Fantasy XI) don't share the s
 
 **Copy** the following file from the `server\settings\default\` folder into the `server\settings\` folder and open the copied file (with the default Windows text editor (Notepad) or an external one (like  [Notepad++](https://notepad-plus-plus.org/)):
 
-* login.lua
+- login.lua
 
 then modify this line:
 
@@ -146,7 +146,7 @@ Python and the MySQL Python Connector are needed and should already be installed
 
 Right click wherever you want to download the repository > Git Clone... > URL: <https://github.com/AdamGagorik/pydarkstar.git> > OK > then Close when it's done.
 
-Its setup instructions (found **[HERE](http://adamgagorik.github.io/pydarkstar/generated/setup.html)**) are focused on a package manager named Anaconda. The below instructions are focused on pip, which comes with the stock python installer. Anaconda may work better for you if the command line is scary.
+Its setup instructions (found in the **[pydarkstar setup guide](http://adamgagorik.github.io/pydarkstar/generated/setup.html)**) are focused on a package manager named Anaconda. The below instructions are focused on pip, which comes with the stock python installer. Anaconda may work better for you if the command line is scary.
 
 Whichever you choose, it is important to note that **LSB doesn't maintain or provide support for pydarkstar** - its a nice thing that happens to work. **PLEASE contact its author NOT US**, for any that wasn't a direct result of us screwing up our guide! Thanks for your understanding.
 

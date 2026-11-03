@@ -19,6 +19,7 @@ Right click on the taskbar > Task Manager > Processes > right click on `xi_map.e
 ## Auto-restarting while using GDB
 
 Create a file in your server root directory called `multirun.gdb` with the following contents:
+
 ```gdb
 while 1
   set confirm off

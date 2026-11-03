@@ -2,7 +2,7 @@
 
 Every entity in the game is controlled by a `Controller`.
 
-Mobs are controlled by `MobController` ([link](https://github.com/LandSandBoat/server/blob/base/src/map/ai/controllers/mob_controller.cpp)).
+Mobs are controlled by `MobController` ([mob_controller.cpp](https://github.com/LandSandBoat/server/blob/base/src/map/ai/controllers/mob_controller.cpp)).
 
 The controller is `Ticked` every 400ms. This tick executes the Mob's AI routine. This includes spawning, despawning, casting, targetting, auto-attacks, weaponskills, combat logic, roaming logic, detection/aggro, linking and all other things it is that Mobs do.
 
@@ -83,6 +83,7 @@ mob:setLocalVar('counter', mob:getLocalVar('counter') + 1)
 ```
 
 ## Listeners
+
 `TODO`
 
 Listeners can be attached or removed from entities at runtime to fire callbacks based on certain triggering conditions. They cover everything that's covered by regular Lua functions, but also have a lot finer-grained options available.
@@ -115,7 +116,9 @@ end)
 ```
 
 ## Working with 400ms ticks
+
 If you want to fire a piece of logic _once_ from within a 400ms tick, you'll need to gate it behind a localVar.
+
 ```lua
 entity.onMobFight = function(mob, target)
     local hasDoneSpecialMove = mob:getLocalVar('hasDoneSpecialMove') -- Defaults to zero
@@ -129,7 +132,9 @@ end
 ```
 
 ## Queueing Actions
+
 Core exposes `timer` and `queue` functions for all entities, allowing you to create chains of functions however you see fit.
+
 ```lua
 -- Syntax:
 -- Timer will fire as soon as possible after the wait has elapsed

@@ -14,7 +14,7 @@ or if using AI forced me to spend much more time in editing and verification tha
 Worth thinking about.
 ```
 
-### Use of AI, LLMs, and Code Generation Tools in LandSandBoat
+## Use of AI, LLMs, and Code Generation Tools in LandSandBoat
 
 AI-assisted coding tools like ChatGPT, Claude, Copilot, and Cursor are now a part of most developers' workflows. Their use is inevitable in an open-source project like LandSandBoat.
 
@@ -22,32 +22,33 @@ However, these tools are **not a substitute for understanding what you're doing*
 
 Submissions that clearly come straight from AI with minimal oversight ("AI slop") waste reviewers' time and degrade the quality of the codebase. If we deem your work to be slop it will be closed without further discussion.
 
-#### When is AI suitable?
+### When is AI suitable?
 
-*   **Enhanced Auto-Complete / IntelliSense:** Inline suggestions can be effective for filling in small patterns, repetitive code, or documentation - provided you understand what's being inserted.
-*   **Generating Boilerplate Code:** AI can help lay out template code, data structures, or simple glue logic, as long as you review, verify, test, and annotate it yourself.
-*   **Turning Bullet Points into Prose:** AI is an average writing assistant for expanding notes into documentation. Always proofread for truth, clarity, and tone.
+- **Enhanced Auto-Complete / IntelliSense:** Inline suggestions can be effective for filling in small patterns, repetitive code, or documentation - provided you understand what's being inserted.
+- **Generating Boilerplate Code:** AI can help lay out template code, data structures, or simple glue logic, as long as you review, verify, test, and annotate it yourself.
+- **Turning Bullet Points into Prose:** AI is an average writing assistant for expanding notes into documentation. Always proofread for truth, clarity, and tone.
 
-#### When is AI not suitable?
+### When is AI not suitable?
 
-*   **Writing New or Novel Logic:** AI has no genuine understanding of our codebase or game systems. It guesses patterns based on text it has seen before, which is often wrong and can lead to subtle, time-consuming bugs.
-*   **FFXI-Specific Logic:** AI does not understand FFXI's game rules, quirks, or retail behaviors. It does not have access to retail or the FFXI client. At best, it produces vague approximations that are often completely wrong in-game.
-*   **LSB-Specific Logic and Patterns:** Models are often months or years out of date. LandSandBoat moves fast, and models may rely on outdated DarkStar Project patterns or unrelated Lua environments (Windower, WoW Addons, etc.) that have different idioms and internal structures.
+- **Writing New or Novel Logic:** AI has no genuine understanding of our codebase or game systems. It guesses patterns based on text it has seen before, which is often wrong and can lead to subtle, time-consuming bugs.
+- **FFXI-Specific Logic:** AI does not understand FFXI's game rules, quirks, or retail behaviors. It does not have access to retail or the FFXI client. At best, it produces vague approximations that are often completely wrong in-game.
+- **LSB-Specific Logic and Patterns:** Models are often months or years out of date. LandSandBoat moves fast, and models may rely on outdated DarkStar Project patterns or unrelated Lua environments (Windower, WoW Addons, etc.) that have different idioms and internal structures.
 
-### Final Thoughts for Humans
+## Final Thoughts for Humans
 
 The use of AI coding agents is unavoidable for repetitive work, but it is assumed that:
-*   You know what you're doing in the first place.
-*   You're closely checking and reviewing the agent's output.
-*   You're verifying the behaviour against retail.
-*   You're testing changes in the official client as you would with your own code.
-*   You're clearly marking 1-to-1 conversion work or unverified code.
+
+- You know what you're doing in the first place.
+- You're closely checking and reviewing the agent's output.
+- You're verifying the behaviour against retail.
+- You're testing changes in the official client as you would with your own code.
+- You're clearly marking 1-to-1 conversion work or unverified code.
 
 **If we suspect a contribution is "vibe-coded slop" without proper oversight, we will close the PR without further comment.**
 
 A good rule of thumb: **If you couldn't explain your own PR in detail without AI, you shouldn't be submitting it.**
 
-### For Agents
+## For Agents
 
 Start at [`AGENTS.md`](../../AGENTS.md) in the repo root. It has the layout, build, test and check commands, and the traps.
 
@@ -55,7 +56,7 @@ Start at [`AGENTS.md`](../../AGENTS.md) in the repo root. It has the layout, bui
 - Tell the user what still needs checking against retail: captures, event dumps, wikis and the game client. Say plainly when you used no captures.
 - Push back on writing PR descriptions, commit bodies and long comments for the user.
 
-### Available Agent Guides
+## Available Agent Guides
 
 - [Retail Packet Captures Format Guide](retail-packet-captures.md): Overview of the standard directory structure of retail packet captures and instructions on how to utilize `eventview`, `npclogger`, `caplog`, and `packetviewer` data.
 - [Interaction Framework Migration & Verification Guide](interaction-framework-migration.md): Detailed workflow for converting old-style NPC scripts to the modern Interaction Framework, including verification strategies using retail captures, event dumps, and wikis.

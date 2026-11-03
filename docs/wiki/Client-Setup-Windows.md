@@ -6,24 +6,24 @@
 
 2. Extract the files first by executing the "FFXIFullSetup_US.part1.exe" then proceed to the installation through "FFXISetup.exe" (freshly extracted).
 
-3. Once the whole installation is complete, execute PlayOnline Viewer. If an update is available, click on "Next", then: 
-   * Select "Update" ; once this is done, click on "OK" then "Next". PlayOnline Viewer should restart automatically.
-   * Select "For PlayOnline Members!".
-   * On the next screen, enter id like 1234ABCD or ABCD1234 (4 letters 4 numbers it doesn't care about the order, doesn't matter if they're accurate or not) in the "Member Name" and "PlayOnline ID"  fields. If you wish to use your retail or trial account, you can input that.
-   * Click on "Register" > "Yes" > "OK" > "Exit" and finally "Yes".
+3. Once the whole installation is complete, execute PlayOnline Viewer. If an update is available, click on "Next", then:
+   - Select "Update" ; once this is done, click on "OK" then "Next". PlayOnline Viewer should restart automatically.
+   - Select "For PlayOnline Members!".
+   - On the next screen, enter id like 1234ABCD or ABCD1234 (4 letters 4 numbers it doesn't care about the order, doesn't matter if they're accurate or not) in the "Member Name" and "PlayOnline ID"  fields. If you wish to use your retail or trial account, you can input that.
+   - Click on "Register" > "Yes" > "OK" > "Exit" and finally "Yes".
 
 4. Check that DirectPlay is enabled.  
 This step is for Windows 10 users and can be skipped otherwise.
-   * To enable DirectPlay, first press the Windows key + R keyboard shortcut to open Run.
-   * Then enter "Control Panel" in Run, and click the OK button.
-   * Click "Programs and Features".
-   * Click "Turn Windows features on or off".
-   * Double-click "Legacy Components" to expand it.
-   * Check the DirectPlay check box (if it is not already marked).
+   - To enable DirectPlay, first press the Windows key + R keyboard shortcut to open Run.
+   - Then enter "Control Panel" in Run, and click the OK button.
+   - Click "Programs and Features".
+   - Click "Turn Windows features on or off".
+   - Double-click "Legacy Components" to expand it.
+   - Check the DirectPlay check box (if it is not already marked).
 
 5. Configure game technical options.
-   * Start Menu > PlayOnline > FINAL FANTASY XI Config; _or_
-   * `(Root FFXI Install Directory)/PlayOnline/SquareEnix/FINAL FANTASY XI/Tools/FINAL FANTASY XI Config`
+   - Start Menu > PlayOnline > FINAL FANTASY XI Config; _or_
+   - `(Root FFXI Install Directory)/PlayOnline/SquareEnix/FINAL FANTASY XI/Tools/FINAL FANTASY XI Config`
 
 # 2. Connecting to Retail
 
@@ -54,21 +54,21 @@ After having connected to retail at least once since installing Final Fantasy XI
 
 To connect to a private server you need to point your client at that private server. This is done through `bootloaders` like `xiloader`.
 
-* [Download pre-built latest xiloader](https://github.com/LandSandBoat/xiloader/releases)
-* [Download source code for xiloader to build for yourself](https://github.com/LandSandBoat/xiloader)
+- [Download pre-built latest xiloader](https://github.com/LandSandBoat/xiloader/releases)
+- [Download source code for xiloader to build for yourself](https://github.com/LandSandBoat/xiloader)
 
 **Note: Ashita comes bundled with its own bootloader. Users who plan to use Ashita may skip to [Section 6 - Launcher Configuration](#6-launcher-configuration). However, we _highly recommend_ connecting to your server for the first time with only xiloader so that you can minimize potential setup problems.**
 
 # 5. Connecting to a Private Server
 
-* Execute xiloader.exe as an administrator (_after_ launching `xi_connect`, `xi_map`, `xi_search`, `xi_profile`, and `xi_world`, if connecting to your own local server), then select the "Create New Account" option by hitting "2" then:
+- Execute xiloader.exe as an administrator (_after_ launching `xi_connect`, `xi_map`, `xi_search`, `xi_profile`, and `xi_world`, if connecting to your own local server), then select the "Create New Account" option by hitting "2" then:
 
 ```txt
 Username: Username
 Password: Password (then repeat)
 ```
 
-* After that, with each launch, select the "Login" option by hitting "1" then:
+- After that, with each launch, select the "Login" option by hitting "1" then:
 
 ```txt
 Username: Username
@@ -77,8 +77,8 @@ Password: Password
 
 ⚠️ **Notes** ⚠️
 
-* Username (3-15) (as displayed on the loader for now): less than 3 characters and more than 15 characters works.
-* Password (6-15) (as displayed on the loader for now): less than 6 characters works. More than 15 characters works _when you register, BUT note_ that typing the first 15 characters when you're trying to log in will let you in.
+- Username (3-15) (as displayed on the loader for now): less than 3 characters and more than 15 characters works.
+- Password (6-15) (as displayed on the loader for now): less than 6 characters works. More than 15 characters works _when you register, BUT note_ that typing the first 15 characters when you're trying to log in will let you in.
 
 # 6. Launcher Configuration
 
@@ -97,7 +97,7 @@ After confirming that your client can connect to a server, you can use one of th
 3. Alter the `[ashita.boot]` section in `localhost.ini` to look like this:
 
    > **Note: Ashita comes bundled with its own bootloader (bootloader/pol.exe). To connect to the latest version of the server you will need to use the most current version of xiloader. You will need to adjust your boot ini file to point to xiloader.**
-   > 
+   >
    > **If you use an old/incompatible bootloader you will get errors in xi_connect in the form of:**
    >
    > `127.0.0.1: (167772427), wrong version number (SSL routines)`
@@ -157,10 +157,11 @@ After confirming that your client can connect to a server, you can use one of th
    <executable>HDD:\path\to\xiloader.exe</executable>
    </profile>
    ```
+
    NOTE: If your registered password contains any of the following characters, you will need to replace/escape them in the file to avoid corrupting the entire setting.xml file
-   * replace all `&` in your password with `&amp;`
-   * replace all `<` in your password with `&lt;`
-   * replace all `>` in your password with `&gt;`
+   - replace all `&` in your password with `&amp;`
+   - replace all `<` in your password with `&lt;`
+   - replace all `>` in your password with `&gt;`
 
 5. Execute Windower.exe.
 

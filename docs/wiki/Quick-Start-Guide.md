@@ -4,19 +4,19 @@ Follow this _to the letter_ the first time. Swap pieces out (WAMP, Strawberry Pe
 
 We support **Windows 10/11** and **Ubuntu 26.04**, and publish **Docker** images. Other platforms are on [Experimental Platforms](Experimental-Platforms).
 
-_(click a section to expand it)_
+Click a section to expand it.
 
 <details>
 <summary><b>Windows 10/11</b></summary>
 
 ## 1. Install the tools
 
-* [Git for Windows](https://gitforwindows.org/). Defaults are fine.
-* [Visual Studio 2026](https://visualstudio.microsoft.com/vs/community/). **YOU MUST** tick the `Desktop development with C++` workload, or nothing will build.
-* [MariaDB Server](https://mariadb.org/download/?t=mariadb&p=mariadb&r=10.11.18&os=windows&cpu=x86_64&pkg=msi&m=xtom_ams), latest `10.11.x`.
-  * Set a root password.
-  * ⚠️ Tick `Use UTF8 as server's character set` on the `Default instance properties` page. Skip it and you'll get crashes that are miserable to diagnose.
-* [Python 3.14](https://www.python.org/downloads/). Tick `Add python.exe to PATH`. CI uses 3.14.
+- [Git for Windows](https://gitforwindows.org/). Defaults are fine.
+- [Visual Studio 2026](https://visualstudio.microsoft.com/vs/community/). **YOU MUST** tick the `Desktop development with C++` workload, or nothing will build.
+- [MariaDB Server](https://mariadb.org/download/?t=mariadb&p=mariadb&r=10.11.18&os=windows&cpu=x86_64&pkg=msi&m=xtom_ams), latest `10.11.x`.
+  - Set a root password.
+  - ⚠️ Tick `Use UTF8 as server's character set` on the `Default instance properties` page. Skip it and you'll get crashes that are miserable to diagnose.
+- [Python 3.14](https://www.python.org/downloads/). Tick `Add python.exe to PATH`. CI uses 3.14.
 
 ## 2. Get the code
 
@@ -62,6 +62,7 @@ Now go to [Start the server](#start-the-server).
 
 We build and test on the latest Ubuntu LTS. Older releases may not work.
 
+<!-- markdownlint-disable-next-line MD024 -->
 ## 1. Install the tools
 
 ```sh
@@ -142,11 +143,11 @@ Choose `l. Launch Server`. It starts `xi_connect`, `xi_search`, `xi_profile` and
 
 To start them by hand, run each of these from the `server` folder and leave it running. `xi_map` goes last.
 
-* `xi_connect`
-* `xi_world`
-* `xi_search`
-* `xi_profile`
-* `xi_map`
+- `xi_connect`
+- `xi_world`
+- `xi_search`
+- `xi_profile`
+- `xi_map`
 
 If one closes straight away, check its log in `log/`.
 

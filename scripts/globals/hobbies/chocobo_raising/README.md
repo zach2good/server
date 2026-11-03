@@ -1,6 +1,6 @@
 # Chocobo Raising
 
-```
+```txt
 Dedicated to 'Friend' the Chocobo. RIP.
 ```
 
@@ -97,59 +97,59 @@ the retail client and `helpers.lua` holding shared model helpers.
 
 Guild Master's Guide tables for food and care plans, as quoted on wiki.ffo.jp:
 
-- https://wiki.ffo.jp/html/10789.html
-- https://wiki.ffo.jp/html/10790.html
-- https://wiki.ffo.jp/html/10791.html
-- https://wiki.ffo.jp/html/7514.html
+- <https://wiki.ffo.jp/html/10789.html>
+- <https://wiki.ffo.jp/html/10790.html>
+- <https://wiki.ffo.jp/html/10791.html>
+- <https://wiki.ffo.jp/html/7514.html>
 
 PlayOnline update notes:
 
-- https://www.playonline.com/pcd/update/ff11us/20060822VOL2B1/detail.html
-- https://www.playonline.com/pcd/update/ff11us/20061017UJ0a71/detail.html
-- https://www.playonline.com/pcd/update/ff11us/20070606TsVPr1/detail.html
-- https://www.playonline.com/pcd/verup/ff11/detail/5334/detail.html
-- http://www.playonline.com/pcd/topics/ff11eu/detail/862/detail.html
-- http://www.playonline.com/pcd/topics/ff11eu/detail/1100/detail.html
+- <https://www.playonline.com/pcd/update/ff11us/20060822VOL2B1/detail.html>
+- <https://www.playonline.com/pcd/update/ff11us/20061017UJ0a71/detail.html>
+- <https://www.playonline.com/pcd/update/ff11us/20070606TsVPr1/detail.html>
+- <https://www.playonline.com/pcd/verup/ff11/detail/5334/detail.html>
+- <http://www.playonline.com/pcd/topics/ff11eu/detail/862/detail.html>
+- <http://www.playonline.com/pcd/topics/ff11eu/detail/1100/detail.html>
 
 BG Wiki:
 
-- https://www.bg-wiki.com/ffxi/Category:Chocobo_Raising
-- https://www.bg-wiki.com/ffxi/Chocobo_Whistle_Quest
-- https://www.bg-wiki.com/ffxi/White_handkerchief
-- https://www.bg-wiki.com/ffxi/Lost_Chocobo_Chick_Mini-Quest
-- https://www.bg-wiki.com/ffxi/Purple_Race_Silks
-- https://www.bg-wiki.com/ffxi/Movement_Speed
+- <https://www.bg-wiki.com/ffxi/Category:Chocobo_Raising>
+- <https://www.bg-wiki.com/ffxi/Chocobo_Whistle_Quest>
+- <https://www.bg-wiki.com/ffxi/White_handkerchief>
+- <https://www.bg-wiki.com/ffxi/Lost_Chocobo_Chick_Mini-Quest>
+- <https://www.bg-wiki.com/ffxi/Purple_Race_Silks>
+- <https://www.bg-wiki.com/ffxi/Movement_Speed>
 
 FFXIclopedia:
 
-- https://ffxiclopedia.fandom.com/wiki/Chocobo_Raising_Guide
-- https://ffxiclopedia.fandom.com/wiki/Arael%27s_Chocobo_Raising_Guide
-- https://ffxiclopedia.fandom.com/wiki/Chocobo_Raising/Go_on_a_Walk
-- https://ffxiclopedia.fandom.com/wiki/Chocobo_Raising/Watch_over_the_Chocobo
-- https://ffxiclopedia.fandom.com/wiki/Chocobo_Attributes
-- https://ffxiclopedia.fandom.com/wiki/Carnivors_Guide_to_Chocobo_Breeding
-- https://ffxiclopedia.fandom.com/wiki/Breeders_Guide_by_Urat
-- https://ffxiclopedia.fandom.com/wiki/Chocobo_Whistle
-- https://ffxiclopedia.fandom.com/wiki/Chocobo_Whistle_Quest
-- https://ffxiclopedia.fandom.com/wiki/White_Handkerchief
-- https://ffxiclopedia.fandom.com/wiki/Talk:White_Handkerchief
-- https://ffxiclopedia.fandom.com/wiki/Handkerchief
-- https://ffxiclopedia.fandom.com/wiki/Dirty_Handkerchief
-- https://ffxi.gamerescape.com/wiki/Arael%27s_Chocobo_Raising_Guide (Arael's guide mirror)
+- <https://ffxiclopedia.fandom.com/wiki/Chocobo_Raising_Guide>
+- <https://ffxiclopedia.fandom.com/wiki/Arael%27s_Chocobo_Raising_Guide>
+- <https://ffxiclopedia.fandom.com/wiki/Chocobo_Raising/Go_on_a_Walk>
+- <https://ffxiclopedia.fandom.com/wiki/Chocobo_Raising/Watch_over_the_Chocobo>
+- <https://ffxiclopedia.fandom.com/wiki/Chocobo_Attributes>
+- <https://ffxiclopedia.fandom.com/wiki/Carnivors_Guide_to_Chocobo_Breeding>
+- <https://ffxiclopedia.fandom.com/wiki/Breeders_Guide_by_Urat>
+- <https://ffxiclopedia.fandom.com/wiki/Chocobo_Whistle>
+- <https://ffxiclopedia.fandom.com/wiki/Chocobo_Whistle_Quest>
+- <https://ffxiclopedia.fandom.com/wiki/White_Handkerchief>
+- <https://ffxiclopedia.fandom.com/wiki/Talk:White_Handkerchief>
+- <https://ffxiclopedia.fandom.com/wiki/Handkerchief>
+- <https://ffxiclopedia.fandom.com/wiki/Dirty_Handkerchief>
+- <https://ffxi.gamerescape.com/wiki/Arael%27s_Chocobo_Raising_Guide> (Arael's guide mirror)
 
 Forums and other pages:
 
-- https://wikiwiki.jp/ffxi/アトルガンの秘宝/チョコボ育成
-- https://www.ffxiah.com/forum/topic/32770/ninians-guide-to-chocobo-raising-v2/
-- https://www.ffxiah.com/forum/topic/57632/chocobo-whistle/
-- https://www.ffxiah.com/forum/topic/58501/demystifying-chocobo-raising-plans-and-food/
-- https://www.ffxionline.com/forum/ffxi-game-related/crafting-synthesis/chocobo-raising-racing-and-digging/
+- <https://wikiwiki.jp/ffxi/アトルガンの秘宝/チョコボ育成>
+- <https://www.ffxiah.com/forum/topic/32770/ninians-guide-to-chocobo-raising-v2/>
+- <https://www.ffxiah.com/forum/topic/57632/chocobo-whistle/>
+- <https://www.ffxiah.com/forum/topic/58501/demystifying-chocobo-raising-plans-and-food/>
+- <https://www.ffxionline.com/forum/ffxi-game-related/crafting-synthesis/chocobo-raising-racing-and-digging/>
   (threads 62800, 63439 and 68660)
-- https://forum.square-enix.com/ffxi/threads/49059
-- https://forum.square-enix.com/ffxi/threads/50584
-- https://ffxi.allakhazam.com/wiki/June_2008_Version_Update
-- https://game.watch.impress.co.jp/docs/20061013/ff11_11.htm
-- https://docs.google.com/spreadsheets/d/1LluCnhI_LTvxW-Q6X6R2i-_jL9TABEbKcGPBMZOOlYU (community
+- <https://forum.square-enix.com/ffxi/threads/49059>
+- <https://forum.square-enix.com/ffxi/threads/50584>
+- <https://ffxi.allakhazam.com/wiki/June_2008_Version_Update>
+- <https://game.watch.impress.co.jp/docs/20061013/ff11_11.htm>
+- <https://docs.google.com/spreadsheets/d/1LluCnhI_LTvxW-Q6X6R2i-_jL9TABEbKcGPBMZOOlYU> (community
   raising spreadsheet)
 
 ## Guesses
@@ -203,8 +203,8 @@ Fitted to few samples or taken from guides, with no capture behind them:
 - A chick's overnight hunger drop is fitted to 20 nights (2.25 per point of energy to refill)
 - Bastok Watch over froze the client once on a chick in high spirits; note the last text if it
   happens again
-- 246 p6 (the server sends 0). Retail sends 260 - 5 * day for eggs, a slow climb for chicks, and 0
-  or 355 - 10 * day later. The client never reads it.
+- 246 p6 (the server sends 0). Retail sends 260 - 5 _day for eggs, a slow climb for chicks, and 0
+  or 355 - 10_ day later. The client never reads it.
 - 244 p2 and p3 for chicks and adolescents: retail repeats the last watch, walk or 246 reply
 - Personality needs a clear lead on retail, not just a higher stat (a Basic Care test chick turned
   enigmatic at STR 5, END 4, DSC 3, RCP 5)

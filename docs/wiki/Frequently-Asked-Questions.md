@@ -25,7 +25,7 @@ Check out the Final Fantasy XI Private Servers Community [List of Servers](https
 
 ## Is there a GM command that does X?
 
-All available GM commands, with descriptions and the level of GM they require, can be found [here](https://github.com/LandSandBoat/server/tree/base/scripts/commands).
+All available GM commands, with descriptions and the level of GM they require, can be found in [scripts/commands](https://github.com/LandSandBoat/server/tree/base/scripts/commands).
 
 ## When will feature X be completed, when will bug Y be fixed?
 
@@ -101,6 +101,7 @@ No. We are a retail server emulator.
 <p>
 
 There is a very small set of scenarios where we **might** consider taking in custom content that doesn't demonstrate the same behaviour as on retail FFXI (_these are entirely at our discretion_):
+
 - There is an obvious bug in the retail client that we can easily remedy, ideally toggleable with a setting.
   - Example: Trusts continuing their casting animations if a battle ends while they're in the middle of casting a spell.
 - There is content that has been removed, which we can re-add through careful use of modules and settings.

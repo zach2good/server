@@ -1,14 +1,13 @@
-Interaction Framework
-===
+# Interaction Framework
 
 The common term used for quests and missions in this document and in the code is "containers", since they contain all the things that go into making a quest/mission/etc work.
 
 See [Full Quest Example](Full-Quest-Example) quest file for a full example of how a quest can be defined.
 
-Sections
----
+## Sections
 
 A container/quest/mission is made up of one or more "sections", which are all of the form:
+
 ```lua
 {
     -- If this "check" function returns true, then this section will be used to determine which action should be taken
@@ -58,8 +57,7 @@ Similarly, the last argument, `globalVars`, can be used to get variables that ar
 
 > Note, that this applies to all variables, no matter what name you give them. The framework will automatically fetch the quest variable with the name supplied. If the variable has spaces or other special characters, you can also use the format `questVars['my var']`, which will result in the same outcome for that variable.
 
-Actions
------
+## Actions
 
 Each NPC function where something is supposed to happen, like `onTrigger` and `onTrade`, should return a special action object, that is used to determine the priority and type of the action the NPC should take. Here's a small list of example actions that the framework supports that can be performed by NPCs:
 
@@ -91,6 +89,7 @@ quest:sequence({ text = 11470, wait = 1000 }, { text = 11471, face = 82, wait = 
 ```
 
 Within a section, there's multiple ways of accomplishing the same action in order to reduce the amount of code needed in places. The examples in the below code segment will result in the same outcome:
+
 ```lua
     -- If an NPC has an onTrigger function that just has one action, you can omit everything except the one action:
     ['Some_NPC'] = quest:event(200),
@@ -111,8 +110,7 @@ Within a section, there's multiple ways of accomplishing the same action in orde
     },
 ```
 
-Action modifiers
-------
+## Action modifiers
 
 There are several modifiers you can apply to the various types of actions after creating them. They are applied by just calling a function on them, which will alter them and return the new one.
 Example of turning a normal event into a progress event:
@@ -143,8 +141,7 @@ quest:event(XXX):cutscene()
 quest:message(YYY):face(player)
 ```
 
-Action table shorthand
----
+## Action table shorthand
 
 An alternative to creating an action from a container object, like `quest:event(XXX)`, is to define the action by providing a table with specific content. This is needed in certain places where a container object is not available, like with default actions.
 
@@ -168,10 +165,10 @@ Possible action shorthand formats are currently:
 -- (see video of this NPC in action here: https://youtu.be/vwfoYUN-rs8?t=1421)
 ```
 
-Container helpers
----------
+## Container helpers
 
 The container objects come with several more helper functions that helps generalize and abstract away a lot of repeated code, like variable management:
+
 ```lua
 quest:getVar(player, 'Prog') -- Returns the value for the quest variable 'Prog' for the  player (stored in char_var `Quest[<area>][<id>]Prog`)
 quest:setVar(player, 'Prog', value) -- Sets the Prog quest variable for the player
@@ -188,15 +185,16 @@ quest:getMustZone(player) -- Returns true until the player zones somewhere else
 ```
 
 There can be other helpers too, like on quests and missions:
+
 ```lua
 quest:begin(player) -- Starts the quest for the player by adding it to their quest log
 quest:complete(player) -- Completes the quest for the player, and returns true if succesful
 ```
 
-Handlers
----
+## Handlers
 
 Below is a more-exhaustive mock example of how a section can be set up, and it tries to show and document the various handlers that can be added in the different places of a section:
+
 ```lua
 {
     -- If this "check" function returns true, this section will be used to determine which action should be taken
@@ -257,8 +255,7 @@ Below is a more-exhaustive mock example of how a section can be set up, and it t
 }
 ```
 
-Default actions
-----
+## Default actions
 
 In order to properly prioritize quest/mission events over default dialogue from NPCs, and to avoid ending up with a lot of NPC lua files that just do one thing, it is possible to define the default action for NPCs in the framework. These will automatically be prioritized lower than normal actions of that type, such that quest/mission dialogue will always take precedence.
 
@@ -273,8 +270,7 @@ return {
 }
 ```
 
-Framework internals
-----
+## Framework internals
 
 Put the container file in `scripts/quests/<area>/`, `scripts/missions/<expansion>/` or `scripts/battlefields/<zone>/`. The server picks up every container in those folders on startup and hooks its handlers up to the NPCs and zones for you.
 
@@ -284,20 +280,22 @@ Since the framework has to be backwards-compatible with existing quest logic in 
 2. Switch between regular events from the interaction framework, and running the corresponding function in the NPC/zone lua file.
 3. Default actions from the framework, if the NPC/zone lua did not do anything.
 
-Commands
-----
+## Commands
 
 Reloads the specified quest. The name has to match the file name under `scripts/quests/<area>/` exactly (it's case sensitive):
-```
+
+```txt
 !reloadquest Three_Men_and_a_Closet
 ```
 
 Reloads the whole interaction framework:
-```
+
+```txt
 !reloadinteraction
 ```
 
 Prints a quest variable for the given player, quest log ID and quest ID (here `Prog` for Three Men and a Closet):
-```
+
+```txt
 !getquestvar <player> 6 31 Prog
 ```

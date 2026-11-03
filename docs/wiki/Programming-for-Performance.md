@@ -21,7 +21,7 @@ This means that if a piece of work is particularly large or performance critical
 
 **NOTE:** This comparison doesn't include SQL queries. They tend to be as slow, or slower than disk reads. Read and write from SQL as little as possible (or cache everything you can!).
 
-### Performance critical systems that should always stay in C++:
+### Performance critical systems that should always stay in C++
 
 - Networking (packet sending/recieving with the client)
 - Communication between processes (IPC & RPC)

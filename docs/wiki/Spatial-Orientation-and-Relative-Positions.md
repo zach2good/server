@@ -1,4 +1,5 @@
 # Rotation Values
+
 The Rotation Value of an entity represents where it's facing in the world. This is stored and used as `uint8`, meaning that **values range 0~255**.
 
 ⚠️ **As such, all degrees on LSB are based on a "256 degree" scale. This is _not_ the same "360 degree" scale that you may be used to.**
@@ -20,7 +21,8 @@ Rotation 0 is aligned with as due East, with values increasing as you rotate **t
 | **_192_** | **_N_** | Pi/2 | 270 |
 | 224 | NE | Pi/4 | 315 |
 
-# World Angles
+## World Angles
+
 The "World Angle" between Entity A and Entity B is the absolute, cardinal, "world aligned" angle between Entity A and B.
 
 ⚠️ **Like Rotation Values, they range 0~255. They are _not_ Trigonometry radians.** (Although they can be converted to radians.)
@@ -35,7 +37,8 @@ These angles are with Entity A as the "origin". If the World Angle from Entity _
 
 ❕ **Tip:** Because Rotation values and World Angles are both absolutely aligned and on the same scale, having an entity face a given angle (ie: another entity) is as simple as setting the entity's Rotation to the World Angle!
 
-# Facing Angles
+## Facing Angles
+
 Facing Angles are the number of degrees from an entity's Rotation to another entity's World Angle. In other words, they're the number of degrees Entity A would need to turn to face Entity B.
 
 An Entity A > Entity B **Facing Angle of 0 means that Entity A is _directly_ facing Entity B** with no deviation (its Rotation is the same as the A->B World Angle).
@@ -56,11 +59,11 @@ Additionally, **Facing Angles are signed** to indicate _which_ direction a rotat
 | -32 | Left | Pi/4 | 45 |
 | 0 | 0 | 0 | 0 |
 | 32 | Right | 7Pi/4 | 45 |
-| 64 | Right | 3Pi/2 | 90 | 
+| 64 | Right | 3Pi/2 | 90 |
 | 96 | Right | 5Pi/4 | 135 |
 | 128 | Right | Pi | 180 |
 
-# Positional Arcs
+## Positional Arcs
 
 The **absolute value** of the Facing Angle can be compared against certain values to quickly determine where Entity B _is_, in relation to where Entity A is _facing_.
 

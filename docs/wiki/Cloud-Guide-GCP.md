@@ -1,11 +1,11 @@
-## WARNING: THIS COSTS MONEY!!!
+## WARNING: THIS COSTS MONEY
 
-### There is a generous free tier and free trial credits are available, but once those run out your payment card will start being charged. Be very careful about how you use cloud service providers!
+### There is a generous free tier and free trial credits are available, but once those run out your payment card will start being charged. Be very careful about how you use cloud service providers
 
 #### Read about the free tier and credits here
 
-- https://cloud.google.com/free
-- https://cloud.google.com/free/docs/free-cloud-features
+- <https://cloud.google.com/free>
+- <https://cloud.google.com/free/docs/free-cloud-features>
 
 #### BEFORE YOU START
 

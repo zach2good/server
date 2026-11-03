@@ -31,7 +31,7 @@ What maintainers keep pointing out in review. CI handles formatting and the [Dev
 - Every behaviour change needs a source: a retail capture, an event dump, a timestamped video or the Japanese wiki. A number without one gets "Where did you get this from?"
 - A wiki on its own is never enough for a number. Neither is earlier LSB or DarkStar code.
 - Credit the capture if it isn't yours.
-- Guessed value? Mark it `TODO: Capture needed` (`-- ` in Lua and SQL, `# ` in YAML). Older rows say `Capture needed` without the `TODO:`, so search for that.
+- Guessed value? Mark it `TODO: Capture needed` (`--` in Lua and SQL, `#` in YAML). Older rows say `Capture needed` without the `TODO:`, so search for that.
 - Your source disagreeing with LSB doesn't make LSB wrong. Find out why.
 - Captured positions go in verbatim. Never round them.
 - Unclear source? Pick the value that's harder on players: shorter buffs, smaller bonuses, a fixed value over a wide random range.
@@ -149,7 +149,7 @@ Values:
 
 - Comments go above the code they describe. Not inside the block, not below it.
 - Delete comments that repeat the code. Keep sources, reasons and capture notes.
-- `-- ` with a space for comments. `---` is for LuaLS annotations.
+- `--` with a space for comments. `---` is for LuaLS annotations.
 - No line numbers, references to old implementations, or links to other projects' issue trackers. That's what git history is for.
 - Take out your debug `print`s.
 - A `TODO:` is fine. A PR that's nothing but TODOs isn't.

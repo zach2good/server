@@ -99,13 +99,13 @@ It appears as though the build will fail if you try to launch it from a raw driv
 
 On Windows, if you have a MariaDB or MySQL client library installed on your machine, CMake might pick it up instead of the one we bundle. You'll spot it during configuration, when CMake reports:
 
-```
+```txt
 -- MARIADB_LIBRARY: C:/mysql-ver-1.0/lib/libmysql.lib
 ```
 
 It should be reporting the bundled one, something like:
 
-```
+```txt
 -- MARIADB_LIBRARY: C:/dev/lsb/ext/mariadb/lib64/libmariadb64.lib
 -- MARIADB_INCLUDE_DIR: C:/dev/lsb/ext/mariadb/include/
 ```

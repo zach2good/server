@@ -672,7 +672,7 @@
 | 669          | Quadav 26                                         |
 | 670          | Quadav 27                                         |
 | 671          | Quadav 28                                         |
-| 672          | Goblin 1(*moblins*)                               |
+| 672          | Goblin 1(_moblins_)                               |
 | 673          | Goblin 2                                          |
 | 674          | Goblin 3                                          |
 | 675          | Goblin 4                                          |

@@ -1,7 +1,7 @@
-Tools
-========================
+# Tools
 
 ## Database Tool
+
 `python dbtool.py`  
 `python dbtool.py backup` - creates a whole database backup in `../sql/backups/`  
 `python dbtool.py backup lite` - creates a backup only of tables defined in settings  
@@ -9,20 +9,23 @@ Tools
 `python dbtool.py update full` - performs a full update with backup and migrations  
 `python dbtool.py migrate` - checks and performs any needed migrations
 
-This tool creates or connects to the database defined in `../settings/network.lua`. It 
-allows the user to backup or restore the database, import any `custom.sql` 
-stored in `../sql/backups/`, and import the latest SQL files provided by LandSandBoat 
+This tool creates or connects to the database defined in `../settings/network.lua`. It
+allows the user to backup or restore the database, import any `custom.sql`
+stored in `../sql/backups/`, and import the latest SQL files provided by LandSandBoat
 Development. This tool also handles data migrations for character data.
 
 ## Price Checker
+
 `python price_checker.py`
 
 This tool checks NPC and guild shop prices to see if anything is being sold for less than the buyback price.
 
 ## Festive Moogle Tool
+
 `python give_items.py`
 
 This tool is used to distribute the following items:  
+
 - Nomad Cap  
 - Moogle Cap  
 - Moogle Rod  
@@ -33,21 +36,23 @@ This tool is used to distribute the following items:
 - Chocobo Shirt  
 
 ## Announce
+
 `python announce.py "<your message>"`
 
 Sends `<your message>` to every character, in every zone, on every map process.  
 
-Setup
-========================
+## Setup
 
-## Installing Python
+### Installing Python
+
 `python3 --version` or `py -3 --version`
 
 **This requires Python 3 and pip.**  
-**Website:** https://www.python.org/downloads/  
+**Website:** <https://www.python.org/downloads/>  
 Download the latest version from the website or check your package manager.
 
-## Installing Dependencies
+### Installing Dependencies
+
 `pip install -r requirements.txt`
 
 **MariaDB** - MariaDB is required to interact with the database.  
@@ -58,6 +63,7 @@ Download the latest version from the website or check your package manager.
 **Pylint** - Pylint is a static code analyser.  
 **Black** - Black is a Python code formatter.  
 
-## Other
+### Other
+
 `./install-systemd-service.sh` - Installs a systemd service for running the servers on Linux.  
 `./run_clang_format.py` - Formats C++ code. Run from repo root.  

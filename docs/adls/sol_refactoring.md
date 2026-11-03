@@ -1,18 +1,23 @@
 ### Title
+
 Sol refactoring, with lua object caching.
 
 ### What was/is the problem?
-Multiple problems, explained in detail [here](https://github.com/LandSandBoat/server/wiki/Sol-Refactor).
+
+Multiple problems, explained in detail on the [Sol Refactor wiki page](https://github.com/LandSandBoat/server/wiki/Sol-Refactor).
 
 In short:
+
 - Our use of Lua relied on constantly reading files from this disk, which was very slow.
 - Lua binding library was hard to use.
 - Errors on the boundary between C++ and Lua would cause undefined behavior or crashes.
 
 ### What were/are the options?
+
 Only Sol was considered.
 
 ### What was chosen?
+
 [Sol](https://github.com/ThePhD/sol2/)
 
 - After the refactor, Lua panics resulting in crashes were eliminated entirely (unless you abuse LuaJIT very badly).
@@ -21,13 +26,16 @@ Only Sol was considered.
 - Writing complex bindings is safe and easy.
 
 ### Misc Notes
+
 #### Caching
+
 By the end of the refactor, the additional Lua memory usage was only 30mb.
 Every new item that gets added to the Lua cache is taking up memory at runtime.
 If this ever gets to be too much (it shouldn't), a cache eviction policy could be written. This could clear out items that haven't been accessed in the last couple of hours.
 Unlikely to ever be needed.
 
 #### Compatibility with LuaJIT
+
 Our use of Lua relies on LuaJIT, which functions a lot like Lua 5.1. Sol uses a series of polyfills to bring the language features up to 5.2/5.3.
 This introduces some breaking changes around number truncation. We undo the `lua_tointeger` change in `src/map/lua/sol_bindings.h`, and the Sol compile definitions are in `cmake/settings/CompilerSettings.cmake`.
 

@@ -1,4 +1,5 @@
 # Basic Branch/Pull Request Information
+
 If you followed the Server Setup instructions, you've already cloned LSB's default branch (called `base`). If you want to make changes and contribute to LSB, here's a quick guide on how to push changes.
 
 **1 - Set up your fork on GitHub if you haven't already.** This is where you'll push changes to then submit a pull request. You can click on [the fork button in the upper-right, above the main `LandSandBoat/server` repository to fork](images/github-fork.png).
@@ -9,9 +10,9 @@ You can make a branch for anything, but typically it's for a unit of work, which
 
 Open your preferred Git client, select `base`, and choose "make branch" (your exact process may vary depending on your Git client). Choose a name for the branch. Select this new branch and "checkout" it to switch to that branch.
 
-If you've made any changes at this point, you'll get an error and be forced to "commit" or "stash" your changes. Commit means bundling the changes you have made on your local machine compared against the branch's original state - a "hard" save. Stash is a temporary "soft" save which lets you change branches and restore that work when you come back. 
+If you've made any changes at this point, you'll get an error and be forced to "commit" or "stash" your changes. Commit means bundling the changes you have made on your local machine compared against the branch's original state - a "hard" save. Stash is a temporary "soft" save which lets you change branches and restore that work when you come back.
 
-**3 - In the new, checked out branch, make the changes as needed.** When you've tested and are comfortable with the work, open your Git client and choose to Commit your changes to the branch. In the window that appears, make sure any changes that you don't _intend_ to change on LSB (ex: customized settings or scripts that you don't want merged into LSB) are not included in your commit. You can choose to "Push" from here to send the changes from your local copy to your remote repository. 
+**3 - In the new, checked out branch, make the changes as needed.** When you've tested and are comfortable with the work, open your Git client and choose to Commit your changes to the branch. In the window that appears, make sure any changes that you don't _intend_ to change on LSB (ex: customized settings or scripts that you don't want merged into LSB) are not included in your commit. You can choose to "Push" from here to send the changes from your local copy to your remote repository.
 
 **4 - In your remote repository, make sure you're on your new branch which you're looking to contribute from and select New Pull Request.** Fill out the relevant checkboxes, put in an appropriate title, etc.
 
@@ -19,15 +20,18 @@ If you've made any changes at this point, you'll get an error and be forced to "
 
 **NOTE:** For custom servers, it's probably best to have a separate repository entirely for your server versus your local copy of LSB's vanilla (`base`) build. That way you can clone/download/branch/edit/commit for contributions to LSB without interfering with files in use by your server.
 
-# Keeping Current With LSB
+## Keeping Current With LSB
+
 You'll want to consistently update your local copy of LSB's `base` branch with recent changes submitted by contributors. This is part of why working on branches when you have WIPs is important. In order to update both your local and remote `base`:
+
 1. Ensure you're on your `base` branch and have no other local branches checked out
 2. Choose "Pull" from the menu of whichever Git tool you're using
 3. Select the LSB remote branch to pull in updates from. Remember LSB's default branch is `base`. If you haven't pulled from LSB in a while, you'll want to do a "Fetch" first to update the remote listings in your Git tool.
-4. Pull from LSB's remote `base` into your local `base` copy. 
+4. Pull from LSB's remote `base` into your local `base` copy.
 5. You'll now need to update your remote repository using the "Push" command. This updates your remote copy to reflect the new updates you just pulled locally.
 
-# Submitting to Multiple Repositories
+## Submitting to Multiple Repositories
+
 [You can use git rebase](https://github.com/edx/edx-platform/wiki/How-to-Rebase-a-Pull-Request) to send commits from other locations to LSB in order to submit to multiple locations and/or repoint.
 
-Alternatively, pull a fork of LSB and copy **changes only** manually. 
+Alternatively, pull a fork of LSB and copy **changes only** manually.

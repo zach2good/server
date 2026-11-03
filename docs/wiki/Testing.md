@@ -8,7 +8,7 @@ Helpers are available to simulate client interactions as if they had come from a
 
 - Tests run one at a time, top to bottom when reading a file.
 - Each test gets a fresh PRNG seed. The seed is reset between test cases, so a case cannot rely on another case's random draws.
-- State is **not** automatically reset between test cases. A player, mob or world value you mutate in one `it` block is still mutated in the next, unless you rebuild it (see `before_each`). 
+- State is **not** automatically reset between test cases. A player, mob or world value you mutate in one `it` block is still mutated in the next, unless you rebuild it (see `before_each`).
   - The one exception is test doubles (`spy`/`stub`/`mock`), which revert automatically at the end of each case.
 
 ## Limitations
@@ -389,9 +389,9 @@ It is possible to mix any of the functions. Per test case, they execute in the f
 - after_each() (after every case)
 - teardown() (once per suite, after the last case)
 
-`before_each` and `after_each` **inherit into nested `describe` blocks and stack**: the outer block's `before_each` runs before the inner block's. 
+`before_each` and `after_each` **inherit into nested `describe` blocks and stack**: the outer block's `before_each` runs before the inner block's.
 
-This is the idiomatic way to layer setup: put "everyone needs a player" in an outer `before_each` and "this sub-group also needs a Thief's Knife" in an inner one. 
+This is the idiomatic way to layer setup: put "everyone needs a player" in an outer `before_each` and "this sub-group also needs a Thief's Knife" in an inner one.
 
 See [`scripts/tests/framework/lifecycle.lua`](https://github.com/LandSandBoat/server/blob/base/scripts/tests/framework/lifecycle.lua) for the exact ordering and inheritance behaviour expressed as runnable tests.
 

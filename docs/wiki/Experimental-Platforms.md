@@ -2,7 +2,7 @@
 
 These should work, but none of us use or test them, so we probably can't help you debug them. Read the [Quick Start Guide](Quick-Start-Guide) first. Apart from the notes below, the Ubuntu steps apply.
 
-_(click a section to expand it)_
+Click a section to expand it.
 
 <details>
 <summary><b>macOS (bare metal)</b></summary>
@@ -51,9 +51,9 @@ Arch marks its system Python as externally managed, so use a virtual environment
 
 Nobody has tried this in a long time. It's probably out of date.
 
-* **Power:** use a supply of at least 2.5 A. A yellow lightning bolt in the corner of the display means the Pi is throttling, and the build will crawl or never finish.
-* **RAM:** start the server processes one at a time if the Pi runs out of memory.
-* **LuaJIT:** your distribution's package may lack ARM fixes. If LuaJIT gives you trouble, build it from source:
+- **Power:** use a supply of at least 2.5 A. A yellow lightning bolt in the corner of the display means the Pi is throttling, and the build will crawl or never finish.
+- **RAM:** start the server processes one at a time if the Pi runs out of memory.
+- **LuaJIT:** your distribution's package may lack ARM fixes. If LuaJIT gives you trouble, build it from source:
 
   ```sh
   git clone https://github.com/LuaJIT/LuaJIT.git

@@ -14,7 +14,7 @@ This article predates the official images. It was written when the core team did
 
 ## No GitHub Issues + Support
 
-The examples *on this page* are provided without warranty or support, and may not be maintainable depending on who's currently around. Please do not raise GitHub issues about them. Feel free to submit a PR to the wiki if you have a fix, but otherwise it's on the user to make do.
+The examples _on this page_ are provided without warranty or support, and may not be maintainable depending on who's currently around. Please do not raise GitHub issues about them. Feel free to submit a PR to the wiki if you have a fix, but otherwise it's on the user to make do.
 
 This does not apply to the official images. Problems with those are ordinary bugs, raise them as issues.
 
@@ -57,6 +57,7 @@ flowchart LR
 ```
 
 ## update_db_then_launch.sh
+
 ```bash
 #!/bin/bash
 
