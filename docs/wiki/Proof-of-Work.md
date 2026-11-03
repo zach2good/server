@@ -21,7 +21,7 @@ No problem. Mark it as `TODO:` with an applicable message indicating what needs 
 What if I have no idea how (feature) works completely and neither does wiki?
 ----------------------------------------------------------------------------
 
-You'll need to do your own research or make a discussion about getting research. Note that partial implementations are OK, but you can't just make stuff up. See [#1442](https://github.com/LandSandBoat/server/pull/1442/files#diff-f46ade0c1c56399dea930a6247ae694a8c0d85d6de37db3c0922b87b143cab68)'s foil implementation. Foil's mechanics at the time were unknown, but the spell is still useful as part of the game for enmity purposes.
+You'll need to do your own research or open an issue asking for research. Note that partial implementations are OK, but you can't just make stuff up. See [#1442](https://github.com/LandSandBoat/server/pull/1442/files#diff-f46ade0c1c56399dea930a6247ae694a8c0d85d6de37db3c0922b87b143cab68)'s foil implementation. Foil's mechanics at the time were unknown, but the spell is still useful as part of the game for enmity purposes.
 
 Levels of certainty required for a "Minimum viable Pull Request":
 -----------------------------------------------------------------
@@ -32,7 +32,7 @@ Complete captures for the mission/quest you are implementing are _required_ for 
 
 ### Job Mechanics
 
-Captures are required for messages, especially for action packets. Until recently, COR rolls were crashing clients due to the original implementation using only 2 message types, even though there were several more. It's very important to get things right, this way nobody has to revisit a broken implementation, only to change an implementation if/when it is changed in retail. For job mechanics that appear completely unknown and you want to test them, make a discussion! We have plenty of people who've contributed in the past that have tested obscure mechanics and their findings are now the de-facto knowledge of retail until proven otherwise.
+Captures are required for messages, especially for action packets. Until recently, COR rolls were crashing clients due to the original implementation using only 2 message types, even though there were several more. It's very important to get things right, this way nobody has to revisit a broken implementation, only to change an implementation if/when it is changed in retail. For job mechanics that appear completely unknown and you want to test them, open an issue! We have plenty of people who've contributed in the past that have tested obscure mechanics and their findings are now the de-facto knowledge of retail until proven otherwise.
 
 ### Notorious Monsters
 
@@ -41,7 +41,7 @@ _How am I supposed to know the NM's level?_ Good question! It turns out the wide
 About Sourcing
 ------------
 
-Often content is added using one or more of the fan sites or wiki's as a source. Most of this isn't as trustworthy as you might expect: wiki articles are sometimes getting what they say from the same person across multipel wiki's or obtaining what they say from another wiki, or worse, over google translate and not realizing what translation mistakes have been made.
+Often content is added using one or more of the fan sites or wiki's as a source. Most of this isn't as trustworthy as you might expect: wiki articles are sometimes getting what they say from the same person across multiple wikis or obtaining what they say from another wiki, or worse, over google translate and not realizing what translation mistakes have been made.
 
 **Retail packet captures are the end all be all of anything that can be seen in a packet.**
 
@@ -56,7 +56,7 @@ Some common data sources are:
 
 Things to remember:
 * With crafting we compare ALL recipe sources but ffo.jp has usually been the most reliable.
-* With drop rates sample size will influence the values you see on fan sites. ffxidb combines all tiers of Treasure Hunter higher than 2 in the "3+" column and that the "average" column combines all tiers even no TH at all - and so does ffxiclopedia. Further more, due to sample sizes and random variance the rates won't exactly match retail on any site so we look at multiple data points at different TH tiers t make an educated guess about what rarity the item actually is, [based on the chart SE released.](TH-chart)
+* With drop rates sample size will influence the values you see on fan sites. ffxidb combines all tiers of Treasure Hunter higher than 2 in the "3+" column and that the "average" column combines all tiers even no TH at all - and so does ffxiclopedia. Further more, due to sample sizes and random variance the rates won't exactly match retail on any site so we look at multiple data points at different TH tiers to make an educated guess about what rarity the item actually is, [based on the chart SE released.](TH-chart)
 
 About Videos
 ------------
@@ -66,4 +66,4 @@ Sometimes, videos are cited as evidence. Some videos are from retail and some ar
 In closing
 ----------
 
-We want your contributions and if you need help, please make a discussion. Remember, a `TODO:` doesn't indicate failure to implement, it indicates that we need more information, a much deeper look or backend changes in core.
+We want your contributions and if you need help, please open an issue. Remember, a `TODO:` doesn't indicate failure to implement, it indicates that we need more information, a much deeper look or backend changes in core.

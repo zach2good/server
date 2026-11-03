@@ -14,7 +14,7 @@ Helpers are available to simulate client interactions as if they had come from a
 ## Limitations
 
 - Multi-process tests are not yet supported. It is not possible to spawn players in a way that emulates them being on different `xi_map` processes.
-- World messages are not yet processed
+- `xi_test` runs a `WorldEngine` in the same process, linked to the map engine over in-process ZMQ. The map side doesn't pump incoming IPC in tests, so messages from the world server aren't handled yet.
 
 ## Getting Started
 
@@ -51,6 +51,8 @@ In a terminal/shell/your IDE debug configuration, target the `xi_test` binary/la
 ./xi_test --keep-going --tag 'magic' --file 'systems'
 ```
 
+C++ unit tests (Catch2, under `src/test/tests`) run first. If any of them fail, `xi_test` exits without running the Lua suite.
+
 ## Arguments
 
 | Arg          | Description                                                   | Example                   |
@@ -65,6 +67,8 @@ In a terminal/shell/your IDE debug configuration, target the `xi_test` binary/la
 | --no-tag     | Execute every test cases but the ones containing tag.         | --no-tag 'long'           |
 | --output     | Test report path (*.json)                                     | --output report.ctrf.json |
 | --retry      | Retry a failed test up to N times.                            | --retry 5                 |
+
+`xi_test` also accepts `--watch`, but it isn't implemented yet.
 
 ## Output formats
 

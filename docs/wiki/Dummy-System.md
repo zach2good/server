@@ -1,5 +1,7 @@
 An experiment to test many char entities on a server.
 
+It was never merged and isn't in the codebase. The patch below is kept for reference and won't apply to current code.
+
 **Patch:**
 
 [dummy_system.patch.txt](https://github.com/LandSandBoat/server/files/8190518/dummy_system.patch.txt)

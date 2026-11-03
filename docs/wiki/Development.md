@@ -4,6 +4,9 @@ Articles in this category are guides covering specific subject matter. They're i
 
 ## Articles
 
+* [Development Guide](Development-Guide)
+* [Development Guide (Git)](Development-Guide-Git)
+* [Testing](Testing)
 * [Maintaining Your Fork](Maintaining-Your-Fork)
 * [Lua Guide and Gotchas](Lua-Guide-and-Gotchas)
 * [Proof of Work](Proof-of-Work)

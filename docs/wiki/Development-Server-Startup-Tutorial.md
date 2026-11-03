@@ -1,187 +1,109 @@
 # Server Startup Tutorial
 
-**NOTE:** In order to give a somewhat simple high-level overview of how the server starts up and runs, a lot of pseudocode and diagrams are used. These do not necessarily reflect actual code in the repo!
+A short tour of how `xi_map` starts up and runs. The other processes share the same `Application` base but aren't covered here. Snippets are trimmed from the real code, so read the files for the full picture.
 
-_This only covers `xi_map` server and not the others!_
+## Entry point
 
-## Server entry point
-
-`src/common/kernel.cpp` calling functions defined in `src/map/map.cpp`
-
-### PSEUDOCODE
+`src/map/main.cpp` builds a `MapApplication` and calls `run()`:
 
 ```cpp
-    // Loads EVERYTHING (settings, Lua, database, etc.)
-    do_init(...);
+auto mapApp = std::make_unique<MapApplication>(argc, argv);
+const auto success = mapApp->run();
+```
 
-    while (running)
-    {
-        // Work on Task Manager tasks until its time to do socket stuff again
-        CTaskMgr::getInstance()->DoTimer(server_clock::now());
+The `Application` constructor (`src/common/application.cpp`) does the shared setup: logging, signal handlers, Lua, settings and the console. `MapApplication` (`src/map/map_application.cpp`) adds the map arguments (`--ip`, `--port`, `--lazy`, `--rebuild-navmeshes`) and its `run()` does this:
 
-        // socket stuff
-        do_sockets(...);
-    }
+```cpp
+engine_ = createEngine(); // A MapEngine
+engine_->onInitialize();
+registerCommands(console());
+
+scheduler_.postToMainThread(mapEngine->init());
+
+scheduler_.run(); // Blocks until shutdown
 ```
 
 ```mermaid
 stateDiagram
-    state while_running()
-    {
-        task_manager() --> do_sockets()
-        do_sockets() --> task_manager()
-    }
-    [*] --> do_init()
-    do_init() --> while_running()
-    while_running() --> [*]
+    [*] --> MapApplication()
+    MapApplication() --> MapEngine_init()
+    MapEngine_init() --> scheduler_run()
+    scheduler_run() --> [*]
 ```
 
-## "Socket stuff"
+## The scheduler
 
-### PSEUDOCODE
+There's no hand-written main loop. `Scheduler` (`src/common/scheduler/scheduler.h`) wraps an asio event loop on the main thread and a worker thread pool. Everything after startup is a task it runs: a timer firing, a UDP packet arriving or a coroutine resuming.
 
-`src/map/map.cpp` -> `do_sockets`:
+The main calls are:
+
+- `postToMainThread`/`postToWorkerThread`: queue work to run once.
+- `intervalOnMainThread`: run work on a fixed period. It returns a token, and the timer stops when the token is destroyed.
+- `spawnOnWorkerThread`: `co_await` work on the pool, then resume on the main thread.
+
+## Engine init
+
+`MapEngine::init()` in `src/map/map_engine.cpp` is a coroutine. It checks the database, calls `luautils::init`, starts the IPC client, loads items, spells, skills, recipes and the rest, then loads the zones with `zoneutils::Initialize`. After that it registers the regular tasks:
 
 ```cpp
-    // Listen for ZMQ messages (inter-process messages)
-    message::handle_incoming();
-
-    // Listen for packets from connected clients
-    check_for_packet_activity()
-    if (packets)
-    {
-        for (packet : packets)
-        {
-            handle_incoming_packet(packet)
-            send_outgoing_packets_as_reply()
-        }
-    }
-
-    // Make sure connection to database is still there
-    sql->TryPing();
+mapCleanupToken_        = scheduler_.intervalOnMainThread(kSessionCleanupInterval, ...);    // 5s
+mapGarbageCollectToken_ = scheduler_.intervalOnMainThread(kGarbageCollectionInterval, ...); // 15min, Lua GC
+timeServerToken_        = scheduler_.intervalOnMainThread(kTimeServerTickInterval, ...);    // 2400ms, time_server
+transportToken_         = scheduler_.intervalOnMainThread(kTransportTickInterval, ...);     // 400ms, ships and lifts
+pumpIPCToken_           = scheduler_.intervalOnMainThread(kIPCPumpInterval, ...);           // 100ms, messages from xi_world
 ```
 
-```mermaid
-stateDiagram
-    [*] --> handle_zmq()
-    handle_zmq() --> check_for_packet_activity()
-    check_for_packet_activity() --> for_each_packet()
-    state for_each_packet()
-    {
-        handle_incoming_packet() --> send_outgoing_packets_as_reply()
-    }
-    for_each_packet() --> try_ping_sql()
-    try_ping_sql() --> [*]
-```
+The intervals live in `src/map/map_constants.h`. Finally it calls `luautils::OnServerStart()` and starts the watchdog, which warns when a main thread tick runs long.
 
-## Handling Incoming Packets
+## Incoming packets
 
-`src/map/map.cpp`
+`MapSocket` (`src/map/map_socket.cpp`) listens for UDP and hands each datagram to `MapNetworking::handle_incoming_packet` (`src/map/map_networking.cpp`). That finds the session, decrypts the buffer and splits it into individual packets. Each packet goes to `PacketSystem::dispatch` (`src/map/packet_system.cpp`), which rate-limits it and calls the handler for that packet id. The reply goes back on the same socket.
 
-Once we have recieved a buffer full of data from a connected client, we use their connection details and their sent data to look up their session. We validate all of this data (somewhat) and pass it into the relevant `Packet Handler` for their packet.
+Each client packet has its own file under `src/map/packets/c2s/`, for example `0x01a_action.cpp`. A handler has a `validate` step that checks what the client sent and a `process` step that does the work.
 
-`src/map/packet_system.cpp`
+## Zone ticks
 
-`PacketParser[SmallPD_Type](map_session_data, PChar, CBasicPacket(reinterpret_cast<uint8*>(SmallPD_ptr)));`
+`zoneutils::Initialize` loads every zone assigned to the process, with its NPCs and mobs, then calls `CZone::createZoneTimers()` on each one. That registers three intervals per zone:
 
-There is one `Packet Handler` for each packet type sent from the client. We typically extract data from the packet, validate it (somewhat), and then use that data to do the things the client is requesting (`Player Action` below).
+- `ZoneServer` every 400ms (`kLogicUpdateInterval`). This is the logic tick.
+- `CheckTriggerAreas` every 200ms.
+- The spawn handler every 30s.
 
-### PSEUDOCODE
-
-```cpp
-// Player Action Packet 0x01A
-void SmallPacket0x01A(map_session_data_t* const PSession, CCharEntity* const PChar, CBasicPacket data)
-{
-    uint16 TargID = data.ref<uint16>(0x08);
-    uint8  action = data.ref<uint8>(0x0A);
-    ...
-```
-
-## Task Manager Tasks
-
-These are set up during the server's `do_init` in `src/map/map.cpp`:
-
-### PSEUDOCODE
-
-```cpp
-    // Handle all logic related to time, onGameHour, Conquest, etc. every 2.4s
-    // NOTE: This is not in-game Combat ticks, status ticks, etc.
-    CTaskManager->AddTask("time_server", time_server, 2400ms);
-
-    // Clean up after any players or other entities who no longer exist in zones, every 5s.
-    CTaskManager->AddTask("map_cleanup", map_cleanup, 5s);
-
-    // Run Lua garbage collection. This isn't automatic, so we do it by hand every 15 mins.
-    CTaskManager->AddTask("garbage_collect", map_garbage_collect, 15min);
-
-    // We cache a lot of non-critical free-form data about characters in memory for performance, try to flush this info
-    // every 1min.
-    CTaskManager->AddTask("persist_server_vars", serverutils::PersistVolatileServerVars, 1min);
-```
-
-## Where's the player logic?
-
-Zones handle all of the entity logic in the form:
+`CZoneEntities::ZoneServer` (`src/map/zone_entities.cpp`) ticks each entity list in turn:
 
 ```mermaid
 stateDiagram-v2
-    a : For each NPC in Zone
-    b : Tick NPC
-    c : For each Mob in Zone
-    d : Tick Mob
-    e : For each Player in Zone
-    f : Tick Player
-        
-    state a { b }
-    state c { d }
-    state e { f }
+    a : OnZoneTick (Lua)
+    b : Tick each Mob, then mob aggro checks
+    c : Tick each NPC
+    d : Tick each Pet
+    e : Tick each Trust
+    f : Tick each Player
 
-    a --> c
-    c --> e
-
-```
-
-On startup, all zones are inactive in order to avoid doing more work than necessary. A zone only "wakes up" once a player zones in to it. This involves multiple packets sent from the client and handled in the relevant `Packet Handlers`.
-
-Once a Zone wakes up it registers a `Task Manager` job which will repeatedly call
-`PZone->ZoneServer(...)` (the logical `tick`).
-
-Once all players have left a Zone it will go back "to sleep".
-
-```mermaid
-stateDiagram-v2
-    a : Zone is asleep
-    b : Player zones into Zone
-    c : Zone wakes up
-    d : Zone ticks constantly
-    e : Player leaves Zone
-    f : Zone goes back to sleep
-    
     a --> b
     b --> c
     c --> d
-    d --> d
     d --> e
     e --> f
-
 ```
 
-## Lua Scripting
+The `--lazy` flag loads zones on demand, which saves time while developing.
 
-While poking around in the core code, you'll likely see a lot of calls to `luautils::<something>`. These are calls into the Lua scripting system. Core data structures (entities, zones, weaponskills, etc.) are wrapped in a Lua object and then passed into scripting. These wrappers provide various functions you can use on the objects once they're in Lua.
+## Lua scripting
 
-The most common places to look up bindings between C++ and Lua are `src/map/lua/luautils.cpp` and `src/map/lua/lua_baseentity.cpp`.
+Calls to `luautils::<something>` go into the Lua scripting system. Core objects (entities, zones, items and so on) are wrapped in a Lua object and passed into scripts. The wrappers expose functions you can call on the object from Lua.
+
+The bindings live in `src/map/lua/luautils.cpp` and `src/map/lua/lua_base_entity.cpp`, with a file per wrapper type under `src/map/lua/`.
 
 ### Example
 
-- `luautils::OnPlayerLevelUp(PChar);` is called in `charutils.cpp` when the player levels up.
-- It will look up the Lua function it is associated with; `xi.player.onPlayerLevelUp = function(player) ...` in this case.
-- It will take the Player object, wrap it for use with Lua, and pass it into the Lua function.
-- The function will then be called.
-- Any errors in the Lua script will be gracefully handled.
+- `charutils.cpp` calls `luautils::OnPlayerLevelUp(PChar)` when the player levels up.
+- That calls the global Lua function `xi.player.onPlayerLevelUp`, in `scripts/globals/player.lua`.
+- The player is wrapped for Lua and passed in as the `player` argument.
+- Errors in the Lua script are caught and logged.
 
 ## Some things of note
 
-- All of this main logic is single-threaded, we ship some things off to other threads, but we _very much on purpose_ keep threading to a minimum. This protects us from a whole category of difficult to diagnose and difficult to fix bugs. See [Programming for Performance](Programming-for-Performance).
+- Game logic runs on the main thread. We send some work to the worker pool, but we _very much on purpose_ keep threading to a minimum. This protects us from a whole category of bugs that are hard to diagnose and fix. See [Programming for Performance](Programming-for-Performance).
 
-- In order to "scale" once the server workload gets sufficiently high, we can run multiple of the `xi_map.exe` process, assign different zones to them, and they'll communicate using ZMQ. Until you have 100+ concurrent users, you don't have to think about this. _Theoretical happy limit_ per process is 200-400 players, dependant on many different factors.
+- To scale once the workload gets high, you can run several `xi_map` processes and assign different zones to each. They exchange messages through `xi_world` over ZMQ. Until you have 100+ concurrent users, you don't have to think about this.

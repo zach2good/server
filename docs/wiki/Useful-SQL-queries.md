@@ -6,7 +6,7 @@
 UPDATE accounts SET password = PASSWORD("NEW_PASSWORD_HERE") WHERE login = 'ACCOUNT_NAME_HERE';
 ```
 
-* Note: This function is deprecated in stock MySQL*
+`PASSWORD()` is a MariaDB function, deprecated in stock MySQL. The login server still accepts this hash and replaces it with a bcrypt hash at the next login.
 
 ## Mail an item to all characters on the entire server
 
@@ -19,17 +19,6 @@ INSERT INTO delivery_box (charid, charname, box, slot, itemid, itemsubid, quanti
 
 ```sql
 INSERT INTO delivery_box VALUES (charid, 'name here', 1, 0, itemid, 0, quantity, NULL, 0, 'The MHMU', 0, 0);
-```
-
-## Find All Mobs Without Pets
-
-```sql
-select ms.mobid, ms.mobname, pt.pet_offset 
-from mob_spawn_points ms
-inner join mob_groups gr on ms.groupid = gr.groupid and gr.zoneid = ((ms.mobid >> 12) & 0xFFF)
-inner join mob_pools pl on gr.poolid = pl.poolid 
-left join mob_pets pt on pt.mob_mobid = ms.mobid 
-where pl.mJob IN (9, 14, 15, 18) and pt.pet_offset IS NULL;
 ```
 
 ## Expansion icons
@@ -64,23 +53,15 @@ It's a decimal representation of multiple bytes. Lets look at them in binary, wh
 
 so our default value of 4094 = 0000111111111110 (everything except the "Not Used" bits). You can use almost any calculator to swap between these formats if you need to.
 
-## Enable ZONEMISC features everywhere
+## Enable zone misc features everywhere
 
-In this example, we'll enable MISC_YELL everywhere. You can see these flags in zone.h.
+Zone misc flags are no longer in the database. Each zone lists them under `misc` in `data/zones/<zone>/zone.yaml`, and `data/enums/zone_misc.yaml` lists every flag. To enable `/yell` in a zone, add `yell` to its list:
 
-```cpp
-MISC_YELL = 0x0400, // Send and receive /yell commands
+```yaml
+misc: [mazurka, tractor, pet, yell]
 ```
 
-0x0400 is hex for 1024, so we'll use that value going forwards. The following query will add the flag 1024 to any zone misc that doesn't already have it set.
-
-```sql
-UPDATE xidb.zone_settings 
-SET 
-    misc = misc + 1024
-WHERE
-    NOT(misc & 1024);
-```
+Restart `xi_map` to pick up the change.
 
 ## Show contents of players' bazaars
 

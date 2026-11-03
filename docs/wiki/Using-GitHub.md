@@ -1,7 +1,7 @@
 # Basic Branch/Pull Request Information
 If you followed the Server Setup instructions, you've already cloned LSB's default branch (called `base`). If you want to make changes and contribute to LSB, here's a quick guide on how to push changes.
 
-**1 - Set up your fork on GitHub if you haven't already.** This is where you'll push changes to then submit a pull request. You can click on [the fork button in the upper-right, above the main `LandSandBoat/server` repository to fork](https://raw.githubusercontent.com/wiki/LandSandBoat/server/images/github-fork.png).
+**1 - Set up your fork on GitHub if you haven't already.** This is where you'll push changes to then submit a pull request. You can click on [the fork button in the upper-right, above the main `LandSandBoat/server` repository to fork](images/github-fork.png).
 
 **2 - Make a new branch from your copy of `base` for _any_ changes.** Do **NOT** make your changes directly on `base`. Even if you _don't_ plan on making Pull Requests, make a new branch for your personal changes - this lets you easily update your copy of LSB's `base` branch and merge it into your personal branch. **Making changes on `base` will prevent you from making different changes until the Pull Request you've opened is reviewed and incorporated.**
 
@@ -15,7 +15,7 @@ If you've made any changes at this point, you'll get an error and be forced to "
 
 **4 - In your remote repository, make sure you're on your new branch which you're looking to contribute from and select New Pull Request.** Fill out the relevant checkboxes, put in an appropriate title, etc.
 
-**5 - Upon review and you making any requested changes, your Pull Request will be merged** with LSB's `base` branch, or a new branch if it's large enough or changed something which warrants further testing before final merge into `base`. All new "side" branches LSB creates in this manner are merged into LSB's `base` branch for ease of testing, or for servers that want to try out cutting-edge features.
+**5 - Once it's reviewed and you've made any requested changes, your Pull Request will be merged** into LSB's `base` branch.
 
 **NOTE:** For custom servers, it's probably best to have a separate repository entirely for your server versus your local copy of LSB's vanilla (`base`) build. That way you can clone/download/branch/edit/commit for contributions to LSB without interfering with files in use by your server.
 

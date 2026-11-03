@@ -1,3 +1,6 @@
+> [!NOTE]
+> This is a historical announcement from January 2021, kept for the record. The `canary` branch no longer exists, and paths and numbers here reflect the code at the time.
+
 **TLDR:**
 >- The main destructive changes we've been working on at LandSandBoat are complete!
 >- Up to 20x performance improvement*!

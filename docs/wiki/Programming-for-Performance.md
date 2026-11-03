@@ -2,9 +2,9 @@
 
 ## Threading (Multi vs Single Threading)
 
-LSB and its predecessors are mostly single-threaded. This means we have to be conscious of how much work we're doing at any given time. If we commit to doing too much work, or the work takes too long, the performance of the server will degrade; leading to lag and/or instability.
+LSB and its predecessors are mostly single-threaded. This means we have to be conscious of how much work we're doing at any given time. If we commit to doing too much work, or the work takes too long, the performance of the server will degrade, leading to lag and/or instability.
 
-Below are some very basic benchmarks comparing similar workloads in C++, in Lua using function caching, and Lua without using funciton caching.
+Below are some very basic benchmarks comparing similar workloads in C++, in Lua using function caching, and Lua without using function caching.
 
 ```txt
 --------------------------------------------------------------------
