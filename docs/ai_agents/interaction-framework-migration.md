@@ -12,11 +12,11 @@ Retail packet captures are essential for accurate migrations. They provide the e
   - **`CEventPacket` (`0x032`/`0x034`):** The `EventPara` value is the Event ID. This directly maps to your IF `quest:progressEvent(id)` or `quest:event(id)` calls.
   - **`CMessageSpecialPacket` (`0x02A`):** The `MessageNumber` value is the Text ID. This directly maps to your IF `quest:messageSpecial(id)` calls (often used for non-standard dialogues or system messages like checking doors/sarcophagi).
   - **`CMessageNamePacket` (`0x027`):** The `MesNum` value (sometimes requiring a bitwise `& 0xFFFF` depending on the logger output) is the standard chat dialogue ID. This maps to IF `quest:messageName(id)` or standard text lookups.
-- **`npclogger/database` (NPC Data):** Use the `.lua` files here to populate or verify NPC coordinates and properties in `sql/npc_list.sql` or to format your NPC script headers correctly.
+- **`npclogger/database` (NPC Data):** Use the `.lua` files here to populate or verify NPC coordinates and properties in `data/zones/<zone>/npcs.yaml` or to format your NPC script headers correctly.
 - **`packetviewer` (Raw Packets):** For complex interactions that `eventview` doesn't fully capture, you can dive into the raw packets here to understand what the client is sending and receiving.
 
-### Database (SQL)
-- **NPC IDs & Positions:** Check `sql/npc_list.sql`. Use this to find the 8-digit NPC ID and their `!pos` coordinates.
+### Game Data
+- **NPC IDs & Positions:** Check `data/zones/<zone>/npcs.yaml`. NPCs are keyed by their 8-digit id, with the position in `at: [x, y, z, rotation]`. Instanced zones still use `sql/npc_list.sql`.
 - **Item IDs:** Check `sql/item_basic.sql`. If an item constant is missing from Lua, find the ID here and use it directly or add it to the enum.
 
 ### Global Registries (Lua Enums)
@@ -24,18 +24,18 @@ Retail packet captures are essential for accurate migrations. They provide the e
 - **Mission IDs:** `scripts/globals/missions.lua`.
 - **Item Constants:** `scripts/enum/item.lua`.
 - **Key Item Constants:** `data/enums/key_item.yaml`.
-- **Zone Constants:** `scripts/enum/zone.lua`.
+- **Zone Constants:** `data/enums/zone.yaml` (generates `xi.zone`).
 
 ### Retail Event Dumps
 The `sruon/FFXI-EventsDump` repository is the source of truth for retail event IDs and dialogue.
 - **Nearby Repo:** If the repo is cloned next to this one, access it via `../FFXI-EventsDump/dumps/<Zone_Name>`.
-- **Remote Access:** Use `web_fetch` or `google_web_search` to find raw markdown files on GitHub if the local path is unavailable.
+- **Remote Access:** If there's no local clone, fetch the raw markdown files from GitHub.
 - **Strings:** Each zone folder has a `strings.txt` file. Map the decimal/hex IDs in the `.md` files to these strings to verify dialogue.
 
 ## 3. The Migration Workflow
 
 ### Step 1: Research (The "Wiki Triangulation")
-1.  Check **BOTH** [BG-Wiki](https://www.bg-wiki.com) and [FFXI Wikia](https://ffxiclopedia.fandom.com).
+1.  Check the [Japanese wiki](https://wiki.ffo.jp), [BG-Wiki](https://www.bg-wiki.com) and [FFXIclopedia](https://ffxiclopedia.fandom.com). When they disagree, trust them in that order and say so.
 2.  Compare steps, item requirements, and NPC dialogue descriptions.
 3.  Note any "Wait until Japanese Midnight" or "Zone out/in" requirements.
 
@@ -54,11 +54,21 @@ Create the appropriate file in `scripts/quests/`, `scripts/missions/`, or `scrip
 - **Basic Structure:**
 ```lua
 local quest = Quest:new(xi.questLog.LOG_NAME, xi.quest.id.area.QUEST_NAME)
-quest.reward = { fame = 30, gil = 1000 }
-quest.sections = {
+quest.reward =
+{
+    fame = 30,
+    gil  = 1000,
+}
+
+quest.sections =
+{
     {
-        check = function(player, status, vars) return status == xi.questStatus.QUEST_AVAILABLE end,
-        [xi.zone.ZONE_ID] = {
+        check = function(player, status, vars)
+            return status == xi.questStatus.QUEST_AVAILABLE
+        end,
+
+        [xi.zone.ZONE_ID] =
+        {
             ['NPC_Name'] = quest:progressEvent(100),
         },
     },
@@ -69,14 +79,19 @@ quest.sections = {
 - **Trigger Areas:** Handle approach-based cutscenes via `onTriggerAreaEnter`.
 
 ### Step 3: NPC Script Cleanup
-1.  **Header:** Ensure the header includes the `!pos` from `npc_list.sql`.
+1.  **Header:** Follow the [NPC Script Header Guide](npc-header-guide.md).
 2.  **Logic Removal:** Strip all `if/else` quest blocks.
 3.  **Minimal Stub:** If no non-quest logic remains, convert to:
 ```lua
 ---@type TNpcEntity
 local entity = {}
-entity.onTrigger = function(player, npc) end
-entity.onTrade = function(player, npc, trade) end
+
+entity.onTrade = function(player, npc, trade)
+end
+
+entity.onTrigger = function(player, npc)
+end
+
 return entity
 ```
 4.  **Preservation:** Keep patrol logic (`onSpawn`), Trust logic, or complex non-migrated quests in the script.

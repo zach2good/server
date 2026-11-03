@@ -1,10 +1,19 @@
 # NPC Script Header Guide
 
-This guide explains how to format the header for NPC script files in LandSandBoat, and how to locate the required information.
+How to format the header of an NPC script, and where to find what goes in it.
 
 ## Header Format
 
-Every NPC script should begin with a standardized header. This header provides the zone name, zone ID, NPC name, and the NPC's spawn position (as a `!pos` command).
+Most NPC scripts carry only the zone and NPC name:
+
+```lua
+-----------------------------------
+-- Area: Windurst Walls
+--  NPC: Ambrosius
+-----------------------------------
+```
+
+You may add the zone id and a `!pos` line, which a GM can paste to go to the NPC:
 
 ```lua
 -----------------------------------
@@ -14,62 +23,42 @@ Every NPC script should begin with a standardized header. This header provides t
 -----------------------------------
 ```
 
-### Components
-
-1.  **Area**: The name of the zone followed by its Zone ID in parentheses.
-2.  **NPC**: The name of the NPC.
-3.  **!pos**: The X, Y, Z coordinates, followed by the Zone ID. This matches the format used by the in-game `!pos` command.
+The dividers are exactly 35 dashes. The Lua style check rejects any other length.
 
 ## Finding the Information
 
-### 1. Zone Name and ID
+### Zone name and id
 
-*   **Zone Name**: Usually matches the name of the folder containing the script (e.g., `scripts/zones/Windurst_Walls/`).
-*   **Zone ID**: Can be found in `scripts/enum/zone.lua`. Search for the zone's constant name (e.g., `WINDURST_WALLS`) to find its numeric ID.
+* **Zone name**: the folder name with spaces, e.g. `scripts/zones/Windurst_Walls/` is `Windurst Walls`.
+* **Zone id**: in `data/enums/zone.yaml`, e.g. `windurst_walls: 239`. The Lua enum `xi.zone.WINDURST_WALLS` is generated from it.
 
-### 2. NPC Name
+### NPC name and position
 
-*   **NPC Name**: Use the **display name** (the second name) as it appears in the `sql/npc_list.sql` file. This is usually the name players see in-game.
+NPCs live in `data/zones/<zone>/npcs.yaml`, keyed by NPC id:
 
-    Example SQL:
-    ```sql
-    INSERT INTO `npc_list` VALUES (17752605,'AMAN_Liaison','A.M.A.N. Liaison', ...);
-    ```
-    In this case, you would use `A.M.A.N. Liaison` in the header.
-
-### 3. Finding Position (X, Y, Z) in `sql/npc_list.sql`
-
-If you don't have the coordinates from an in-game capture or a retail dump, you can find them in the database:
-
-1.  Open `sql/npc_list.sql`.
-2.  Search for the NPC's name within the section for the specific zone. Note that names in SQL might be in `varbinary` or `char` formats.
-3.  The coordinates are stored in the `pos_x`, `pos_y`, and `pos_z` columns.
-
-Example SQL entry:
-```sql
-INSERT INTO `npc_list` VALUES (16781427,'Ambrosius','Ambrosius',0,65.175,-2.499,-63.231,0,40,40,0,0,0,0,0,'\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0',0,NULL,1);
+```yaml
+  17756197:
+    script:       Ambrosius
+    display_name: Ambrosius
+    at:           [65.175, -2.499, -63.231, 76]
 ```
-In this example:
-*   `pos_x` = `65.175`
-*   `pos_y` = `-2.499`
-*   `pos_z` = `-63.231`
-*   Zone ID = `239` (derived from the NPC ID or the zone header in the SQL file).
 
-## Maintaining the Notes Section
+* Use `display_name` in the header. It's the name players see.
+* `at` is `[x, y, z, rotation]`. The `!pos` line uses the first three, then the zone id.
 
-If a script requires additional context or documentation, a "Notes" section can be included within the header block.
+Instanced and dynamic zones (Nyzul Isle, Ilrusi Atoll and similar) still keep their NPCs in `sql/npc_list.sql`.
 
-### Existing Notes
-If a script already has a notes section, **do not remove it**. Maintain the notes and update them if your changes alter the NPC's behavior or purpose.
+Positions from a retail capture beat the ones in the repo. If they disagree, say so.
 
-### Formatting Notes
-Notes should be placed within the header block, usually before the `!pos` command.
+## Notes
+
+A header may hold a `Notes:` line for context the code can't show. Never delete existing notes. Update them if your change alters what the NPC does.
 
 ```lua
 -----------------------------------
 -- Area: Windurst Walls (239)
 --  NPC: Ambrosius
--- Notes: This NPC is part of the "Crying Over Onions" quest.
+-- Notes: Part of "Crying Over Onions".
 -- !pos 65.175 -2.499 -63.231 239
 -----------------------------------
 ```

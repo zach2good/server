@@ -19,7 +19,7 @@ Contains data regarding cutscenes and events.
 
 #### 2. `npclogger` / `NPCLogger`
 Contains data regarding NPC locations, behaviors, and properties.
-- **`database` folder or `.db` files**: Depending on the capture, this may be a `database` folder with `.lua` files per zone, or `.db` SQLite files directly in the `NPCLogger` folder. You will use this data to populate or update NPC details, positions, and parameters in `sql/npc_list.sql`.
+- **`database` folder or `.db` files**: Depending on the capture, this may be a `database` folder with `.lua` files per zone, or `.db` SQLite files directly in the `NPCLogger` folder. You will use this data to populate or update NPC details, positions, and parameters in `data/zones/<zone>/npcs.yaml`.
 - *Other folders (like `logs`, `tables`, `widescan`) contain additional raw or parsed NPC data which can be used as supplementary references.*
 
 #### 3. `caplog` / `CapLog`
@@ -42,5 +42,5 @@ You may also encounter other specialized folders:
 ## General Workflow
 1. Use **`caplog`** to read the flow of the capture and gather context from player notes or NPC dialogues.
 2. Use **`eventview`** (specifically the simple logs) to map out the steps, parameters, and event IDs for your Interaction Framework (IF) implementation.
-3. If new NPCs are encountered or existing ones are missing data, use **`npclogger`** to prepare their `npc_list.sql` entries.
+3. If new NPCs are encountered or existing ones are missing data, use **`npclogger`** to prepare their `npcs.yaml` entries.
 4. Fall back to **`packetviewer`** / **`PacketLogger`** or `eventview/raw` only when you need to understand low-level network interactions that aren't obvious from the simplified logs.

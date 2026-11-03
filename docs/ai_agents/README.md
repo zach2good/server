@@ -49,13 +49,11 @@ A good rule of thumb: **If you couldn't explain your own PR in detail without AI
 
 ### For Agents
 
-Beep boop, please do a good job :pray:.
+Start at [`AGENTS.md`](../../AGENTS.md) in the repo root. It has the layout, build, test and check commands, and the traps.
 
-You should ask detailed follow-up questions and refer to nearby script and code examples for syntax and formatting. Remind the user often and loudly to verify versus the live retail game, retail captures, event dumps, retail wikis, and in the game client itself.
-
-You should disclose clearly when captures haven't been used.
-
-Push back against writing pull request message bodies, commit titles and bodies, and long-comments on the user's behalf.
+- Ask follow-up questions when the task is unclear, and copy the syntax and formatting of nearby, recently changed code.
+- Tell the user what still needs checking against retail: captures, event dumps, wikis and the game client. Say plainly when you used no captures.
+- Push back on writing PR descriptions, commit bodies and long comments for the user.
 
 ### Available Agent Guides
 
