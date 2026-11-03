@@ -1,111 +1,67 @@
 # Post-Install Guide
 
-## Changing Game Settings
+Read this once the [Quick Start Guide](Quick-Start-Guide) has you logged in.
 
-Various details about the game can be changed via editing the settings files. Settings are located in `settings/` and require a server reboot to apply. If you edit the settings files in `settings/default` nothing will happen. These are used as default values for the settings if you don't copy any files from `settings/default` to `settings/`.
+## Change settings
 
-## Making a Game Master Character
+The defaults live in `settings/default/`. Don't edit them. To change a setting, copy its file into `settings/` and edit the copy. The server loads the defaults first, then your files over the top, key by key, so your copy only needs the keys you change.
 
-After creating your first character you'll want to make it a GM by typing `gm TheirName 4` into your `xi_map` exe's console (this applies instantly and is accompanied by an in-game message). You can also do this by executing the following MySQL query, replacing `Name` with your character name (this will require your character to zone to take effect):
+You can also set any setting with an environment variable named `XI_<FILE>_<SETTING>`, e.g. `XI_MAIN_SERVER_NAME`.
+
+Restart the server after any change.
+
+## Make yourself a GM
+
+Run this query, with your character's name, then zone or log in again:
 
 ```sql
-UPDATE chars SET gmlevel = 4 WHERE charname = "Name";
+UPDATE chars SET gmlevel = 4 WHERE charname = 'Name';
 ```
 
-Available GM commands are found in the [scripts/commands/](https://github.com/LandSandBoat/server/tree/base/scripts/commands) folder, and a description of each command can be found at the top of the script. Commands can be used in-game using the script name with a preceding `!`, and removing `.lua`. For example, `promote.lua` is ran in game using `!promote`. This is the command you would use to make additional GMs.
+If you started `xi_map` by hand, you can type `gm Name 4` into its console instead. It applies at once. `dbtool`'s `Launch Server` runs the processes without a console, so use the query there.
 
-#### Useful starter GM commands
+GM commands are the scripts in [`scripts/commands/`](https://github.com/LandSandBoat/server/tree/base/scripts/commands). Each script's header describes it. In game, type `!` and the script name, e.g. `!promote` for `promote.lua`. Some to start with:
 
-* `!godmode`: Toggles god mode on the player, granting them several special abilities, including invincibility.
-* `!givegil`: Gives the specified amount of gil to GM or target player.
-* `!giveexp`: Gives the GM or target player experience points.
-* `!togglegm`: Toggles a GMs nameflags/icon.
-* `!speed`: Sets the players movement speed.
-* `!zone`: Teleports a player to the given zone (can be used with autotranslate, ie. `!zone {Port Bastok}`)
+* `!godmode`: makes you invincible, among other things.
+* `!givegil`: gives gil to you or your target.
+* `!givexp`: gives experience points to you or your target.
+* `!togglegm`: toggles your GM icon.
+* `!speed`: sets your movement speed.
+* `!zone`: moves you to a zone. It takes auto-translate, e.g. `!zone {Port Bastok}`.
+* `!promote`: makes another player a GM.
 
-Make sure you look in `scripts/commands` for more commands!
+## Open the server to other players
 
-## Making the Server Available to the Internet
+Every zone's `zoneip` in the `zone_settings` table must hold the address clients connect to. `dbtool` sets it. Run `python3 ./tools/dbtool.py` (Windows: `py -3 ./tools/dbtool.py`), choose `t. Maintenance Tasks`, then `2. Set zone IP addresses`, and pick one:
 
-To reach the server from anywhere other than the machine it runs on, the `zoneip` field for every zone in the `zone_settings` table must hold the address clients will connect to.
-
-`dbtool` does this for you. From the `server` directory, run `python3 ./tools/dbtool.py` (Windows: `py -3 ./tools/dbtool.py`), choose `t. Maintenance Tasks`, then `2. Set zone IP addresses`:
-
-```txt
-o------------------------------------------o
-|          Set Zone IP Addresses           |
-o------------------------------------------o
-| 1. Local only (127.0.0.1)                |
-| 2. Local network (auto-detect LAN IP)    |
-| 3. Public IP (via ident.me)              |
-| m. Manual entry                          |
-| q. Quit to tasks menu                    |
-o------------------------------------------o
-```
-
-Pick the one that matches how players will reach you:
-
-* **Local only**: you are the only player, connecting from the same machine.
-* **Local network**: players are on your LAN. `dbtool` detects the host's LAN address, e.g. `192.168.0.11`.
+* **Local only** (`127.0.0.1`): you play on the machine that runs the server.
+* **Local network**: players are on your LAN. `dbtool` finds the host's LAN address.
 * **Public IP**: players connect over the internet. `dbtool` looks your address up through `ident.me`.
 * **Manual entry**: anything else.
 
-Setting a public IP is not enough on its own. You also need the [ports below](#port-forwarding) forwarded and open.
+⚠️ `zone_settings` is not a protected table. Every database update or reset overwrites `zoneip`, and nobody can connect until you set it again. Set it from a [module](Module-Guide) so it survives updates.
 
-### These settings are wiped by updates
-
-⚠️ `zone_settings` is not a protected table. Any database update or reset overwrites your `zoneip` values, and players will not be able to connect until you set them again.
-
-Do not rely on remembering. Make the change reproducible:
-
-* Put it in a [module](Module-Guide), which survives updates and is the better option once you are running a server for other people.
-
-## Port Forwarding
-
-Make sure you have the following ports forwarded by your router and open in any firewall software if accessing the server over a network:
+For a public server, forward these ports on your router and open them in your firewall:
 
 ```txt
-TCP ports: 54230, 54231, 54001, 54002, 51220, 51240
-UDP port: 54230
+TCP: 54001, 54002, 54230, 54231, 51220, 51240
+UDP: 54230
 ```
 
-## Database Management
+Add TCP 8088 only if you set `ENABLE_HTTP` in `network.lua`.
 
-By default, dbtool will offer to backup your whole database into `server/sql/backups/` whenever it performs an update. You can turn this off and do manual backups either with the TUI, or by running the commands below from the `server` directory.
+## Back up the database
 
-Back up everything:
+`dbtool` offers a backup before each update. Backups, restores and the rest of `dbtool` are covered in [Database Management](Database-Management).
 
-```sh
-python3 ./tools/dbtool.py backup
-```
+## Customise the server
 
-Back up only sensitive player data:
+Editing the repo's files is fine while you learn. Once you pull updates regularly, your edits will conflict with ours. Move them into [modules](Module-Guide).
 
-```sh
-python3 ./tools/dbtool.py backup lite
-```
+## Run a public server
 
-Windows users: `py -3` instead of `python3`.
-
-The tables it backs up with the `lite` argument are defined in `server/tools/config.yaml` (created automatically by dbtool the first time you run it). The backups can be imported using the **Restore/Import** command in dbtool.
-
-## Executing a MySQL Query
-
-Linux and Windows users with MySQL in their PATH can execute a query from the terminal using the following format:
-
-```sh
-mysql -u xi -ppassword xidb -e "QUERY"
-```
-
-Where **xi**, **password**, **xidb**, and **QUERY** are changed to your needs. Windows users can also use the query tab in HeidiSQL (default keybind is CTRL+T).
-
-## Server Customisation
-
-During early experimentation it's probably fine for you to tinker with the main files of the repo to get a feel for how things fit together. Once you start to scale up, pulling updates regularly from LandSandBoat ("upstream"), trying to track your changes against the base repo - you're going to want to start using `modules`. You can read the module guide [here](https://github.com/LandSandBoat/server/wiki/Module-Guide).
-
-## See Also
-
-* [Database Management](Database-Management)
+* [Common Tasks, Issues & Tweaks](Miscellaneous-Server): running several map processes, auction house bots and more.
+* `tools/install-systemd-service.sh` installs the server as systemd services on Linux.
+* [LetsEncrypt](LetsEncrypt): certificates for `xi_connect`.
+* [Cloud Guide (GCP)](Cloud-Guide-GCP): hosting on Google Cloud.
 * [Useful SQL Queries](Useful-SQL-queries)
-* [Common Tasks](Miscellaneous-Server)
-* [Development Articles](Development)

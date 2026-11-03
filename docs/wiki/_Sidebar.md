@@ -5,6 +5,7 @@
   * [Useful Resources](Resources)
 * Server Administration
   * [Quick Start Guide](Quick-Start-Guide)
+  * [Experimental Platforms](Experimental-Platforms)
   * [Post-Install Guide](Post-Install-Guide)
   * [Database Management](Database-Management)
   * [Useful SQL Queries](Useful-SQL-queries)

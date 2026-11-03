@@ -24,6 +24,7 @@ To raise problems or suggestions about the wiki, you can open issues on the main
 Articles in this category are geared towards what a server administrator might want to know to setup and keep their server running smoothly.
 
 * [Quick Start Guide](Quick-Start-Guide)
+  * [Experimental Platforms](Experimental-Platforms)
   * [Working with WSL](Working-with-WSL)
   * [Docker](Docker)
 * [Post-Install Guide](Post-Install-Guide)
