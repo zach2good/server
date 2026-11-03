@@ -67,7 +67,9 @@ This is also valid if you have particularly crash-prone content and want to prot
 
 ### How do I set it up?
 
-You can take a look at our CI job `MultiInstance_Startup_Checks_Linux` in [build.yml](https://github.com/LandSandBoat/server/blob/base/.github/workflows/build.yml).
+The quickest way is through dbtool. Under `t. Maintenance Tasks`, `b. Configure multi-process server (3 processes)` or `c. Configure multi-process server (7 processes)` spreads the zones by zone id over ports `54230` upwards. `l. Configure single-process server` puts them all back on `54230`. `l. Launch Server` on the main menu then starts one `xi_map` per port, alongside the other processes.
+
+To do it by hand, take a look at the `multi` mode of our CI startup checks in [`tools/ci/startup_checks.py`](https://github.com/LandSandBoat/server/blob/base/tools/ci/startup_checks.py).
 
 By default, all zones in `zone_settings` are assigned a `zoneport` of `54230`, which is the default port used when you launch `xi_map`.
 
@@ -76,7 +78,7 @@ Any zones you want to move onto a different process you can assign a different `
 In the case of our CI, we set every other zone to use `zoneport` `54231`:
 
 ```sql
-UPDATE xidb.zone_settings SET zoneport = 54231 WHERE zoneid % 2 = 0;
+UPDATE xidb.zone_settings SET zoneport = 54231 WHERE zoneid % 2 = 1;
 ```
 
 Then when we launch our server processes we make sure to specify a process that uses the original `zoneport` and the new `zoneport`:
@@ -86,7 +88,7 @@ Then when we launch our server processes we make sure to specify a process that 
     screen -d -m -S xi_map ./xi_map --ip 127.0.0.1 --port 54231 --log map-server-1.log
 ```
 
-**NOTE**: You must make sure to specify `--ip` for each process you run. This should match up to whatever you have set in `zone_settings`. See the [Post-Install Guide](https://github.com/LandSandBoat/server/wiki/Post-Install-Guide#making-the-server-available-to-the-internet) if you need to change this.
+**NOTE**: You must make sure to specify `--ip` for each process you run. This should match up to whatever you have set in `zone_settings`. See the [Post-Install Guide](https://github.com/LandSandBoat/server/wiki/Post-Install-Guide#open-the-server-to-other-players) if you need to change this.
 
 It's also recommended (as above) that you specify different log files to be used by each process.
 
@@ -98,25 +100,6 @@ You can set any 'split' between your processes that you'd like. Remember that ea
 -- Any zones with a name that contains 'Dynamis'
 
 UPDATE xidb.zone_settings SET zoneport = 54231 WHERE `name` LIKE "%Dynamis%";
-```
-
-```sql
--- Split according to their 'ZONE_TYPE'
-
--- ZONE_TYPE::CITY
-UPDATE xidb.zone_settings SET zoneport = 54230 WHERE zonetype = 1;
--- ZONE_TYPE::OUTDOORS
-UPDATE xidb.zone_settings SET zoneport = 54231 WHERE zonetype = 2;
--- ZONE_TYPE::DUNGEON
-UPDATE xidb.zone_settings SET zoneport = 54232 WHERE zonetype = 3;
--- ZONE_TYPE::BATTLEFIELD
-UPDATE xidb.zone_settings SET zoneport = 54233 WHERE zonetype = 4;
--- ZONE_TYPE::DYNAMIS
-UPDATE xidb.zone_settings SET zoneport = 54234 WHERE zonetype = 5;
--- ZONE_TYPE::DUNGEON_INSTANCED
-UPDATE xidb.zone_settings SET zoneport = 54235 WHERE zonetype = 6;
--- ZONE_TYPE::LIMBUS
-UPDATE xidb.zone_settings SET zoneport = 54236 WHERE zonetype = 7;
 ```
 
 ## Generating LandSandBoat patch notes
@@ -137,8 +120,8 @@ One possible fix: Execute HeidiSQL > select your session and connect to it > sel
 If the server (LandSandBoat) and the client (Final Fantasy XI) don't share the same version, you'll probably get this error in the xi_connect.exe log window:
 
 ```sh
-[Error] lobbyview_parse: Incorrect client version: got 000000xx_x, expected 000000xx_x
-[Error] lobbyview_parse: The server must be updated to support this client version
+[Error] view_session: Account 1000 has incorrect client version: got xxxxxxxx_x, expected xxxxxxxx_x
+[Error] view_session: The client must be updated to support this server version
 ```
 
 **Copy** the following file from the `server\settings\default\` folder into the `server\settings\` folder and open the copied file (with the default Windows text editor (Notepad) or an external one (like  [Notepad++](https://notepad-plus-plus.org/)):
@@ -226,13 +209,7 @@ py -3 -m pip install --upgrade Modulename
 
 ### Useful GM Commands
 
-Type `!command` in game (for other GM commands to use in place of **!command**, refer to: `\server\scripts\commands`).
-
-!togglegm: no more aggro and the GM icon next to the character name
-
-!togglegm + /anon: invisible through /search.
-
-!hide: switches between being visible/invisible to players.
+See [Make yourself a GM](Post-Install-Guide#make-yourself-a-gm) in the Post-Install Guide.
 
 ### Change your MariaDB password
 
@@ -288,7 +265,11 @@ JP midnight is now coded to align with the retail JST midnight regardless of you
 
 #### Linux
 
-Linux users can create several systemd services to automate the servers (make sure to update `/path/to/lsb`, and the User/Group):
+Linux users can create several systemd services to automate the servers.
+
+`tools/install-systemd-service.sh` writes the services below for you. Run it from the `tools` folder, since it takes the server directory from the parent of the current one. It creates a user to run the services (`xi` by default), hands that user ownership of the server directory, and enables every service.
+
+To write the services by hand instead, make sure to update `/path/to/lsb`, and the User/Group:
 
 ```ini
 #xi.service
@@ -329,13 +310,13 @@ User=
 # Group=
 WorkingDirectory=/path/to/lsb
 # For multiple map servers:
-# - Make a copy of this file for each server. Rename appropriately, e.g. topaz_game-cities.service
-# - Add this to a file named ip.txt in the topaz folder, replacing YOUR_PUBLIC_IP with your IP: "IP=YOUR_PUBLIC_IP"
+# - Make a copy of this file for each server. Rename appropriately, e.g. xi_map-cities.service
+# - Add this to a file named ip.txt in the lsb folder, replacing YOUR_PUBLIC_IP with your IP: "IP=YOUR_PUBLIC_IP"
 # - Change the zone ports in zone_settings table. A custom.sql file is useful for this.
-# - Remove the line below, 'ExecStart=/path/to/topaz_game'.
+# - Remove the line below, 'ExecStart=/path/to/lsb/xi_map'.
 # - Uncomment and edit the 2 lines below with the appropriate port and log location for each zone server.
-#EnvironmentFile=/path/to/topaz/ip.txt
-#ExecStart=/path/to/topaz/topaz_game --ip $IP --port 54230 --log /path/to/log/map_server.log
+#EnvironmentFile=/path/to/lsb/ip.txt
+#ExecStart=/path/to/lsb/xi_map --ip $IP --port 54230 --log /path/to/lsb/log/map_server.log
 ExecStart=/path/to/lsb/xi_map
 
 [Install]

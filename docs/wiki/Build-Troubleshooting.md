@@ -97,22 +97,21 @@ It appears as though the build will fail if you try to launch it from a raw driv
 
 ### External Libraries
 
-On Windows, if you have versions of our external libraries installed on your machine, CMake might try to use them. You'll be able to catch this during configuration when CMake reports:
+On Windows, if you have a MariaDB or MySQL client library installed on your machine, CMake might pick it up instead of the one we bundle. You'll be able to catch this during configuration when CMake reports:
 
 ```
--- MARIADB_LIBRARY: C:\mysql-ver-1.0\lib
--- MARIADB_INCLUDE_DIR: C:\mysql-ver-1.0\include
+-- MARIADB_LIBRARY: C:/mysql-ver-1.0/lib/libmysql.lib
 ```
 
-This should be reporting the bundled versions we keep, something like this:
+This should be reporting the bundled library, something like this:
 
 ```
--- MARIADB_LIBRARY: C:\dev\lsb\ext\lib\mysql
--- MARIADB_INCLUDE_DIR: C:\dev\lsb\ext\include\mysql
+-- MARIADB_LIBRARY: C:/dev/lsb/ext/mariadb/lib64/libmariadb64.lib
+-- MARIADB_INCLUDE_DIR: C:/dev/lsb/ext/mariadb/include/
 ```
 
-If this happens, you can override these paths when you configure CMake:
+If this happens, point `MARIADB_LIBRARY` at the bundled library when you configure CMake. The include directory is always the bundled `ext/mariadb/include`, so it needs no override:
 
 ```sh
-cmake --preset default -DMARIADB_INCLUDE_DIR=C:\dev\lsb\ext\include\mysql -DMARIADB_LIBRARY=C:\dev\lsb\ext\lib\libmariadb.lib
+cmake --preset default -DMARIADB_LIBRARY=C:/dev/lsb/ext/mariadb/lib64/libmariadb64.lib
 ```

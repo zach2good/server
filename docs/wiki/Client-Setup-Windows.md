@@ -14,14 +14,14 @@
 
 4. Check that DirectPlay is enabled.  
 This step is for Windows 10 users and can be skipped otherwise.
-   * To enable DirectPlay, first press the Windpws key + R keyboard shortcut to open Run.
+   * To enable DirectPlay, first press the Windows key + R keyboard shortcut to open Run.
    * Then enter "Control Panel" in Run, and click the OK button.
    * Click "Programs and Features".
    * Click "Turn Windows features on or off".
    * Double-click "Legacy Components" to expand it.
    * Check the DirectPlay check box (if it is not already marked).
 
-5. Configure game technical optiones.
+5. Configure game technical options.
    * Start Menu > PlayOnline > FINAL FANTASY XI Config; _or_
    * `(Root FFXI Install Directory)/PlayOnline/SquareEnix/FINAL FANTASY XI/Tools/FINAL FANTASY XI Config`
 
@@ -57,11 +57,11 @@ To connect to a private server you need to point your client at that private ser
 * [Download pre-built latest xiloader](https://github.com/LandSandBoat/xiloader/releases)
 * [Download source code for xiloader to build for yourself](https://github.com/LandSandBoat/xiloader)
 
-**Note: Ashita comes bundled with it's own bootloader. Users who plan to use Ashita may skip to [Section 6 - Launcher Configuration](#6-launcher-configuration). However, we _highly recommend_ connecting to your server for the first time with only xiloader so that you can minimize potential setup problems.**
+**Note: Ashita comes bundled with its own bootloader. Users who plan to use Ashita may skip to [Section 6 - Launcher Configuration](#6-launcher-configuration). However, we _highly recommend_ connecting to your server for the first time with only xiloader so that you can minimize potential setup problems.**
 
 # 5. Connecting to a Private Server
 
-* Execute xiloader.exe as an administrator (_after_ launching `xi_connect`, `xi_map`, `xi_search`, `xi_profile`, and `xi_world`, if connecting to your own local sever), then select the "Create New Account" option by hitting "2" then:
+* Execute xiloader.exe as an administrator (_after_ launching `xi_connect`, `xi_map`, `xi_search`, `xi_profile`, and `xi_world`, if connecting to your own local server), then select the "Create New Account" option by hitting "2" then:
 
 ```txt
 Username: Username
@@ -96,7 +96,7 @@ After confirming that your client can connect to a server, you can use one of th
 
 3. Alter the `[ashita.boot]` section in `localhost.ini` to look like this:
 
-   > **Note: Ashita comes bundled with it's own bootloader (bootloader/pol.exe). To connect to the latest version of the server you will need to use the most current version of xiloader. You will need to adjust your boot ini file to point to xiloader.**
+   > **Note: Ashita comes bundled with its own bootloader (bootloader/pol.exe). To connect to the latest version of the server you will need to use the most current version of xiloader. You will need to adjust your boot ini file to point to xiloader.**
    > 
    > **If you use an old/incompatible bootloader you will get errors in xi_connect in the form of:**
    >
@@ -166,6 +166,6 @@ After confirming that your client can connect to a server, you can use one of th
 
 6. Select your profile and click on the arrow (bottom right), it will launch xiloader.
 
-### Windower v5 / Fennestra
+### Windower v5 / Fenestra
 
-Nobody in LandSandBoat has much experience using [Windower v5/Fennestra](https://github.com/Windower/Fenestra), so we can't give any advice on how to use it. You can [check out their Discord](https://discord.gg/aUrHCvk) though!
+Nobody in LandSandBoat has much experience using [Windower v5/Fenestra](https://github.com/Windower/Fenestra), so we can't give any advice on how to use it. You can [check out their Discord](https://discord.gg/aUrHCvk) though!

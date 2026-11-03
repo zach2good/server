@@ -1,10 +1,10 @@
-## How to make a dump file with Visual Studio 2019
+## How to make a dump file with Visual Studio
 
 (Make sure you're running your servers and you identified a crash for which you've been asked to provide a dump file.)
 
-Execute Visual Studio 2019 > Debug > Attach to Process... > select `xi_map.exe` in the list > Attach.
+Execute Visual Studio > Debug > Attach to Process... > select `xi_map.exe` in the list > Attach.
 
-Once the crash is reproduced while being monitored by Visual Studio 2019:
+Once the crash is reproduced while being monitored by Visual Studio:
 
 Debug > Save Dump As...
 
@@ -41,6 +41,9 @@ This is preferable to a full core dump because it's quick and easy to catch mult
 The loop is pretty tight, you'll have to spam CTRL+C a few times to get back to the gdb interface. You can then quit with `quit`.
 
 **Example output (gdb.txt):**
+
+This sample comes from an older version of the server. Function names and file paths have changed since, but the layout of the output is the same.
+
 ```cpp
 12074    inline int32 CLuaBaseEntity::spawnTrust(lua_State *L)
 12075    {

@@ -5,7 +5,7 @@ mysql -u server -ppassword xidb < server/sql/backups/custom.sql
 ```
 
 # dbtool
-The database update, backup, and restore tool is called dbtool and is located in the `server\tools\` folder. You can execute it using Python3 by typing `py -3 dbtool.py` in a PowerShell window on Windows or `python3 dbtool.py` in a Linux terminal. After opening it, it will create a `config.yaml` file that saves its settings.
+The database update, backup, and restore tool is called dbtool and is located in the `server\tools\` folder. Run it from the repo root: `py -3 .\tools\dbtool.py` on Windows, or `python3 ./tools/dbtool.py` on Linux with the `.venv` from the Quick Start Guide activated. On first run it creates `tools/config.yaml`, which saves its settings.
 
 - Backup
   - Using the default interface, select "3. Backup" and press `y` to create a full database backup in `server\sql\backups\`.
@@ -14,48 +14,21 @@ The database update, backup, and restore tool is called dbtool and is located in
 
   - Use the command `dbtool.py backup` to create a full database backup in `server\sql\backups\`.
 
-    - Use the command `dbtool.py backup lite` to create a partial database backup in `server\sql\backups\`. This will contain only the tables listed in `config.yaml`.
+    - Use the command `dbtool.py backup lite` to create a partial database backup in `server\sql\backups\`. This will contain only the protected tables described below.
 
 - Restore/Import
   - Using the default interface, select "4. Restore/Import", press `y` to create a full database backup or anything else to continue without a backup, then enter the number of the desired backup to import. Read the prompt carefully and confirm the import. 
 
 - Update
-  - Using the default interface, select "1. Update", press `y` to create a full database backup or anything else to continue without a backup, review the changes then press `y` to import all files in `server\sql\` except those defined in `config.yaml`. It will then check for any needed migrations, and finally it will check if there was a version update and if your `login.lua` settings file should be updated with a new version number.
+  - Using the default interface, select "1. Update DB", press `y` to create a database backup or anything else to continue without a backup, review the changes then press `y` to import all files in `server\sql\` except the protected tables. It will then run any needed migrations, and finally check whether the release changed the client version and offer to update `CLIENT_VER` in `settings/login.lua`.
+  - When your database is behind the checked-out commit, the menu also offers "e. Express Update". This imports only the `.sql` files that changed since that commit, then runs migrations.
 
   **OR**
 
-  - Use the command `dbtool.py update`. This will create a full backup, perform an express update (defined above), perform any needed migrations, and finally update your targeted client version in the `login.lua` settings file.
-    - The automatic backup and target client update can be disabled in `config.yaml`.
-    - Use the command `dbtool.py update full` to ignore the express part of the update and import all files in `server\sql\` except those defined in `config.yaml`.
+  - Use the command `dbtool.py update`. This performs an express update when possible, otherwise a full one, then runs any needed migrations and updates `CLIENT_VER` in `settings/login.lua` if the release changed it.
+    - It only backs up first if you turn on automatic backups in the "s. Settings" menu (`auto_backup` in `config.yaml`).
+    - Use the command `dbtool.py update full` to skip the express update and import all files in `server\sql\` except the protected tables.
+  - Use the command `dbtool.py migrate` to run migrations without importing anything.
 
 ## ⚠Protected Tables⚠
-  By default, these files will be left untouched during updates using dbtool. This is also the same list of tables used for `dbtool.py backup lite`. You can edit this list using dbtool or editing `config.yaml`.
-  ```
-  - accounts.sql
-  - accounts_banned.sql
-  - auction_house.sql
-  - char_blacklist.sql
-  - char_effects.sql
-  - char_equip.sql
-  - char_exp.sql
-  - char_inventory.sql
-  - char_jobs.sql
-  - char_look.sql
-  - char_merit.sql
-  - char_pet.sql
-  - char_points.sql
-  - char_profile.sql
-  - char_skills.sql
-  - char_spells.sql
-  - char_stats.sql
-  - char_storage.sql
-  - char_style.sql
-  - char_unlocks.sql
-  - char_vars.sql
-  - chars.sql
-  - conquest_system.sql
-  - delivery_box.sql
-  - linkshells.sql
-  - server_variables.sql
-  - unity_system.sql
-  ```
+  dbtool leaves the player data tables untouched during updates, unless a table is missing from the database. The same list is used for `dbtool.py backup lite`. It is the `player_data` list near the top of [`tools/dbtool.py`](https://github.com/LandSandBoat/server/blob/base/tools/dbtool.py), and includes `accounts`, `chars`, nearly every `char_*` table, `auction_house`, `delivery_box`, `linkshells` and `server_variables`. It is not stored in `config.yaml`, so to change it you have to edit `dbtool.py`.

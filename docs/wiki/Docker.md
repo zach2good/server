@@ -2,7 +2,7 @@
 
 ## Read this first: there is now an official Docker setup
 
-⚠️ **Most people should not use the examples on this page.** The server repo now carries maintained Dockerfiles under `docker/`, and our CI builds them, runs `xi_test` and startup checks inside the container, and publishes images to `ghcr.io/landsandboat/server` for `linux/amd64`, `linux/arm64`, and `linux/arm/v7`.
+⚠️ **Most people should not use the examples on this page.** The server repo now carries maintained Dockerfiles under `docker/`, and our CI builds them, runs `xi_test` and startup checks inside the container, and publishes images to `ghcr.io/landsandboat/server` for `linux/amd64`.
 
 Start with [`docker/README.md`](https://github.com/LandSandBoat/server/blob/base/docker/README.md) in the server repo. It is the maintained reference, and it covers the published image, the `ximeshes` navmesh image, database credentials, port binding, and adjusting settings through environment variables.
 
@@ -116,7 +116,7 @@ RUN apt-get install -y libmariadb3 libmariadb-dev mariadb-server
 RUN apt-get update
 RUN apt-get upgrade -y
 
-RUN apt install -y python3.12 python3.12-dev python3-pip
+RUN apt install -y python3.14 python3.14-dev python3-pip
 
 RUN python3 --version
 

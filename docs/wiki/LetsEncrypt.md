@@ -13,10 +13,10 @@ Make sure you replace any references to `/path/to/server/` with your own server'
 
 ## Install Certbot
 <details>
-  <summary>Linux (Ubuntu 24.04)</summary>
+  <summary>Linux (Ubuntu 26.04)</summary>
 
 ### Backup Existing Cert
-Chances are you already have a cert in your xi server directory. The connect server will automatically generate a self-signed certificate if it does not detect one. Its a good idea to back anything we are changing just in case.
+Chances are you already have a cert in your xi server directory. `xi_connect` reads `login.key` and `login.cert` from the server directory, and generates a self-signed pair on startup if neither exists. It's a good idea to back up anything we are changing just in case.
 ```sh
 cp /path/to/server/login.key /path/to/server/login.key.bak
 cp /path/to/server/login.cert /path/to/server/login.cert.bak
@@ -90,7 +90,7 @@ $ sudo certbot certonly --key-type rsa --dns-route53 -d myserver.mydomain.com
 Create the following Certbot post-renewal in:
 `/etc/letsencrypt/renewal-hooks/post/xi_connect.sh`
 with the following contents:
-```sh#!/bin/bash
+```sh
 #!/bin/bash
 cp /etc/letsencrypt/live/myserver.mydomain.com/privkey.pem /path/to/server/login.key
 cp /etc/letsencrypt/live/myserver.mydomain.com/fullchain.pem /path/to/server/login.cert
@@ -102,7 +102,7 @@ Make the post-renewal script executable and run it:
 $ sudo chmod u+x /etc/letsencrypt/renewal-hooks/post/xi_connect.sh
 $ sudo /etc/letsencrypt/renewal-hooks/post/xi_connect.sh
 ```
-Check the xi_connect log for any errors. If done correctly, the `connect-server.log` file should look something like:
+Check the xi_connect log for any errors. If done correctly, `log/connect-server.log` should look something like:
 ```sh
 [12/19/24 00:49:11:626][connect][info] The connect-server is ready to work... (Application:70)
 [12/19/24 00:49:11:626][connect][info] ======================================================================= (Application:71)

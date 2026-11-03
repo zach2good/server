@@ -37,7 +37,15 @@ To increase the efficiency and avoid a full import every time the container is r
 
 #### Port binding
 
-The server executables running within the container will listen on ports 54001, 54002, 54230, and 54231 (and 8088 if you enable the HTTP API).
+The server executables running within the container listen on these ports:
+
+| Port | Protocol | Process |
+| --- | --- | --- |
+| 54001, 54230, 54231 | TCP | `xi_connect` |
+| 54230 | UDP | `xi_map` |
+| 54002 | TCP | `xi_search` |
+| 51220, 51240 | TCP | `xi_profile` |
+| 8088 | TCP | `xi_world`, only if `ENABLE_HTTP` is on |
 
 ### Starting using a minimal configuration
 
@@ -46,7 +54,10 @@ docker run --name some-lsb-server \
 -p 54001:54001 \
 -p 54002:54002 \
 -p 54230:54230 \
+-p 54230:54230/udp \
 -p 54231:54231 \
+-p 51220:51220 \
+-p 51240:51240 \
 -v navmeshes:/server/navmeshes \
 -it ghcr.io/landsandboat/server:latest
 ```

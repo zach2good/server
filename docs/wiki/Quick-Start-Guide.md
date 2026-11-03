@@ -124,7 +124,7 @@ Now go to [Start the server](#start-the-server).
 <details>
 <summary><b>Docker (and macOS)</b></summary>
 
-CI builds our images, runs `xi_test` in them, and publishes them to `ghcr.io/landsandboat/server` for `linux/amd64`, `linux/arm64` and `linux/arm/v7`. On macOS, use Docker. Apple Silicon gets a native `arm64` image.
+CI builds our images, runs `xi_test` in them, and publishes them to `ghcr.io/landsandboat/server` for `linux/amd64`. On macOS, use Docker. Apple Silicon runs the `amd64` image under emulation.
 
 Follow [`docker/README.md`](https://github.com/LandSandBoat/server/blob/base/docker/README.md).
 

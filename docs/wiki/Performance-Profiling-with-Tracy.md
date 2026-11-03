@@ -38,26 +38,7 @@ If you need Tracy on a configuration the preset does not cover, add `-DTRACY_ENA
 
 <img width="395" alt="image" src="https://github.com/user-attachments/assets/aab0f2f8-b693-4112-9523-17005a6f20e8">
 
-```sh
-1> Working directory: C:\ffxi\server\build-tracy
-1> [CMake] -- C:/ProgramData/chocolatey/bin/ccache.exe found and enabled
-1> [CMake] -- CMAKE_SOURCE_DIR: C:/ffxi/server
-1> [CMake] -- CMAKE_SIZEOF_VOID_P == 8: 64-bit build
-1> [CMake] -- ENABLE_FAST_MATH: ON
-1> [CMake] -- TRACY_ENABLE: ON
-1> [CMake] -- Downloading Tracy development library
-1> [CMake] x tracy-0.8.2/
-1> [CMake] x tracy-0.8.2/.github/
-1> [CMake] x tracy-0.8.2/.github/FUNDING.yml
-1> [CMake] x tracy-0.8.2/.github/sponsor.png
-1> [CMake] x tracy-0.8.2/.github/workflows/
-... 
-1> [CMake] -- Modifying C:/ffxi/server/ext/tracy/tracy-0.8.2/client/TracyProfiler.hpp
-...
-1> [CMake] -- Configuring done
-1> [CMake] -- Generating done
-1> [CMake] -- Build files have been written to: C:/ffxi/server/build-tracy
-```
+CMake fetches the Tracy client itself, at the version pinned by `TRACY_VERSION` in `cmake/tools/Tracy.cmake`. Check for `TRACY_ENABLE: ON` in the configure output.
 
 ## Usage (Windows)
 
@@ -65,7 +46,7 @@ During the Tracy-enabled build from the previous steps, the client code will be 
 
 The build will output `xi_map_tracy.exe` instead of `xi_map.exe`, so you can continue to run multi-process setups by swapping out the single `xi_map.exe` process you want to profile with the Tracy-enabled `xi_map_tracy.exe`.
 
-**WARNING:** Tracy is designed to only bind to and profile a single executable at a time. If you launch multiple `xi_map_tracy.exe`'s at the same time, you will need to set environment variables before each exe launches so Tracy can serve on different ports. On Linux this looks like: `TRACY_PORT=8088 ./xi_map_tracy --other-args etc. --stuff 1`
+**WARNING:** Tracy is designed to only bind to and profile a single executable at a time. If you launch multiple `xi_map_tracy.exe`'s at the same time, you will need to set environment variables before each exe launches so Tracy can serve on different ports. On Linux this looks like: `TRACY_PORT=8087 ./xi_map_tracy --other-args etc. --stuff 1`. Avoid `8088`, which is the HTTP API's default port.
 
 **WARNING:** On Windows, Tracy can only properly gather all the information it needs if you run `xi_map_tracy.exe` as **Administrator/root**. There are loud warnings if you don't do this, so you're unlikely to miss them.
 
@@ -79,7 +60,7 @@ Press `Connect`.
 
 You will see it connect and start profiling.
 
-You can launch `tracy-profiler.exe` before or after `xi_map.exe`, it isn't important.
+You can launch `tracy-profiler.exe` before or after `xi_map_tracy.exe`, it isn't important.
 
 It is usually better to wait until startup has completed before you attach Tracy, as the startup routine isn't a good indicator of the server's runtime performance. The startup is also incredibly intensive in terms of how much data is collected and transmitted. If you don't need to profile the startup specifically, you should only attach `tracy-profiler.exe` once the server is up and running.
 
@@ -97,9 +78,9 @@ If you want to record a trace for later use you can click on the `Wifi symbol` a
 
 If you need to capture a trace without launching the GUI (ie. on Linux/Mac where the full GUI isn't easily buildable, on a remote VM, a resource constrained system, etc.), Tracy comes with `tracy-capture.exe`. We automatically build it for you on Linux/Mac builds.
 
-We provide a capture helper script which you can launch as: `python3 ./tools/capture.py (--port 8088 etc. if needed)`. By default this will capture for 60 seconds, then close. This is normally sufficient.
+We provide a capture helper script which you can launch as: `python3 ./tools/capture.py (--port 8087 etc. if needed)`. By default this will capture for 60 seconds, then close. This is normally sufficient. It also writes the zone statistics to a CSV beside the trace, using `tracy-csvexport`.
 
-You can open the resulting Trace in the `tracy-profiler.exe` GUI at a later time, or decompose it into a CSV with `tracy-csvextract.exe`.
+You can open the resulting Trace in the `tracy-profiler.exe` GUI at a later time, or decompose it into a CSV with `tracy-csvexport`.
 
 ## Finding Problems
 
@@ -119,7 +100,7 @@ Remember that there are a lot of things that can affect performance.
 
 - Platform (Windows, Linux, OSX)
 - Architecture (x86, x86_64)
-- Type of build (Debug, RelWithDebugInfo, Release, MinSizeRel)
+- Type of build (Debug, RelWithDebInfo, Release)
 - Compiler (MSVC, Clang, GCC)
 - Your system specs (CPU Speed, Available Memory, Memory Latency, HDD R/W speed etc.)
 - Other programs using your system's resources
@@ -132,5 +113,3 @@ It's also possible to convince yourself that something is very expensive by look
 ## Known bottlenecks
 
 - Expensive pathing and navmesh access... all the time... every tick... every mob... everywhere...
-- `parse` routine is slow.
-- Next to nothing is threaded, almost everything is blocking.

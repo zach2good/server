@@ -69,7 +69,7 @@ Machine type: e2-standard-2 (2vCPU, 8 GM memory)
 GPUs: Not needed
 Display device: Not needed
 Boot disk: The default 10 GB storage is fine
-Operating system: Change it to `Ubuntu 24.04 LTS`
+Operating system: Change it to `Ubuntu 26.04 LTS`
 Boot disk type: Balanced persistent disk
 Firewall: Allow both HTTP and HTTPS traffic
 ```
@@ -141,7 +141,7 @@ Attached to: Your instance
 ### Setting up your LSB Server
 
 - Follow the Linux section of the [Quick Start Guide](Quick-Start-Guide).
-- Since this is not a particularly powerful machine, the build/make step might take a while.
+- Since this is not a particularly powerful machine, the build step might take a while.
   - If it looks like it's stalled on the Linking stage, hold tight, it's a long step.
   - Don't close your original SSH window!
   - You can open a second SSH window and use `htop` to confirm that your machine is busy working, not stalled.
@@ -156,21 +156,20 @@ user    29m31.597s
 sys     3m1.356s
 ```
 
-- You need to set your zone ports to reflect your public IP.
-- Launch `python3 tools/dbtool.py`
+- You need to set your zone IPs to your public IP.
+- Activate the virtual environment from the Quick Start Guide with `source .venv/bin/activate`, then launch `python3 tools/dbtool.py`
 - `t. Maintenance Tasks`
 - `2. Set zone IP addresses`
+- `3. Public IP (via ident.me)`
 
 ```txt
-Make server public-facing? [y/N] y
-Detected your public-facing IP as: 35.209.88.74
-Is this correct? [y/N] y
+Detected your public-facing IP as: 203.0.113.10
 Executing query:
 
-    UPDATE zone_settings SET zoneip = '35.209.88.74'; 
+    UPDATE zone_settings SET zoneip = '203.0.113.10';
 ```
 
-- It should automatically (and correctly) detect your public IP. If not, enter it yourself.
+- Check that the detected IP matches the static IP you reserved. If it doesn't, use `m. Manual entry` and type it yourself.
 
 ### Running your LSB Server (to test)
 
@@ -197,8 +196,7 @@ screen -d -m -S xi_profile ./xi_profile
 - REMEMBER: Be careful about what ports and services you expose to the public!
 - REMEMBER: Keep an eye on your usage and billing statements!
 
-- TODO: Instructions to set up all executables as `systemd` services that auto-start on boot, and auto-restart on crash.
-  - This should be pretty easily Google-able though.
+- To run every executable as a `systemd` service that starts on boot and restarts after a crash, see [Auto-Starting the Server](Miscellaneous-Server#auto-starting-the-server).
 
 ### Saving Money
 

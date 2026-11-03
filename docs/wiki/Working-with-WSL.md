@@ -30,18 +30,18 @@ Set the IP found here in `network.lua` settings.
 ```lua
 xi.settings.network =
 {
-    SQL_HOST     = "172.18.64.1",
+    SQL_HOST     = '172.18.64.1',
     
     ...
 ```
 
 ### In Windows
 
-If you need to give your WSL instance permissions to use MariaDB, you can create a user for it (using ):
+If you need to give your WSL instance permissions to use MariaDB, you can create a user for it.
 
 Get the IP of your WSL instance:
 
-```ps
+```powershell
 wsl hostname -I
 ```
 
