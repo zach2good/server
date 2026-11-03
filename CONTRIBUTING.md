@@ -9,6 +9,7 @@
   - [General Guidelines](#general-guidelines)
   - [Technical Guidelines](#technical-guidelines)
   - [Workflow Guide](#workflow-guide)
+  - [Security Fixes](#security-fixes)
   - [Issue Report Contributions](#issue-report-contributions)
   - [Pull Request Contributions](#pull-request-contributions)
 
@@ -39,7 +40,18 @@
 - Cite your sources. This can be comments in your code or your commit messages. Pull Request descriptions and comments will get lost over time.
 - If you're commiting work on someone else's behalf, use git's `--author` argument or GitHub's `Co-Authored-By:` feature so they get the credit they deserve.
 - Make your commit messages meaningful, or amend/rebase once you're ready to push.
-- If you want to report or resolve an exploitable issue please try and get in contact with staff privately. Staff are pretty easy to find across different Discords or by the emails their commits are attributed with. This software is used by many live servers with active players, and we want to distribute fixes for exploits in a responsible and private fashion before they're published to the public.
+- If you find or fix an exploitable issue, follow [Security Fixes](#security-fixes).
+
+## Security Fixes
+
+Many live servers run this code, and not all of them can update the day a fix lands. A public fix that names the problem tells every bad actor where to look before those servers have patched. Keep the problem quiet until they've had time to update.
+
+- Report it to staff privately first. Staff are easy to find on the community Discords, or through the email addresses on their commits. Never open a public issue for it.
+- Don't call it an exploit, dupe, vulnerability or crash anywhere public: commit titles and bodies, PR titles and descriptions, review comments, code comments or test names.
+- Describe the change as ordinary work. "Packets: Tidy item slot handling" is fine. "Fix item dupe via trade slot" is not.
+- Never write reproduction steps, proof-of-concept code or the packet that triggers it in public. Keep them in the private conversation.
+- Don't add a test that reproduces the problem until staff say the fix has been out long enough.
+- Keep the fix small and focused, so it reads like the change its description says it is.
 
 ## Issue Report Contributions
 

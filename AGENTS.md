@@ -11,6 +11,7 @@ Read [`docs/ai_agents/README.md`](docs/ai_agents/README.md) first. It sets the p
 - Copy the patterns of nearby, recently changed code. Many older files predate the current style and APIs, and so do patterns from DarkStar, Topaz, Windower or other Lua projects.
 - Keep changes small and in scope. Don't reformat or refactor code you weren't asked to touch.
 - Leave commit messages and PR descriptions to the human, or keep them to the format in [the Git guide](docs/wiki/Development-Guide-Git.md#writing-useful-commit-messages). Don't add AI attribution trailers.
+- If a change closes a hole a player could abuse, follow [Security Fixes](CONTRIBUTING.md#security-fixes). Never say "exploit", "dupe" or "vulnerability" in a commit, PR, comment or test, never write reproduction steps, and tell the user to report it privately.
 
 ## Layout
 

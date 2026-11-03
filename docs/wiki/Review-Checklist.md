@@ -24,7 +24,7 @@ These are the points maintainers raise most often in review. Check your change a
 - Say what you tested and how. Untested PRs go back to draft.
 - Leave review conversations for the reviewer to resolve. You don't need to reply to every comment, or re-request review after every push.
 - Keep to the scope of the PR. Anything big should start as a draft.
-- Report security problems to a maintainer privately, never in a public issue or PR.
+- Report security problems to a maintainer privately. A fix never names the problem, and never comes with reproduction steps or a test that reproduces it in public. See [Security Fixes](https://github.com/LandSandBoat/server/blob/base/CONTRIBUTING.md#security-fixes).
 
 ## Sources and values
 
