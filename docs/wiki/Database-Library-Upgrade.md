@@ -1,5 +1,5 @@
 > [!NOTE]
-> This is a historical announcement, kept for the record. The API has moved on since: `mariadb-connector-cpp`, `_sql` and `db::query` are gone, and the code now lives in `src/common/database/`. Read `src/common/database/database.h` for the current `db::` API rather than the migration guide below.
+> The top half is the original announcement, kept for the record. `mariadb-connector-cpp`, `_sql` and `db::query` are long gone. The [Usage](#usage) section is how `db::` works _today_, and the code lives in `src/common/database/`.
 
 **TLDR:**
 

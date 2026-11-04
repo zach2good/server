@@ -17,7 +17,7 @@ Read [`docs/ai_agents/README.md`](docs/ai_agents/README.md) first. It sets the p
 
 | Path | What lives there |
 | --- | --- |
-| `src/common` | Shared runtime: settings, logging, scheduler, IPC, type aliases (`types/`) |
+| `src/common` | Shared runtime: settings, logging, IPC, type aliases (`types/`). `database/` is the `db::` layer, `scheduler/` the main thread and worker pool |
 | `src/login` | Login/lobby server, target `xi_connect` |
 | `src/map` | Game server, target `xi_map`. Lua bindings in `lua/`, packets in `packets/`, AI in `ai/` |
 | `src/world` | World server, target `xi_world`: conquest, Besieged, campaign, parties |
@@ -104,6 +104,9 @@ There's one right tool for most jobs, listed in [Conventions](docs/wiki/Developm
 - Rewards: `npcUtil.giveItem`, `npcUtil.giveKeyItem`, `npcUtil.giveCurrency`, never a bare `player:addItem`.
 - Pathing: `pathTo` and let C++ find the route. `pathThrough` only for a path copied from a capture. Never generate paths or waypoints in Lua.
 - `GetSystemTime()`, `math.randomInt`, `utils.clamp`, `utils.randomEntry`, `string.format`.
+- Database: `db::preparedStmt` with a literal or `constexpr` query, values bound to `?`, never query text built at runtime. Strict mode is on, so fit values to their columns.
+- Threads: Lua, entities and zones are main-thread only. Slow work goes to the pool with `spawnOnWorkerThread` or `runOnWorkerThreads`.
+- Packets: `validate()` with a `PacketValidator` chain, then `process()`. Read client strings with `asStringFromUntrustedSource(ptr, size)`, log them with `{:?}`.
 
 ## Traps
 

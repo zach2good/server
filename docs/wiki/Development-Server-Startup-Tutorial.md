@@ -38,8 +38,9 @@ There's no hand-written main loop. `Scheduler` (`src/common/scheduler/scheduler.
 The ones you'll see most:
 
 - `postToMainThread`/`postToWorkerThread`: queue work to run once.
-- `intervalOnMainThread`: run work on a fixed period. It returns a token, and the timer stops when the token is destroyed.
-- `spawnOnWorkerThread`: `co_await` work on the pool, then resume on the main thread.
+- `intervalOnMainThread`: run work on a fixed period. It returns a token, and the timer stops when the token is destroyed or reassigned. The first run gets a random delay, so a pile of timers created together don't all fire on the same tick.
+- `spawnOnWorkerThread`: run work on the pool. It's lazy, and starts when you `co_await` it.
+- `runOnWorkerThreads` and `withTimeout`, in `src/common/scheduler/task_utils.h`: fan a batch of jobs out to the pool, or give up on a task after a while. A job that throws rethrows to you instead of vanishing.
 
 ## Engine init
 
@@ -57,7 +58,9 @@ The intervals live in `src/map/map_constants.h`. Finally it calls `luautils::OnS
 
 ## Incoming packets
 
-`MapSocket` (`src/map/map_socket.cpp`) listens for UDP and hands each datagram to `MapNetworking::handle_incoming_packet` (`src/map/map_networking.cpp`). That finds the session, decrypts the buffer and splits it into individual packets. Each packet goes to `PacketSystem::dispatch` (`src/map/packet_system.cpp`), which rate-limits it and calls the handler for that packet id. The reply goes back on the same socket.
+`MapSocket` (`src/map/map_socket.cpp`) listens for UDP and hands each datagram to `MapNetworking::handle_incoming_packet` (`src/map/map_networking.cpp`). That finds the session, decrypts the buffer, undoes the client's Huffman coding (`src/common/huffman.h`) and splits it into individual packets.
+
+Zoning in is the odd one out. The client's `0x00A` can arrive from a new address, so the server finds the session by character instead of by address. The map session's key is derived from the login session, the same way the client works it out. Each packet goes to `PacketSystem::dispatch` (`src/map/packet_system.cpp`), which rate-limits it and calls the handler for that packet id. The reply goes back on the same socket.
 
 Each client packet has its own file under `src/map/packets/c2s/`, for example `0x01a_action.cpp`. A handler has a `validate` step, which checks what the client sent (never trust it), and a `process` step that does the work.
 
@@ -67,7 +70,7 @@ Each client packet has its own file under `src/map/packets/c2s/`, for example `0
 
 - `ZoneServer` every 400ms (`kLogicUpdateInterval`). This is the logic tick.
 - `CheckTriggerAreas` every 200ms.
-- The spawn handler every 30s.
+- The spawn handler every 30s, plus once as soon as the zone loads, so night-only mobs aren't half a minute late.
 
 `CZoneEntities::ZoneServer` (`src/map/zone_entities.cpp`) ticks each entity list in turn:
 

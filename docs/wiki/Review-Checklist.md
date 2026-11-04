@@ -117,7 +117,11 @@ Values:
 - `!c.empty()`, structured bindings, `std::ranges` algorithms and `std::erase_if` over hand-rolled loops.
 - `FlatHashMap` invalidates every iterator and reference on insert.
 - Constants and lookup maps go in an anonymous namespace at the top of the `.cpp`.
-- All database access goes through `db::preparedStmt`. Read columns by name.
+- All database access goes through `db::preparedStmt` with a literal or `constexpr` query. No query text built at runtime. Read columns by name.
+- Clamp or cut values to their column's width before writing. Strict mode fails the statement otherwise.
+- Writes that must land together go in `db::transaction`, with every statement's result checked.
+- Nothing off the main thread touches Lua, entities or zones. Don't block the main thread waiting on a worker.
+- Client strings come in through `asStringFromUntrustedSource(ptr, size)` and go out to the log as `{:?}`.
 - Don't prefix log messages with the function name. The logger already does.
 - Send IPC to the process that needs it, not to all of them.
 - If a function iterates a whole zone, its name should say so. Callers need to know it's expensive.

@@ -105,9 +105,41 @@ There's usually one right tool for a job. Use it, even when you can see an older
 - `quest:event()` for filler and reminders. `quest:progressEvent()` when the event moves the quest on.
 - An NPC's default event goes in the zone's `DefaultActions.lua`, not in its script.
 
+### <a id="conventions-database"/>Database
+
+The full API is in [Database Library Upgrade](Database-Library-Upgrade#usage). The bits people trip over:
+
+- Every query goes through `db::preparedStmt`, and the query text is a string literal or a `constexpr db::Query`. It's checked at compile time, so _never_ build query text at runtime. If you really have to pick one of several queries, it goes through `db::selected(query)`.
+- Bind values to `?`. There's no escaping any more because there's nothing to escape.
+- Read columns by name with `rset->get<T>("column")`. If you see a warning about a value not fitting, the code and the schema disagree. Fix one of them.
+- Every connection runs in strict mode. A value too big or too long for its column fails the whole statement, so clamp or cut it to the column's width before you write it.
+- Several writes that must land together go in `db::transaction`. Check each statement's result and throw to roll back. A transaction inside another joins it.
+- Many rows at once: `db::executeBulk`, inside a transaction.
+- New player-data tables go in the `player_data` list in `tools/dbtool.py`, and schema changes need a migration.
+
+### <a id="conventions-scheduler"/>Scheduler and threads
+
+`Scheduler` lives in `src/common/scheduler/`. The main thread runs game logic and owns the Lua state. Workers do everything else.
+
+- Anything that touches Lua, entities or zones runs on the main thread. **The Lua state is not thread safe. At all.**
+- Repeating work: `scheduler.intervalOnMainThread(period, ...)`, and keep the token it returns. Drop or reassign the token and the timer stops. Timers that start together get a random first delay, so they don't all fire on the same tick.
+- Slow work (file IO, heavy maths, big queries) goes to the pool with `spawnOnWorkerThread`. It's lazy, so nothing happens until you `co_await` it. Don't touch Lua or entities from inside it.
+- Fanning out lots of jobs: `runOnWorkerThreads` in `scheduler/task_utils.h`. Giving up after a while: `withTimeout`. Both rethrow a task's exception rather than swallowing it.
+- Never block the main thread waiting on a worker. The watchdog _will_ tell on you.
+- Only the main thread can stop the scheduler.
+
+### <a id="conventions-packets"/>Packets and client data
+
+Everything the client sends is a lie until proven otherwise.
+
+- Each inbound packet has its own file in `src/map/packets/c2s/`. `validate()` checks the client's values with a `PacketValidator` chain. `process()` does the work, and only runs if validation passed.
+- Read a string from a packet with `asStringFromUntrustedSource(ptr, sizeof(field))`. Always pass the size, since the client doesn't have to null-terminate anything.
+- Log client strings with `{:?}` so they come out quoted and escaped, e.g. `ShowInfoFmt("GM call from {}: {:?}", name, text)`.
+- Packet field names follow [XiPackets](https://github.com/atom0s/XiPackets).
+- To send something between processes, add a struct to `src/common/ipc_structs.h` and its name to `IPC_STRUCT_NAMES` in `tools/generate_ipc_stubs.py`. Serialisation is generated for you.
+
 ### <a id="conventions-cpp"/>C++
 
-- Database access goes through `db::preparedStmt`, reading columns by name.
 - Ownership through `Box`, maybe-values through `Maybe`. See [Project types](#c-types).
 - Entity downcasts use `dynamic_cast`, checked straight away.
 

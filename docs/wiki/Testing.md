@@ -556,6 +556,21 @@ xi.test.world:seed()        -- assign a fresh, non-deterministic seed
 math.random(1000)           -- who knows!
 ```
 
+### getLogs()
+
+Returns every log line written since the test started, as a table of strings. Handy when the only visible sign of the behaviour is a warning in the log.
+
+```lua
+local found = false
+for _, line in ipairs(xi.test.world:getLogs()) do
+    if string.find(line, 'the warning you expect', 1, true) then
+        found = true
+    end
+end
+
+assert(found)
+```
+
 ## Simulating client interactions
 
 The player object returned by CSimulation:spawnPlayer() contains a handful of helpers to simulate interactions as if they had originated from a legitimate game client.
