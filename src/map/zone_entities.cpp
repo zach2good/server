@@ -816,6 +816,15 @@ void CZoneEntities::onEntityDespawned(CBaseEntity* PEntity)
     }
 }
 
+void CZoneEntities::ensureSpatialGrid()
+{
+    if (spatialGridStale_)
+    {
+        rebuildSpatialGrid();
+        spatialGridStale_ = false;
+    }
+}
+
 void CZoneEntities::rebuildSpatialGrid()
 {
     TracyZoneScoped;
@@ -892,6 +901,8 @@ void CZoneEntities::syncSpawnListWithGrid(CCharEntity*                     PChar
                                           EntityCallback                   onUpdate,
                                           const std::vector<CBaseEntity*>* alwaysInclude)
 {
+    ensureSpatialGrid();
+
     // Remove pass: anything currently shown that is no longer visible.
     idsToRemoveScratch_.clear();
     for (const auto& [id, entity] : spawnList)
@@ -1191,6 +1202,7 @@ void CZoneEntities::SpawnPCs(CCharEntity* PChar)
     };
 
     // Only score players in the 3x3 cell block instead of every player in the zone.
+    ensureSpatialGrid();
     spatialGrid_.forEachInRange(
         PChar->loc.p,
         CHARACTER_SYNC_DISTANCE,
@@ -1447,6 +1459,12 @@ void CZoneEntities::UpdateEntityPacket(CBaseEntity* PEntity, ENTITYUPDATE type, 
 {
     TracyZoneScopedN("CZoneEntities::UpdateEntityPacket");
 
+    // Every path below only queues packets for players in this zone.
+    if (m_charList.empty())
+    {
+        return;
+    }
+
     // Do not send packets that are updates of a hidden GM
     if (auto* PChar = dynamic_cast<CCharEntity*>(PEntity))
     {
@@ -1467,6 +1485,7 @@ void CZoneEntities::UpdateEntityPacket(CBaseEntity* PEntity, ENTITYUPDATE type, 
     // Grid-accelerated recipient selection for the common ENTITY_UPDATE case: instead of scanning
     // every player in the zone (O(P) per broadcast -> O(P^2)/tick), query the spatial hash for the
     // players near the entity.
+    ensureSpatialGrid();
     if (type == ENTITY_UPDATE && !alwaysInclude && spatialGrid_.size() > 0)
     {
         spatialGrid_.forEachInRange(
@@ -1779,6 +1798,7 @@ auto CZoneEntities::mobAggroCheck(CMobEntity* PMob, timer::time_point tick) -> T
     };
 
     // Only visit mobs in the 3x3 cell block around PMob, instead of every mob in the zone.
+    ensureSpatialGrid();
     spatialGrid_.forEachInRange(
         PMob->loc.p,
         ENTITY_RENDER_DISTANCE,
@@ -1946,7 +1966,8 @@ auto CZoneEntities::ZoneServer(timer::time_point tick) -> Task<void>
 
     luautils::OnZoneTick(this->m_zone);
 
-    rebuildSpatialGrid();
+    // Rebuilt lazily by the first reader this tick; zones nobody looks at skip it entirely.
+    spatialGridStale_ = true;
 
     // Snapshot each list, then tick inline.
     tickEntityScratch_.clear();

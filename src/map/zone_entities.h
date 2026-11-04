@@ -132,6 +132,10 @@ private:
     // clear and re-file every entity into the grid
     void rebuildSpatialGrid();
 
+    // Rebuild the grid if this tick hasn't yet. Every grid reader calls this first, so a zone where
+    // nothing reads the grid (no players, no player-allied mobs) never pays for the rebuild.
+    void ensureSpatialGrid();
+
     // Sync one of a player's spawn lists against the proximity grid: drop now-invisible entries, then
     // add in-range visible ones from a 3x3 cell query. `visible` carries the precise status/vertical/
     // distance checks; `onAdd` runs per newly-added entity (mob aggro). `alwaysInclude` is an optional
@@ -153,7 +157,8 @@ private:
     EntityList_t m_TransportList;
     EntityList_t m_charList;
 
-    SpatialGrid               spatialGrid_;        // proximity grid; rebuilt every tick (always on)
+    SpatialGrid               spatialGrid_;        // proximity grid; rebuilt on first use each tick (see ensureSpatialGrid)
+    bool                      spatialGridStale_ = true;
     std::vector<uint32>       idsToRemoveScratch_; // reused scratch for grid spawn-list removals
     std::vector<CBaseEntity*> alwaysRelevantNpcs_; // NPCs flagged alwaysRelevant; collected each rebuild, spawned regardless of range
 
