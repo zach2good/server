@@ -64,7 +64,7 @@ Targets: `xi_map`, `xi_world`, `xi_connect`, `xi_search`, `xi_profile`, `xi_test
 ./xi_test --filter 'trades the item'        # tests whose name matches a regex
 ```
 
-Never run two `xi_test` processes at once. They share `xidb` and the test character ids, and fail in confusing ways.
+Only one `xi_test` can run at a time. It takes over `xidb` and the test character ids, and a second run breaks both in confusing ways: segfaults and leaked events, not a database error. Every checkout and worktree shares the same database, so another agent or person may already be running one. Before you start, check for a running `xi_test` (`tasklist | findstr xi_test` on Windows, `pgrep xi_test` elsewhere). If one is running, wait for it to finish, then start yours. Don't kill someone else's run.
 
 Add a test for behaviour you change. See [Testing](docs/wiki/Testing.md).
 
