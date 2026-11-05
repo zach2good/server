@@ -1447,6 +1447,12 @@ void CZoneEntities::UpdateEntityPacket(CBaseEntity* PEntity, ENTITYUPDATE type, 
 {
     TracyZoneScopedN("CZoneEntities::UpdateEntityPacket");
 
+    // Every path below only queues packets for players in this zone.
+    if (m_charList.empty())
+    {
+        return;
+    }
+
     // Do not send packets that are updates of a hidden GM
     if (auto* PChar = dynamic_cast<CCharEntity*>(PEntity))
     {

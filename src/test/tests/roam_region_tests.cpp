@@ -135,6 +135,112 @@ TEST_CASE("RoamRegion contains respects holes and bounds", "[roam_region]")
     CHECK_FALSE(region.contains(50.0f, 101.0f));
 }
 
+namespace
+{
+
+// Even-odd ray cast, independent of the region's triangulation and lookup grid.
+auto insideRing(const RoamRegion::Ring& ring, const float x, const float z) -> bool
+{
+    bool inside = false;
+    for (std::size_t i = 0, j = ring.size() - 1; i < ring.size(); j = i++)
+    {
+        const auto& a = ring[i];
+        const auto& b = ring[j];
+        if ((a.z > z) != (b.z > z) && x < (b.x - a.x) * (z - a.z) / (b.z - a.z) + a.x)
+        {
+            inside = !inside;
+        }
+    }
+    return inside;
+}
+
+} // namespace
+
+TEST_CASE("RoamRegion grid lookup agrees with a reference point-in-polygon test", "[roam_region]")
+{
+    // A wavy 96-vertex ring with two holes: enough triangles that contains() uses its grid.
+    RoamRegion::Ring outer;
+    for (int i = 0; i < 96; ++i)
+    {
+        const auto angle  = static_cast<float>(i) * 2.0f * 3.14159265f / 96.0f;
+        const auto radius = 50.0f + 10.0f * std::sin(5.0f * angle);
+        outer.push_back({ 100.0f + radius * std::cos(angle), 0.0f, 100.0f + radius * std::sin(angle) });
+    }
+    const RoamRegion::Ring holeA{ { 92.0f, 0.0f, 92.0f }, { 108.0f, 0.0f, 92.0f }, { 108.0f, 0.0f, 108.0f }, { 92.0f, 0.0f, 108.0f } };
+    const RoamRegion::Ring holeB{ { 120.0f, 0.0f, 97.0f }, { 126.0f, 0.0f, 97.0f }, { 126.0f, 0.0f, 103.0f }, { 120.0f, 0.0f, 103.0f } };
+
+    const RoamRegion region(outer, { holeA, holeB });
+
+    int checked    = 0;
+    int mismatches = 0;
+    for (int i = 0; i < 64; ++i)
+    {
+        for (int j = 0; j < 64; ++j)
+        {
+            // odd offsets keep samples off vertices and edges, where the two tests may round differently
+            const auto x = 35.0f + (static_cast<float>(i) + 0.37f) * (130.0f / 64.0f);
+            const auto z = 35.0f + (static_cast<float>(j) + 0.61f) * (130.0f / 64.0f);
+
+            const bool expected = insideRing(outer, x, z) && !insideRing(holeA, x, z) && !insideRing(holeB, x, z);
+            mismatches += region.contains(x, z) != expected ? 1 : 0;
+            ++checked;
+        }
+    }
+
+    CHECK(checked == 64 * 64);
+    CHECK(mismatches == 0);
+}
+
+TEST_CASE("RoamRegion clamps steps at the boundary of a large region", "[roam_region]")
+{
+    // Same wavy ring as above: large enough that clampToRegion() looks edges up through its grid.
+    RoamRegion::Ring outer;
+    for (int i = 0; i < 96; ++i)
+    {
+        const auto angle  = static_cast<float>(i) * 2.0f * 3.14159265f / 96.0f;
+        const auto radius = 50.0f + 10.0f * std::sin(5.0f * angle);
+        outer.push_back({ 100.0f + radius * std::cos(angle), 0.0f, 100.0f + radius * std::sin(angle) });
+    }
+    const RoamRegion::Ring hole{ { 92.0f, 0.0f, 92.0f }, { 108.0f, 0.0f, 92.0f }, { 108.0f, 0.0f, 108.0f }, { 92.0f, 0.0f, 108.0f } };
+    const RoamRegion       region(outer, { hole });
+
+    int stepsTaken = 0;
+    int clamped    = 0;
+    int escaped    = 0;
+    for (int i = 0; i < 40; ++i)
+    {
+        for (int j = 0; j < 40; ++j)
+        {
+            position_t from{};
+            from.x = 50.0f + static_cast<float>(i) * 2.53f;
+            from.z = 50.0f + static_cast<float>(j) * 2.47f;
+            if (!region.contains(from.x, from.z))
+            {
+                continue;
+            }
+
+            for (int d = 0; d < 8; ++d)
+            {
+                const auto    angle = static_cast<float>(d) * 0.785398f + 0.1f;
+                const Vector3 direction{ std::cos(angle), 0.0f, std::sin(angle) };
+                const float   length  = 12.0f;
+                const float   allowed = region.clampToRegion(from, direction, length);
+
+                ++stepsTaken;
+                clamped += allowed < length ? 1 : 0;
+                if (allowed > 0.0f && !region.contains(from.x + direction.x * allowed, from.z + direction.z * allowed))
+                {
+                    ++escaped;
+                }
+            }
+        }
+    }
+
+    REQUIRE(stepsTaken > 1000);
+    CHECK(clamped > 0); // the walls were actually exercised
+    CHECK(escaped == 0);
+}
+
 TEST_CASE("RoamRegion measures how far outside a position is", "[roam_region]")
 {
     const auto region = squareWithHole();

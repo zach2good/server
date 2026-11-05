@@ -877,12 +877,14 @@ auto targetLacksBuff(CBattleEntity* PTarget, const CSpell& spell) -> bool
 // What buffs does the target have on them?
 auto CMobSpellContainer::GetBuffSpellsFor(CBattleEntity* PTarget) -> std::vector<SpellID>
 {
+    // Called every idle tick for the caster and each ally in range, and the usual answer is "nothing
+    // missing": no reserve, so an empty result never allocates, and the buff check runs before the
+    // recast/MP and targeting checks since it is the one that usually fails.
     std::vector<SpellID> missingBuffs;
-    missingBuffs.reserve(m_buffList.size());
     for (const auto spellId : m_buffList)
     {
         const auto* const PSpell = spell::GetSpell(spellId);
-        if (PSpell == nullptr || !GetAvailable(spellId).has_value())
+        if (PSpell == nullptr || !targetLacksBuff(PTarget, *PSpell) || !GetAvailable(spellId).has_value())
         {
             continue;
         }
@@ -892,10 +894,7 @@ auto CMobSpellContainer::GetBuffSpellsFor(CBattleEntity* PTarget) -> std::vector
             continue;
         }
 
-        if (targetLacksBuff(PTarget, *PSpell))
-        {
-            missingBuffs.emplace_back(spellId);
-        }
+        missingBuffs.emplace_back(spellId);
     }
 
     return missingBuffs;

@@ -27,6 +27,7 @@
 #include <map/ximesh/vector3.h>
 
 #include <algorithm>
+#include <cstdint>
 #include <vector>
 
 class NavMesh;
@@ -71,6 +72,8 @@ private:
     };
 
     auto samplePoint() const -> position_t;
+    auto inTriangle(const Triangle& triangle, float x, float z) const -> bool;
+    void buildGrid();
     auto acceptPoint(const position_t& point, const NavMesh* navMesh) const -> Maybe<position_t>;
 
     struct Edge
@@ -87,4 +90,19 @@ private:
     // rejects a position before it walks the triangles
     std::ranges::minmax_result<float> boundsX_{};
     std::ranges::minmax_result<float> boundsZ_{};
+
+    // Uniform grid over the bounds so contains() only tests the triangles near a point (it runs on
+    // every roam step). Cell c's triangles are gridTriangles_[gridStart_[c], gridStart_[c + 1]).
+    // Empty for small regions, which scan every triangle instead.
+    int                   gridWidth_{ 0 };
+    int                   gridHeight_{ 0 };
+    float                 cellScaleX_{ 0.0f }; // cells per yalm
+    float                 cellScaleZ_{ 0.0f };
+    std::vector<uint32_t> gridStart_;
+    std::vector<uint32_t> gridTriangles_;
+
+    // Same cells, listing the ring edges each cell's box overlaps, so clampToRegion() only intersects
+    // a roam step with the edges near it. Cell c's edges are gridEdges_[gridEdgeStart_[c], gridEdgeStart_[c + 1]).
+    std::vector<uint32_t> gridEdgeStart_;
+    std::vector<uint32_t> gridEdges_;
 };

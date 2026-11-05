@@ -211,15 +211,19 @@ auto CPathFind::ValidPosition(const position_t& pos) const -> bool
     TracyZoneScoped;
     TracyZoneString(owner_->name());
 
-    constexpr auto maxEntryAge = 10s;
+    // A position's validity only changes when the navmesh does, which navMeshId catches. Standing
+    // mobs re-check their own spot every few seconds, so a long age saves most of those queries.
+    constexpr auto maxEntryAge = 300s;
 
-    const auto now   = timer::now();
-    const auto begin = validPositionCache_.begin();
+    const auto& mesh   = navMesh();
+    const auto  meshId = mesh.instanceId();
+    const auto  now    = timer::now();
+    const auto  begin  = validPositionCache_.begin();
 
     for (std::size_t i = 0; i < validPositionCacheCount_; ++i)
     {
         const auto& entry = validPositionCache_[i];
-        if (!isWithinDistance(entry.position, pos, 0.05f) || now - entry.checkedAt >= maxEntryAge)
+        if (entry.navMeshId != meshId || !isWithinDistance(entry.position, pos, 0.05f) || now - entry.checkedAt >= maxEntryAge)
         {
             continue;
         }
@@ -231,7 +235,7 @@ auto CPathFind::ValidPosition(const position_t& pos) const -> bool
     }
 
     std::rotate(begin, validPositionCache_.end() - 1, validPositionCache_.end());
-    validPositionCache_.front() = { pos, now, navMesh().validPosition(pos) };
+    validPositionCache_.front() = { pos, now, meshId, mesh.validPosition(pos) };
     validPositionCacheCount_    = std::min(validPositionCacheCount_ + 1, kValidPositionCacheSize);
 
     return validPositionCache_.front().valid;

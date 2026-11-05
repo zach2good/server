@@ -26,6 +26,8 @@
 
 #include <common/types/flag.h>
 #include <common/types/maybe.h>
+#include <atomic>
+#include <cstdint>
 #include <vector>
 
 // isPartial marks a path that stopped short of `end` because the poly buffer ran out, so callers can chunk.
@@ -45,6 +47,13 @@ public:
 
     DISALLOW_COPY_AND_MOVE(NavMesh);
 
+    // Unique per navmesh object. Zones swap in a new object whenever they load or rebuild a mesh,
+    // so caches of query results can key on this to notice a reload.
+    [[nodiscard]] auto instanceId() const -> uint64_t
+    {
+        return instanceId_;
+    }
+
     virtual auto findPath(const position_t& start, const position_t& end, float clearance, AvoidLinks avoidLinks) -> Maybe<PathResult> = 0;
     virtual auto findRandomPosition(const position_t& start, float maxRadius) const -> Maybe<position_t>                               = 0;
     virtual auto validPosition(const position_t& position) const -> bool                                                               = 0;
@@ -52,4 +61,13 @@ public:
     virtual auto findFurthestValidPoint(const position_t& startPosition, const position_t& endPosition) const -> Maybe<position_t>     = 0;
     virtual auto snapToValidPosition(position_t& position) const -> void                                                               = 0;
     virtual auto moveAlongSurface(const position_t& start, const position_t& end, position_t& result) const -> bool                    = 0;
+
+private:
+    static auto nextInstanceId() -> uint64_t
+    {
+        static std::atomic<uint64_t> next{ 1 };
+        return next.fetch_add(1, std::memory_order_relaxed);
+    }
+
+    uint64_t instanceId_ = nextInstanceId();
 };

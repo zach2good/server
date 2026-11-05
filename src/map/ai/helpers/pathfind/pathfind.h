@@ -193,6 +193,7 @@ private:
     {
         position_t        position{};
         timer::time_point checkedAt{ timer::time_point::min() };
+        uint64_t          navMeshId{ 0 }; // NavMesh::instanceId() the answer came from
         bool              valid{ false };
     };
 
@@ -200,7 +201,8 @@ private:
     // survive the one-shot candidate probes that share this cache.
     static constexpr std::size_t kValidPositionCacheSize = 8;
 
-    // Most recently used first; the max age bounds staleness after a navmesh reload we cannot see.
+    // Most recently used first. Entries are tied to the navmesh they were computed on, so a reload
+    // invalidates them at once; the max age is only a backstop.
     mutable std::array<ValidPositionEntry, kValidPositionCacheSize> validPositionCache_{};
     mutable std::size_t                                             validPositionCacheCount_{ 0 };
 

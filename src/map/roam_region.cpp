@@ -144,6 +144,135 @@ RoamRegion::RoamRegion(const Ring& outer, const std::vector<Ring>& holes)
     // the box every query checks before touching the triangles
     boundsX_ = std::ranges::minmax(vertices | std::views::transform(&Vector3::x));
     boundsZ_ = std::ranges::minmax(vertices | std::views::transform(&Vector3::z));
+
+    buildGrid();
+}
+
+void RoamRegion::buildGrid()
+{
+    // small regions are as fast to scan as to look up
+    constexpr std::size_t kMinTrianglesForGrid = 8;
+    constexpr int         kMaxCellsPerSide     = 64;
+
+    if (triangles_.size() <= kMinTrianglesForGrid)
+    {
+        return;
+    }
+
+    const auto side = std::clamp(static_cast<int>(std::ceil(std::sqrt(static_cast<float>(triangles_.size())))), 1, kMaxCellsPerSide);
+    gridWidth_      = side;
+    gridHeight_     = side;
+
+    // guard degenerate (zero-width) bounds; the scale only has to be finite and positive
+    const auto spanX = std::max(boundsX_.max - boundsX_.min, 1e-3f);
+    const auto spanZ = std::max(boundsZ_.max - boundsZ_.min, 1e-3f);
+    cellScaleX_      = static_cast<float>(gridWidth_) / spanX;
+    cellScaleZ_      = static_cast<float>(gridHeight_) / spanZ;
+
+    const auto cellX = [&](const float x)
+    {
+        return std::clamp(static_cast<int>((x - boundsX_.min) * cellScaleX_), 0, gridWidth_ - 1);
+    };
+    const auto cellZ = [&](const float z)
+    {
+        return std::clamp(static_cast<int>((z - boundsZ_.min) * cellScaleZ_), 0, gridHeight_ - 1);
+    };
+
+    // Each triangle goes in every cell its box overlaps. Points map to cells with the same functions,
+    // so a triangle holding a point is always listed in that point's cell.
+    const auto forEachCell = [&](const Triangle& triangle, auto&& fn)
+    {
+        const auto x0 = cellX(std::min({ triangle.a.x, triangle.b.x, triangle.c.x }));
+        const auto x1 = cellX(std::max({ triangle.a.x, triangle.b.x, triangle.c.x }));
+        const auto z0 = cellZ(std::min({ triangle.a.z, triangle.b.z, triangle.c.z }));
+        const auto z1 = cellZ(std::max({ triangle.a.z, triangle.b.z, triangle.c.z }));
+        for (int z = z0; z <= z1; ++z)
+        {
+            for (int x = x0; x <= x1; ++x)
+            {
+                fn(static_cast<std::size_t>(z * gridWidth_ + x));
+            }
+        }
+    };
+
+    const auto cells = static_cast<std::size_t>(gridWidth_) * static_cast<std::size_t>(gridHeight_);
+    gridStart_.assign(cells + 1, 0);
+    for (const auto& triangle : triangles_)
+    {
+        forEachCell(triangle,
+                    [&](const std::size_t cell)
+                    {
+                        ++gridStart_[cell + 1];
+                    });
+    }
+    for (std::size_t cell = 0; cell < cells; ++cell)
+    {
+        gridStart_[cell + 1] += gridStart_[cell];
+    }
+
+    gridTriangles_.resize(gridStart_[cells]);
+    auto fill = std::vector<uint32_t>(gridStart_.begin(), gridStart_.end() - 1);
+    for (uint32_t index = 0; index < triangles_.size(); ++index)
+    {
+        forEachCell(triangles_[index],
+                    [&](const std::size_t cell)
+                    {
+                        gridTriangles_[fill[cell]++] = index;
+                    });
+    }
+
+    // the ring edges, filed the same way (by the box of each edge)
+    const auto forEachEdgeCell = [&](const Edge& edge, auto&& fn)
+    {
+        const auto x0 = cellX(std::min(edge.a.x, edge.b.x));
+        const auto x1 = cellX(std::max(edge.a.x, edge.b.x));
+        const auto z0 = cellZ(std::min(edge.a.z, edge.b.z));
+        const auto z1 = cellZ(std::max(edge.a.z, edge.b.z));
+        for (int z = z0; z <= z1; ++z)
+        {
+            for (int x = x0; x <= x1; ++x)
+            {
+                fn(static_cast<std::size_t>(z * gridWidth_ + x));
+            }
+        }
+    };
+
+    gridEdgeStart_.assign(cells + 1, 0);
+    for (const auto& edge : edges_)
+    {
+        forEachEdgeCell(edge,
+                        [&](const std::size_t cell)
+                        {
+                            ++gridEdgeStart_[cell + 1];
+                        });
+    }
+    for (std::size_t cell = 0; cell < cells; ++cell)
+    {
+        gridEdgeStart_[cell + 1] += gridEdgeStart_[cell];
+    }
+
+    gridEdges_.resize(gridEdgeStart_[cells]);
+    fill.assign(gridEdgeStart_.begin(), gridEdgeStart_.end() - 1);
+    for (uint32_t index = 0; index < edges_.size(); ++index)
+    {
+        forEachEdgeCell(edges_[index],
+                        [&](const std::size_t cell)
+                        {
+                            gridEdges_[fill[cell]++] = index;
+                        });
+    }
+}
+
+auto RoamRegion::inTriangle(const Triangle& triangle, const float x, const float z) const -> bool
+{
+    const Vector3 point{ .x = x, .y = 0.0f, .z = z };
+
+    const auto ab = signedArea(triangle.a, triangle.b, point);
+    const auto bc = signedArea(triangle.b, triangle.c, point);
+    const auto ca = signedArea(triangle.c, triangle.a, point);
+
+    // winding is whatever the ring was authored with, so accept either sign as long as it agrees
+    return (ab >= 0.0f && bc >= 0.0f && ca >= 0.0f) || (ab <= 0.0f && bc <= 0.0f && ca <= 0.0f);
 }
 
 auto RoamRegion::contains(const float x, const float z) const -> bool
@@ -156,19 +285,28 @@ auto RoamRegion::contains(const float x, const float z) const -> bool
         return false;
     }
 
-    const Vector3 point{ .x = x, .y = 0.0f, .z = z };
-
     // inside the region means inside any one of its triangles
-    return std::ranges::any_of(triangles_,
-                               [&](const Triangle& triangle)
-                               {
-                                   const auto ab = signedArea(triangle.a, triangle.b, point);
-                                   const auto bc = signedArea(triangle.b, triangle.c, point);
-                                   const auto ca = signedArea(triangle.c, triangle.a, point);
+    if (gridWidth_ == 0)
+    {
+        return std::ranges::any_of(triangles_,
+                                   [&](const Triangle& triangle)
+                                   {
+                                       return inTriangle(triangle, x, z);
+                                   });
+    }
 
-                                   // winding is whatever the ring was authored with, so accept either sign as long as it agrees
-                                   return (ab >= 0.0f && bc >= 0.0f && ca >= 0.0f) || (ab <= 0.0f && bc <= 0.0f && ca <= 0.0f);
-                               });
+    // only the triangles listed in this point's cell can hold it
+    const auto cellX = std::clamp(static_cast<int>((x - boundsX_.min) * cellScaleX_), 0, gridWidth_ - 1);
+    const auto cellZ = std::clamp(static_cast<int>((z - boundsZ_.min) * cellScaleZ_), 0, gridHeight_ - 1);
+    const auto cell  = static_cast<std::size_t>(cellZ * gridWidth_ + cellX);
+    for (auto i = gridStart_[cell]; i < gridStart_[cell + 1]; ++i)
+    {
+        if (inTriangle(triangles_[gridTriangles_[i]], x, z))
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 auto RoamRegion::hasWalkableSurface(const NavMesh& navMesh) const -> bool
@@ -235,15 +373,15 @@ auto RoamRegion::clampToRegion(const position_t& from, const Vector3& direction,
     }
 
     // first crossing of a ring edge; the ray may leave and come back
-    float nearest = distance;
-    for (const auto& edge : edges_)
+    float      nearest  = distance;
+    const auto consider = [&](const Edge& edge)
     {
         const float ex    = edge.b.x - edge.a.x;
         const float ez    = edge.b.z - edge.a.z;
         const float denom = direction.x * ez - direction.z * ex;
         if (std::abs(denom) < 1e-6f)
         {
-            continue;
+            return;
         }
 
         const float dx = edge.a.x - from.x;
@@ -253,6 +391,45 @@ auto RoamRegion::clampToRegion(const position_t& from, const Vector3& direction,
         if (t > 1e-4f && t < nearest && u >= 0.0f && u <= 1.0f)
         {
             nearest = t;
+        }
+    };
+
+    // Only edges in the cells the step's box covers can be crossed by it. An edge listed in several
+    // of those cells is just tested again, which can't change the nearest crossing.
+    bool usedGrid = false;
+    if (gridWidth_ > 0)
+    {
+        const float toX = from.x + direction.x * distance;
+        const float toZ = from.z + direction.z * distance;
+        const auto  x0  = std::clamp(static_cast<int>((std::min(from.x, toX) - boundsX_.min) * cellScaleX_), 0, gridWidth_ - 1);
+        const auto  x1  = std::clamp(static_cast<int>((std::max(from.x, toX) - boundsX_.min) * cellScaleX_), 0, gridWidth_ - 1);
+        const auto  z0  = std::clamp(static_cast<int>((std::min(from.z, toZ) - boundsZ_.min) * cellScaleZ_), 0, gridHeight_ - 1);
+        const auto  z1  = std::clamp(static_cast<int>((std::max(from.z, toZ) - boundsZ_.min) * cellScaleZ_), 0, gridHeight_ - 1);
+
+        // a step spanning much of the region is cheaper to check against every edge once
+        const auto cellsCovered = static_cast<std::size_t>(x1 - x0 + 1) * static_cast<std::size_t>(z1 - z0 + 1);
+        if (cellsCovered * 4 <= edges_.size())
+        {
+            usedGrid = true;
+            for (int z = z0; z <= z1; ++z)
+            {
+                for (int x = x0; x <= x1; ++x)
+                {
+                    const auto cell = static_cast<std::size_t>(z * gridWidth_ + x);
+                    for (auto i = gridEdgeStart_[cell]; i < gridEdgeStart_[cell + 1]; ++i)
+                    {
+                        consider(edges_[gridEdges_[i]]);
+                    }
+                }
+            }
+        }
+    }
+
+    if (!usedGrid)
+    {
+        for (const auto& edge : edges_)
+        {
+            consider(edge);
         }
     }
 

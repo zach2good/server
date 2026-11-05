@@ -74,13 +74,70 @@ public:
     }
 };
 
+// flat ground whose validPosition() answer is configurable and whose queries are counted
+class CountingNavMesh final : public NavMesh
+{
+public:
+    explicit CountingNavMesh(bool valid)
+    : valid_(valid)
+    {
+    }
+
+    mutable int validQueries = 0;
+
+    auto findPath(const position_t&, const position_t& end, float, AvoidLinks) -> Maybe<PathResult> override
+    {
+        return PathResult{ { pathpoint_t{ end, 0s, false } }, false };
+    }
+
+    auto findRandomPosition(const position_t& start, float) const -> Maybe<position_t> override
+    {
+        return start;
+    }
+
+    auto validPosition(const position_t&) const -> bool override
+    {
+        ++validQueries;
+        return valid_;
+    }
+
+    auto findClosestValidPoint(const position_t& position) const -> Maybe<position_t> override
+    {
+        return position;
+    }
+
+    auto findFurthestValidPoint(const position_t&, const position_t& endPosition) const -> Maybe<position_t> override
+    {
+        return endPosition;
+    }
+
+    auto snapToValidPosition(position_t&) const -> void override
+    {
+    }
+
+    auto moveAlongSurface(const position_t&, const position_t& end, position_t& result) const -> bool override
+    {
+        result = end;
+        return true;
+    }
+
+private:
+    bool valid_;
+};
+
 class StubOwner final : public pathfind::PathOwner
 {
 public:
     StubOwner(position_t position, NavMesh& navMesh)
     : position_(position)
-    , navMesh_(navMesh)
+    , navMesh_(&navMesh)
     {
+    }
+
+    // what a zone does when it reloads its navmesh: hand out a different mesh object
+    void setNavMesh(NavMesh& navMesh)
+    {
+        navMesh_ = &navMesh;
     }
 
     auto position() -> position_t& override
@@ -95,7 +152,7 @@ public:
 
     auto navMesh() -> NavMesh& override
     {
-        return navMesh_;
+        return *navMesh_;
     }
 
     auto markPositionDirty() -> void override
@@ -157,7 +214,7 @@ public:
 
 private:
     position_t  position_;
-    NavMesh&    navMesh_;
+    NavMesh*    navMesh_;
     std::string name_{ "stub" };
 };
 
@@ -228,4 +285,27 @@ TEST_CASE("pathfind: a region mob that cannot sample a leg walks back onto its r
     const auto destination = pathFind.GetDestination();
     CHECK(region.contains(destination.x, destination.z));
     CHECK_FALSE(region.contains(ownerPtr->position().x, ownerPtr->position().z));
+}
+
+TEST_CASE("pathfind: valid-position answers are cached until the navmesh changes", "[pathfind]")
+{
+    CountingNavMesh walkable(true);
+    CountingNavMesh blocked(false);
+    const position_t spot{ 10.0f, 0.0f, 10.0f, 0, 0 };
+
+    auto      owner    = std::make_unique<StubOwner>(spot, walkable);
+    auto*     ownerPtr = owner.get();
+    CPathFind pathFind(std::move(owner));
+
+    // a standing mob re-checks its own spot over and over: only the first check reaches the mesh
+    for (int i = 0; i < 50; ++i)
+    {
+        CHECK(pathFind.ValidPosition(spot));
+    }
+    CHECK(walkable.validQueries == 1);
+
+    // a reload swaps in another mesh object: the old answer must not be reused
+    ownerPtr->setNavMesh(blocked);
+    CHECK_FALSE(pathFind.ValidPosition(spot));
+    CHECK(blocked.validQueries == 1);
 }

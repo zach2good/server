@@ -1620,15 +1620,17 @@ auto CMobController::FindBuffAllies() -> BuffAllies
     for (auto* PMember : PMob->PParty->members)
     {
         auto* const PCandidate = dynamic_cast<CMobEntity*>(PMember);
-        if (PCandidate == nullptr || PCandidate == PMob || PCandidate->PMaster != nullptr || PCandidate->PBattlefield != PMob->PBattlefield ||
-            !PCandidate->isAlive() || !PCandidate->PAI->IsRoaming())
+        if (PCandidate == nullptr || PCandidate == PMob)
         {
             continue;
         }
 
+        // Range first: a linked party spans the whole zone, so most members are out of reach, and every
+        // check below reads another part of the member (master, battlefield, AI state).
         const auto range      = kBuffAllyHitboxScale * (PMob->modelHitboxSize + PCandidate->modelHitboxSize);
         const auto distanceSq = distanceSquared(PMob->loc.p, PCandidate->loc.p);
-        if (distanceSq > square(range) || PMob->SpellContainer->GetBuffSpellsFor(PCandidate).empty())
+        if (distanceSq > square(range) || PCandidate->PMaster != nullptr || PCandidate->PBattlefield != PMob->PBattlefield ||
+            !PCandidate->isAlive() || !PCandidate->PAI->IsRoaming() || PMob->SpellContainer->GetBuffSpellsFor(PCandidate).empty())
         {
             continue;
         }
@@ -2154,22 +2156,23 @@ auto CMobController::IsSpecialSkillReady(const float currentDistance) const -> b
 
 auto CMobController::IsSpellReady(const float& currentDistance, const float& meleeRange) const -> bool
 {
-    if (PMob->StatusEffectContainer->HasStatusEffect({ xi::StatusEffect::Chainspell, xi::StatusEffect::Manafont }))
+    const auto timerReady = [&]() -> bool
     {
-        return true;
-    }
+        // Worms don't cast in melee range (typically.) The edge cases can be scripted.
+        if ((PMob->m_roamFlags & xi::RoamFlag::Worm) != xi::RoamFlag::None && currentDistance <= meleeRange)
+        {
+            return false;
+        }
 
-    // Worms don't cast in melee range (typically.) The edge cases can be scripted.
-    if ((PMob->m_roamFlags & xi::RoamFlag::Worm) != xi::RoamFlag::None && currentDistance <= meleeRange)
-    {
-        return false;
-    }
+        if (currentDistance > 5 && ((PMob->m_roamFlags & xi::RoamFlag::Worm) != xi::RoamFlag::None) == 0)
+        {
+            // Mobs use magic quicker when standing back
+            return m_Tick >= (m_nextMagicTime - std::chrono::seconds(PMob->getMobMod(xi::MobMod::StandbackCool)));
+        }
 
-    if (currentDistance > 5 && ((PMob->m_roamFlags & xi::RoamFlag::Worm) != xi::RoamFlag::None) == 0)
-    {
-        // Mobs use magic quicker when standing back
-        return m_Tick >= (m_nextMagicTime - std::chrono::seconds(PMob->getMobMod(xi::MobMod::StandbackCool)));
-    }
+        return m_Tick >= m_nextMagicTime;
+    };
 
-    return m_Tick >= m_nextMagicTime;
+    // Chainspell and Manafont override the timer. Check the timer first: walking the effect list costs more.
+    return timerReady() || PMob->StatusEffectContainer->HasStatusEffect({ xi::StatusEffect::Chainspell, xi::StatusEffect::Manafont });
 }
