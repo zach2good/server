@@ -26,8 +26,6 @@
 #include "tracy.h"
 #include "utils.h"
 
-#include "circular_buffer.h"
-#include "no_destructor.h"
 
 #include "spdlog/common.h"
 
@@ -39,7 +37,6 @@
 
 #include <algorithm>
 #include <array>
-#include <atomic>
 #include <cctype>
 #include <cstdint>
 #include <string_view>
@@ -49,26 +46,7 @@ namespace
 
 std::string ServerName;
 
-// Split so bulk trace breadcrumbs cannot evict errors. Capacities must stay powers of two.
-NoDestructor<CircularBuffer<logging::BacktraceEntry>> TraceBuffer(512);
-NoDestructor<CircularBuffer<logging::BacktraceEntry>> EventBuffer(64);
-
-// Shared across both rings so a merged read can put the entries back in real order.
-std::atomic<std::uint64_t> BacktraceSequence{ 0 };
-
 bool gSeenWarningOrError = false;
-
-void pushEntry(CircularBuffer<logging::BacktraceEntry>& ring, const char* file, int line, const char* message, std::size_t length)
-{
-    ring.emplace(
-        [&](logging::BacktraceEntry& entry)
-        {
-            entry.file     = file;
-            entry.line     = line;
-            entry.sequence = BacktraceSequence.fetch_add(1, std::memory_order_relaxed);
-            entry.message.assign(message, length);
-        });
-}
 
 } // namespace
 
@@ -250,39 +228,9 @@ auto logging::loggerFor(std::string_view name) -> spdlog::logger*
     return logger.get();
 }
 
-auto logging::detail::scratchBuffer() -> fmt::memory_buffer&
-{
-    thread_local fmt::memory_buffer buffer;
-    return buffer;
-}
-
-void logging::detail::pushTraceEntry(const char* file, int line, const char* message, std::size_t length)
-{
-    pushEntry(*TraceBuffer, file, line, message, length);
-}
-
-void logging::detail::pushEventEntry(const char* file, int line, const char* message, std::size_t length)
-{
-    pushEntry(*EventBuffer, file, line, message, length);
-}
-
-void logging::AddTraceString(const char* file, int line, std::string_view message)
-{
-    detail::pushTraceEntry(file, line, message.data(), message.size());
-}
-
-void logging::AddBacktrace(const char* file, int line, std::string_view message)
-{
-    detail::pushEventEntry(file, line, message.data(), message.size());
-}
-
 auto logging::GetBacktrace() -> std::vector<std::string>
 {
-    auto       entries = EventBuffer->snapshot();
-    const auto traces  = TraceBuffer->snapshot();
-    entries.insert(entries.end(), traces.begin(), traces.end());
-
-    std::ranges::sort(entries, {}, &BacktraceEntry::sequence);
+    const auto entries = breadcrumbs::snapshot();
 
     std::vector<std::string> backtrace;
     backtrace.reserve(entries.size());

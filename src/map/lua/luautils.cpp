@@ -478,7 +478,7 @@ void init(IPP mapIPP, bool isRunningInCI)
 
             const auto relative_path_string = entry.relative_path().generic_string();
 
-            ShowTrace("Loading global script %s", relative_path_string);
+            XI_BREADCRUMB("Loading global script {}", relative_path_string);
             if (const auto result = lua.safe_script_file(relative_path_string); !result.valid())
             {
                 const sol::error err = result;
@@ -500,7 +500,7 @@ void init(IPP mapIPP, bool isRunningInCI)
         {
             const auto relative_path_string = entry.relative_path().generic_string();
 
-            ShowTrace("Loading global script %s", relative_path_string);
+            XI_BREADCRUMB("Loading global script {}", relative_path_string);
 
             const auto result = lua.safe_script_file(relative_path_string);
             if (!result.valid())
@@ -1037,7 +1037,7 @@ void LoadLuaObjectFromFile(const std::string& filename, bool overwriteCurrentEnt
 
     if (!std::filesystem::exists(filename))
     {
-        ShowTrace("luautils::LoadLuaObjectFromFile: Tried to load file but it does not exist: %s", filename);
+        XI_BREADCRUMB("luautils::LoadLuaObjectFromFile: Tried to load file but it does not exist: {}", filename);
         return;
     }
 
@@ -2593,7 +2593,7 @@ void OnZoneInitialize(const xi::ZoneId ZoneID)
     auto name     = PZone->getName();
     auto filename = fmt::format("./scripts/zones/{}/Zone.lua", name);
 
-    ShowTraceFmt("luautils::OnZoneInitialize: {}", name);
+    XI_BREADCRUMB("luautils::OnZoneInitialize: {}", name);
 
     LoadLuaObjectFromFile(filename);
 
@@ -2618,7 +2618,7 @@ void OnZoneTick(CZone* PZone)
     auto name     = PZone->getName();
     auto filename = fmt::format("./scripts/zones/{}/Zone.lua", name);
 
-    ShowTraceFmt("luautils::OnZoneTick: {}", name);
+    XI_BREADCRUMB("luautils::OnZoneTick: {}", name);
 
     auto onZoneTick = getCachedFileFunction(filename, "onZoneTick");
     if (!onZoneTick.valid())
@@ -2638,7 +2638,7 @@ void OnGameIn(CCharEntity* PChar, bool zoning)
 {
     TracyZoneScoped;
 
-    ShowTraceFmt("luautils::OnGameIn: {}", PChar->getName());
+    XI_BREADCRUMB("luautils::OnGameIn: {}", PChar->getName());
 
     // game time of 0 is not reliable to determine if the char needs the starter fame/gear
     // You can DC in the intro CS when logging in and your playtime is non-zero
@@ -2675,7 +2675,7 @@ void OnZoneIn(CCharEntity* PChar)
     auto name     = destinationZone->getName();
     auto filename = fmt::format("./scripts/zones/{}/Zone.lua", name);
 
-    ShowTraceFmt("luautils::OnZoneIn: {}: {} -> {}", PChar->getName(), prevZoneStr, name);
+    XI_BREADCRUMB("luautils::OnZoneIn: {}: {} -> {}", PChar->getName(), prevZoneStr, name);
 
     auto onZoneInFramework = lua["InteractionGlobal"]["onZoneIn"];
     auto onZoneIn          = getCachedFileFunction(filename, "onZoneIn");
@@ -2718,7 +2718,7 @@ void AfterZoneIn(CBaseEntity* PChar)
     auto name     = PChar->loc.zone->getName();
     auto filename = fmt::format("./scripts/zones/{}/Zone.lua", name);
 
-    ShowTraceFmt("luautils::AfterZoneIn: {} ({})", PChar->getName(), name);
+    XI_BREADCRUMB("luautils::AfterZoneIn: {} ({})", PChar->getName(), name);
 
     auto afterZoneInFramework = lua["InteractionGlobal"]["afterZoneIn"];
     auto afterZoneIn          = getCachedFileFunction(filename, "afterZoneIn");
@@ -2739,7 +2739,7 @@ void OnZoneOut(CCharEntity* PChar)
     auto name     = PChar->loc.zone->getName();
     auto filename = fmt::format("./scripts/zones/{}/Zone.lua", name);
 
-    ShowTraceFmt("luautils::OnZoneOut: {} ({})", PChar->getName(), name);
+    XI_BREADCRUMB("luautils::OnZoneOut: {} ({})", PChar->getName(), name);
 
     auto onZoneOutFramework = lua["InteractionGlobal"]["onZoneOut"];
     auto onZoneOut          = getCachedFileFunction(filename, "onZoneOut");
@@ -2874,7 +2874,7 @@ auto OnTrigger(CCharEntity* PChar, CBaseEntity* PNpc) -> int32
     }
     auto filename = fmt::format(fmt::runtime(pathFormat), zone, name);
 
-    ShowTraceFmt("luautils::OnTrigger: {} ({}) -> {}", name, zone, PNpc->getName());
+    XI_BREADCRUMB("luautils::OnTrigger: {} ({}) -> {}", name, zone, PNpc->getName());
 
     PChar->eventPreparation->targetEntity = PNpc;
     PChar->eventPreparation->scriptFile   = filename;
@@ -2900,7 +2900,7 @@ auto OnEventUpdate(CCharEntity* PChar, uint16 eventID, uint32 result) -> int32
 
     LogWith({ "event", { { "id", eventID }, { "type", "update" } } });
 
-    ShowTraceFmt("luautils::OnEventUpdate: {} ({}), id: {}, result: {}",
+    XI_BREADCRUMB("luautils::OnEventUpdate: {} ({}), id: {}, result: {}",
                  PChar->getName(),
                  PChar->loc.zone->getName(),
                  eventID,
@@ -2931,7 +2931,7 @@ auto OnEventUpdate(CCharEntity* PChar, const std::string& updateString) -> int32
 {
     TracyZoneScoped;
 
-    ShowTraceFmt("luautils::OnEventUpdate: {} ({}), string: {}",
+    XI_BREADCRUMB("luautils::OnEventUpdate: {} ({}), string: {}",
                  PChar->getName(),
                  PChar->loc.zone->getName(),
                  updateString);
@@ -2963,7 +2963,7 @@ auto OnEventFinish(CCharEntity* PChar, uint16 eventID, uint32 result) -> int32
 
     LogWith({ "event", { { "id", eventID }, { "type", "finish" } } });
 
-    ShowTraceFmt("luautils::OnEventFinish: {} ({}), id: {}, result: {}",
+    XI_BREADCRUMB("luautils::OnEventFinish: {} ({}), id: {}, result: {}",
                  PChar->getName(),
                  PChar->loc.zone->getName(),
                  eventID,
@@ -3016,7 +3016,7 @@ void OnTrade(CCharEntity* PChar, CBaseEntity* PNpc)
     auto name     = PNpc->getName();
     auto filename = fmt::format("./scripts/zones/{}/npcs/{}.lua", zone, name);
 
-    ShowTrace("luautils::OnTrade: {} ({}) -> {}", PChar->getName(), zone, name);
+    XI_BREADCRUMB("luautils::OnTrade: {} ({}) -> {}", PChar->getName(), zone, name);
 
     // An event the trade starts copies these. One it doesn't must not inherit them.
     const auto previousPrep = *PChar->eventPreparation;
@@ -5094,7 +5094,7 @@ auto OnSteal(CBattleEntity* PChar, CBattleEntity* PMob, CAbility* PAbility, acti
     auto name     = PMob->getName();
     auto filename = fmt::format("./scripts/zones/{}/mobs/{}.lua", zone, name);
 
-    ShowTraceFmt("luautils::OnSteal: {} ({}) -> {}", PChar->getName(), zone, name);
+    XI_BREADCRUMB("luautils::OnSteal: {} ({}) -> {}", PChar->getName(), zone, name);
 
     auto onStealFramework = lua["InteractionGlobal"]["onSteal"];
     auto onSteal          = getCachedFileFunction(filename, "onSteal");

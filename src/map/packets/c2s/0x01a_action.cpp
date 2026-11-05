@@ -152,7 +152,7 @@ void GP_CLI_COMMAND_ACTION::process(MapSession* PSession, CCharEntity* PChar) co
     LogWith({ "action", { { "type", static_cast<GP_CLI_COMMAND_ACTION_ACTIONID>(this->ActionID) }, { "target_id", this->ActIndex } } });
 
     const auto actionStr = fmt::format("Player Action: {}: {} -> ActIndex: {}", PChar->getName(), actionToStr(static_cast<GP_CLI_COMMAND_ACTION_ACTIONID>(this->ActionID)), this->ActIndex);
-    ShowTrace(actionStr);
+    XI_BREADCRUMB("{}", actionStr);
     DebugActions(actionStr);
 
     // Retrigger latents if the previous packet parse in this chunk included equip/equipset

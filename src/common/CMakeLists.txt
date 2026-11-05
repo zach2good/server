@@ -14,6 +14,8 @@ set(COMMON_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/arguments.h
     ${CMAKE_CURRENT_SOURCE_DIR}/blowfish.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/blowfish.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/breadcrumbs.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/breadcrumbs.h
     ${CMAKE_CURRENT_SOURCE_DIR}/cbasetypes.h
     ${CMAKE_CURRENT_SOURCE_DIR}/enum_traits.h
     ${CMAKE_CURRENT_SOURCE_DIR}/console_service.cpp

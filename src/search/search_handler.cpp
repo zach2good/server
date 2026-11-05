@@ -675,7 +675,7 @@ auto SearchHandler::ParseSearchRequest(const uint16_t length) -> SearchRequest
             {
                 if (isPresent == 0) // no more Area entries
                 {
-                    ShowTraceFmt("Area List End found.");
+                    XI_BREADCRUMB("Area List End found.");
                 }
                 else // 8 Bit = 1 Byte per Area Code
                 {

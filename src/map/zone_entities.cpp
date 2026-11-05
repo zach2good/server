@@ -1695,7 +1695,7 @@ auto CZoneEntities::mobTick(CMobEntity* PMob, timer::time_point tick) -> Task<vo
     TracyZoneScoped;
     TracyZoneString(PMob->getName());
 
-    ShowTraceFmt("CZoneEntities::ZoneServer: Mob: {} ({})", PMob->getName(), PMob->id);
+    XI_BREADCRUMB("CZoneEntities::ZoneServer: Mob: {} ({})", PMob->getName(), PMob->id);
 
     PMob->PRecastContainer->Check();
 
@@ -1761,7 +1761,7 @@ auto CZoneEntities::mobAggroCheck(CMobEntity* PMob, timer::time_point tick) -> T
     TracyZoneScoped;
     TracyZoneString(PMob->getName());
 
-    ShowTraceFmt("CZoneEntities::ZoneServer: Mob Aggro: {} ({})", PMob->getName(), PMob->id);
+    XI_BREADCRUMB("CZoneEntities::ZoneServer: Mob Aggro: {} ({})", PMob->getName(), PMob->id);
 
     const auto checkCandidate = [&](CMobEntity* PCurrentMob)
     {
@@ -1798,7 +1798,7 @@ auto CZoneEntities::npcTick(CNpcEntity* PNpc, timer::time_point tick) -> Task<vo
     TracyZoneScoped;
     TracyZoneString(PNpc->getName());
 
-    ShowTraceFmt("CZoneEntities::ZoneServer: NPC: {} ({})", PNpc->getName(), PNpc->id);
+    XI_BREADCRUMB("CZoneEntities::ZoneServer: NPC: {} ({})", PNpc->getName(), PNpc->id);
 
     co_await PNpc->PAI->Tick(tick);
 
@@ -1827,7 +1827,7 @@ auto CZoneEntities::petTick(CPetEntity* PPet, timer::time_point tick) -> Task<vo
 
     // TODO: The static_cast in this loop includes Battlefield Allies. Allies shouldn't be handled here in
     //     : this way, but we need to do this to keep allies working (for now).
-    ShowTraceFmt("CZoneEntities::ZoneServer: Pet: {} ({})", PPet->getName(), PPet->id);
+    XI_BREADCRUMB("CZoneEntities::ZoneServer: Pet: {} ({})", PPet->getName(), PPet->id);
 
     // TODO: Is this still necessary?
 
@@ -1870,7 +1870,7 @@ auto CZoneEntities::trustTick(CTrustEntity* PTrust, timer::time_point tick) -> T
     TracyZoneScoped;
     TracyZoneString(PTrust->getName());
 
-    ShowTraceFmt("CZoneEntities::ZoneServer: Trust: {} ({})", PTrust->getName(), PTrust->id);
+    XI_BREADCRUMB("CZoneEntities::ZoneServer: Trust: {} ({})", PTrust->getName(), PTrust->id);
 
     PTrust->PRecastContainer->Check();
     PTrust->StatusEffectContainer->CheckEffectsExpiry(tick);
@@ -1909,7 +1909,7 @@ auto CZoneEntities::charTick(CCharEntity* PChar, timer::time_point tick) -> Task
     TracyZoneScoped;
     TracyZoneString(PChar->getName());
 
-    ShowTraceFmt("CZoneEntities::ZoneServer: Char: {} ({})", PChar->getName(), PChar->id);
+    XI_BREADCRUMB("CZoneEntities::ZoneServer: Char: {} ({})", PChar->getName(), PChar->id);
 
     if (PChar->status != xi::Status::Shutdown)
     {

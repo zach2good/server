@@ -285,8 +285,8 @@ auto ConsoleService::consoleLoop() -> Task<void>
                         {
                             auto& command = it->second;
 
-                            // Try and populate trace buffer in case something goes wrong
-                            ShowTraceFmt("Handling console command: {}", command.name);
+                            // Leave a breadcrumb in case something goes wrong
+                            XI_BREADCRUMB("Handling console command: {}", command.name);
 
                             command.func(args);
                         }

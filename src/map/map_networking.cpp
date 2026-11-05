@@ -504,7 +504,7 @@ auto MapNetworking::parse(uint8* buff, size_t* buffsize, MapSession* PSession) -
             const auto subPacketSize = static_cast<std::size_t>(SmallPD_Size) * 2;
             std::memcpy(&parseScratchPacket_.ref<uint8>(0), SmallPD_ptr, subPacketSize);
             std::memset(&parseScratchPacket_.ref<uint8>(subPacketSize), 0, PACKET_SIZE - subPacketSize);
-            ShowTraceFmt("map::parse: Char: {} ({}): {}", PChar->getName(), PChar->id, hex16ToString(parseScratchPacket_.getType()));
+            XI_BREADCRUMB("map::parse: Char: {} ({}): 0x{:04X}", PChar->getName(), PChar->id, parseScratchPacket_.getType());
             packetSystem_.dispatch(SmallPD_Type, PSession, PChar, parseScratchPacket_);
         }
     }
