@@ -10699,7 +10699,11 @@ void CLuaBaseEntity::delHP(int32 delAmt)
  *  Example : target:takeDamage(500, attacker=nil, attackType=ATTACK_NONE, damageType=DAMAGE_NONE, flags={wakeUp=true})
  ************************************************************************/
 
-void CLuaBaseEntity::takeDamage(int32 damage, const sol::object& attacker, const sol::object& atkType, const sol::object& dmgType, const sol::object& flags)
+// The optional arguments are sol::stack_object, not sol::object: a stack_object views the argument
+// slot directly, where a sol::object takes a registry reference for each supplied argument (~40 ns
+// apiece, and nearly every call supplies all three). .as<T>() validates exactly as before, so a wrong
+// type still raises a Lua error rather than silently falling back to the default.
+void CLuaBaseEntity::takeDamage(int32 damage, const sol::stack_object& attacker, const sol::stack_object& atkType, const sol::stack_object& dmgType, const sol::stack_object& flags)
 {
     if (m_PBaseEntity->objtype == TYPE_NPC)
     {
@@ -10709,7 +10713,7 @@ void CLuaBaseEntity::takeDamage(int32 damage, const sol::object& attacker, const
 
     // Attempt to retrieve the attacker
     CBattleEntity* PAttacker = nullptr;
-    if (attacker != sol::lua_nil)
+    if (attacker.valid())
     {
         CLuaBaseEntity* PLuaAttacker = attacker.as<CLuaBaseEntity*>();
 
@@ -10722,14 +10726,6 @@ void CLuaBaseEntity::takeDamage(int32 damage, const sol::object& attacker, const
         PAttacker = dynamic_cast<CBattleEntity*>(PLuaAttacker->m_PBaseEntity);
     }
 
-    CBattleEntity* PDefender = dynamic_cast<CBattleEntity*>(m_PBaseEntity);
-
-    if (!PDefender)
-    {
-        ShowWarning("CLuaBaseEntity::takeDamage() - Attempt to use non-BattleEntity as PDefender.");
-        return;
-    }
-
     // Check for special flags which may prevent damage from waking up the target
     bool wakeUp        = true;
     bool breakBind     = true;
@@ -10737,13 +10733,29 @@ void CLuaBaseEntity::takeDamage(int32 damage, const sol::object& attacker, const
 
     // TODO: Unused in current code, needs testing; change type to sol::table?
     //       Find a way to make this better! (Optional keys as well?)
-    if (flags != sol::lua_nil)
+    if (flags.valid())
     {
         auto flag_map = flags.as<std::map<std::string, bool>>();
 
         wakeUp        = flag_map["wakeUp"];
         removePetrify = flag_map["removePetrify"];
         breakBind     = flag_map["breakBind"];
+    }
+
+    const xi::AttackType attackType = atkType.valid() ? static_cast<xi::AttackType>(atkType.as<uint8>()) : xi::AttackType::None;
+    const xi::DamageType damageType = dmgType.valid() ? static_cast<xi::DamageType>(dmgType.as<uint8>()) : xi::DamageType::None;
+
+    applyDamage(damage, PAttacker, attackType, damageType, wakeUp, breakBind, removePetrify);
+}
+
+void CLuaBaseEntity::applyDamage(int32 damage, CBattleEntity* PAttacker, xi::AttackType attackType, xi::DamageType damageType, bool wakeUp, bool breakBind, bool removePetrify)
+{
+    CBattleEntity* PDefender = dynamic_cast<CBattleEntity*>(m_PBaseEntity);
+
+    if (!PDefender)
+    {
+        ShowWarning("CLuaBaseEntity::takeDamage() - Attempt to use non-BattleEntity as PDefender.");
+        return;
     }
 
     // Check to see if the target has a nightmare effect active, reset wakeUp accordingly
@@ -10771,9 +10783,6 @@ void CLuaBaseEntity::takeDamage(int32 damage, const sol::object& attacker, const
     {
         removePetrify = true;
     }
-
-    xi::AttackType attackType = (atkType != sol::lua_nil) ? static_cast<xi::AttackType>(atkType.as<uint8>()) : xi::AttackType::None;
-    xi::DamageType damageType = (dmgType != sol::lua_nil) ? static_cast<xi::DamageType>(dmgType.as<uint8>()) : xi::DamageType::None;
 
     PDefender->takeDamage(damage, PAttacker, attackType, damageType);
 

@@ -538,7 +538,8 @@ public:
     void setMaxHP(int32 value);                                                                                                                   // Set max hp of Entity to value
     auto restoreHP(int32 restoreAmt) -> int32;                                                                                                    // Modify hp of Entity, but check if alive first
     void delHP(int32 delAmt);                                                                                                                     // Decrease hp of Entity
-    void takeDamage(int32 damage, const sol::object& attacker, const sol::object& atkType, const sol::object& dmgType, const sol::object& flags); // Takes damage from the provided attacker
+    void takeDamage(int32 damage, const sol::stack_object& attacker, const sol::stack_object& atkType, const sol::stack_object& dmgType, const sol::stack_object& flags); // Takes damage from the provided attacker
+    void applyDamage(int32 damage, CBattleEntity* PAttacker, xi::AttackType attackType, xi::DamageType damageType, bool wakeUp, bool breakBind, bool removePetrify); // takeDamage with its arguments already resolved, for C++ callers
     void hideHP(bool value);
     auto getDeathType() -> int32;   // Returns Death Type (for Abyssea)
     void setDeathType(int32 value); // Sets Death Type (for Abyssea)

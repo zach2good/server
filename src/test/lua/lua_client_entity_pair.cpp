@@ -260,8 +260,8 @@ void CLuaClientEntityPair::claimAndKillMob(const sol::object& mobQuery, sol::opt
     const sol::object playerObj = sol::make_object(lua.lua_state(), this);
     mob.updateClaim(playerObj);
 
-    // Deal massive damage
-    mob.takeDamage(2000000000, playerObj, sol::lua_nil, sol::lua_nil, sol::lua_nil);
+    // Deal massive damage (takeDamage's defaults: no attack or damage type; wakes and breaks bind)
+    mob.applyDamage(2000000000, dynamic_cast<CBattleEntity*>(GetBaseEntity()), xi::AttackType::None, xi::DamageType::None, true, true, false);
 
     // Check death if expected
     if (expectDeath)
