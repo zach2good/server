@@ -515,11 +515,15 @@ auto CAIContainer::Tick(const timer::time_point tick) -> Task<void>
     // magic and mobskill states resolve their own interrupt at their finish.
     const auto shouldGoInactive = [&]() -> bool
     {
-        auto* battle = dynamic_cast<CBattleEntity*>(PEntity);
+        if (!isBattleEntityType(PEntity->objtype))
+        {
+            return false;
+        }
+        auto* battle = static_cast<CBattleEntity*>(PEntity);
 
-        return battle && battle->isAlive() && !IsCurrentState<CInactiveState>() &&
-               !IsCurrentState<CMagicState>() && !IsCurrentState<CMobSkillState>() &&
-               battle->StatusEffectContainer->HasPreventActionEffect(true);
+        // Cheapest first: almost nothing has a prevent-action effect, and each state check is a dynamic_cast.
+        return battle->isAlive() && battle->StatusEffectContainer->HasPreventActionEffect(true) &&
+               !IsCurrentState<CInactiveState>() && !IsCurrentState<CMagicState>() && !IsCurrentState<CMobSkillState>();
     };
 
     // The guard is a backstop against

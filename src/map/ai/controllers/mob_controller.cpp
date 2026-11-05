@@ -1619,7 +1619,7 @@ auto CMobController::FindBuffAllies() -> BuffAllies
 
     for (auto* PMember : PMob->PParty->members)
     {
-        auto* const PCandidate = dynamic_cast<CMobEntity*>(PMember);
+        auto* const PCandidate = PMember != nullptr && isMobEntityType(PMember->objtype) ? static_cast<CMobEntity*>(PMember) : nullptr;
         if (PCandidate == nullptr || PCandidate == PMob || PCandidate->PMaster != nullptr || PCandidate->PBattlefield != PMob->PBattlefield ||
             !PCandidate->isAlive() || !PCandidate->PAI->IsRoaming())
         {

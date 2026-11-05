@@ -1447,13 +1447,16 @@ void CZoneEntities::UpdateEntityPacket(CBaseEntity* PEntity, ENTITYUPDATE type, 
 {
     TracyZoneScopedN("CZoneEntities::UpdateEntityPacket");
 
-    // Do not send packets that are updates of a hidden GM
-    if (auto* PChar = dynamic_cast<CCharEntity*>(PEntity))
+    // Every path below only queues packets for players in this zone.
+    if (m_charList.empty())
     {
-        if (PChar->m_isGMHidden && type != ENTITY_DESPAWN)
-        {
-            return;
-        }
+        return;
+    }
+
+    // Do not send packets that are updates of a hidden GM
+    if (PEntity->objtype == TYPE_PC && static_cast<CCharEntity*>(PEntity)->m_isGMHidden && type != ENTITY_DESPAWN)
+    {
+        return;
     }
 
     if (PEntity->objtype == TYPE_NPC)
@@ -1474,11 +1477,11 @@ void CZoneEntities::UpdateEntityPacket(CBaseEntity* PEntity, ENTITYUPDATE type, 
             ENTITY_RENDER_DISTANCE,
             [&](CBaseEntity* candidate)
             {
-                auto* PCurrentChar = dynamic_cast<CCharEntity*>(candidate);
-                if (!PCurrentChar || PCurrentChar == PEntity)
+                if (candidate->objtype != TYPE_PC || candidate == PEntity)
                 {
                     return;
                 }
+                auto* PCurrentChar = static_cast<CCharEntity*>(candidate);
                 if (charutils::hasEntitySpawned(PCurrentChar, PEntity))
                 {
                     PCurrentChar->updateEntityPacket(PEntity, type, updatemask);

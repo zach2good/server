@@ -56,6 +56,19 @@ enum ENTITYTYPE : uint8
 
 DECLARE_FORMAT_AS_UNDERLYING(ENTITYTYPE);
 
+// objtype is fixed at construction and matches the class hierarchy (CBattleEntity: PC and the CMobEntity
+// family; CMobEntity: mob, pet, trust, fellow), so these answer what a dynamic_cast would without RTTI.
+// Prefer them on hot paths: a dynamic_cast that misses costs a type-name strcmp under libstdc++.
+[[nodiscard]] constexpr auto isBattleEntityType(const ENTITYTYPE type) -> bool
+{
+    return (type & (TYPE_PC | TYPE_MOB | TYPE_PET | TYPE_TRUST | TYPE_FELLOW)) != 0;
+}
+
+[[nodiscard]] constexpr auto isMobEntityType(const ENTITYTYPE type) -> bool
+{
+    return (type & (TYPE_MOB | TYPE_PET | TYPE_TRUST | TYPE_FELLOW)) != 0;
+}
+
 enum MOUNTTYPE : uint8
 {
     MOUNT_CHOCOBO        = 0,
