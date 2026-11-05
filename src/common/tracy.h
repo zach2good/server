@@ -95,30 +95,34 @@ inline auto hex32ToString(std::uint32_t hex) -> std::string
     TracyReportGraphBytes("Lua Memory Usage", static_cast<double>(lua_gc(L, LUA_GCCOUNT, 0)) * 1024.0);
 
 #else // Empty stubs for regular builds
-#define TracyFrameMark                     std::ignore = 0
-#define TracyZoneScoped                    std::ignore = 0
-#define TracyZoneScopedN(n)                std::ignore = n
-#define TracyZoneNamed(var, name)          std::ignore = #var; std::ignore = name
-#define TracyZoneText(n, l)                std::ignore = n; std::ignore = l
-#define TracyZoneScopedC(c)                std::ignore = c
-#define TracyZoneScopedNC(n, c)            std::ignore = n; std::ignore = c
-#define TracyZoneScopedS(depth)            std::ignore = depth
-#define TracyZoneString(str)               std::ignore = str
-#define TracyZoneCString(cstr)             std::ignore = cstr
-#define TracyZoneIString(istr)             std::ignore = istr
-#define TracyZoneHex8(num)                 std::ignore = num
-#define TracyZoneHex16(num)                std::ignore = num
-#define TracyZoneHex32(num)                std::ignore = num
-#define TracyReportGraphNumber(name, num)  std::ignore = name; std::ignore = num
-#define TracyReportGraphBytes(name, num)   std::ignore = name; std::ignore = num
-#define TracyReportGraphPercent(name, num) std::ignore = name; std::ignore = num
-#define TracyReportLuaMemory(L)            std::ignore = L
-#define TracyMessageStr(str)               std::ignore = str
-#define TracySetThreadName(str)            std::ignore = str
+// The arguments sit in an unevaluated sizeof: they cost nothing at runtime (no getName() calls, no
+// formatted strings), but they still have to compile, so Tracy-only code can't rot in regular builds
+// and variables used only for Tracy don't trip -Wunused-variable.
+#define XI_TRACY_UNUSED(x)                 ((void)sizeof((x)))
+#define TracyFrameMark                     ((void)0)
+#define TracyZoneScoped                    ((void)0)
+#define TracyZoneScopedN(n)                XI_TRACY_UNUSED(n)
+#define TracyZoneNamed(var, name)          XI_TRACY_UNUSED(name)
+#define TracyZoneText(n, l)                (XI_TRACY_UNUSED(n), XI_TRACY_UNUSED(l))
+#define TracyZoneScopedC(c)                XI_TRACY_UNUSED(c)
+#define TracyZoneScopedNC(n, c)            (XI_TRACY_UNUSED(n), XI_TRACY_UNUSED(c))
+#define TracyZoneScopedS(depth)            XI_TRACY_UNUSED(depth)
+#define TracyZoneString(str)               XI_TRACY_UNUSED(str)
+#define TracyZoneCString(cstr)             XI_TRACY_UNUSED(cstr)
+#define TracyZoneIString(istr)             XI_TRACY_UNUSED(istr)
+#define TracyZoneHex8(num)                 XI_TRACY_UNUSED(num)
+#define TracyZoneHex16(num)                XI_TRACY_UNUSED(num)
+#define TracyZoneHex32(num)                XI_TRACY_UNUSED(num)
+#define TracyReportGraphNumber(name, num)  (XI_TRACY_UNUSED(name), XI_TRACY_UNUSED(num))
+#define TracyReportGraphBytes(name, num)   (XI_TRACY_UNUSED(name), XI_TRACY_UNUSED(num))
+#define TracyReportGraphPercent(name, num) (XI_TRACY_UNUSED(name), XI_TRACY_UNUSED(num))
+#define TracyReportLuaMemory(L)            XI_TRACY_UNUSED(L)
+#define TracyMessageStr(str)               XI_TRACY_UNUSED(str)
+#define TracySetThreadName(str)            XI_TRACY_UNUSED(str)
 #define TracyLockable(m, n)                m n
 #define TracySharedLockable(m, n)          m n
 #define LockableBase(type)                 type
 #define SharedLockableBase(type)           type
-#define LockMark(m)                        std::ignore = m
+#define LockMark(m)                        XI_TRACY_UNUSED(m)
 #endif
 // clang-format on
