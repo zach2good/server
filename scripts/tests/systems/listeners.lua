@@ -48,3 +48,90 @@ describe('AoE Listeners', function()
         mob2:removeListener('TEST_MAGIC_TAKE_2')
     end)
 end)
+
+describe('Listener re-entrancy', function()
+    ---@type CTestEntity
+    local mob
+
+    before_each(function()
+        local player = xi.test.world:spawnPlayer({ zone = xi.zone.WEST_RONFAURE })
+        mob          = player.entities:moveTo('Wild_Rabbit')
+    end)
+
+    it('fires every listener when a nested trigger removes one mid-iteration', function()
+        local fired = {}
+
+        mob:addListener('TEST_OUTER', 'TEST_OUTER_A', function()
+            table.insert(fired, 'A')
+            mob:triggerListener('TEST_INNER')
+        end)
+
+        mob:addListener('TEST_OUTER', 'TEST_OUTER_B', function()
+            table.insert(fired, 'B')
+        end)
+
+        -- Removing A from inside a nested trigger must wait for the outer trigger to finish,
+        -- otherwise B shifts into A's slot and is skipped.
+        mob:addListener('TEST_INNER', 'TEST_INNER_REMOVER', function()
+            mob:removeListener('TEST_OUTER_A')
+        end)
+
+        mob:triggerListener('TEST_OUTER')
+        assert(#fired == 2 and fired[1] == 'A' and fired[2] == 'B', 'expected A then B, got ' .. table.concat(fired, ','))
+
+        -- The deferred removal has now been applied.
+        fired = {}
+        mob:triggerListener('TEST_OUTER')
+        assert(#fired == 1 and fired[1] == 'B', 'expected only B after removal, got ' .. table.concat(fired, ','))
+
+        mob:removeListener('TEST_OUTER_B')
+        mob:removeListener('TEST_INNER_REMOVER')
+    end)
+
+    it('stops firing once every listener is removed', function()
+        local count = 0
+        mob:addListener('TEST_EVENT', 'TEST_EVENT_1', function()
+            count = count + 1
+        end)
+
+        mob:triggerListener('TEST_EVENT')
+        mob:removeListener('TEST_EVENT_1')
+        mob:triggerListener('TEST_EVENT')
+        assert(not mob:hasListener('TEST_EVENT'), 'listener should be gone')
+
+        mob:addListener('TEST_EVENT', 'TEST_EVENT_1', function()
+            count = count + 1
+        end)
+        mob:triggerListener('TEST_EVENT')
+        mob:removeListener('TEST_EVENT_1')
+
+        assert(count == 2, 'expected 2 calls, got ' .. count)
+    end)
+
+    it('tracks per-tick events across add, remove and re-add', function()
+        -- TICK, ROAM_TICK and COMBAT_TICK take a fast path that caches their listener lists.
+        local ticks = 0
+        mob:addListener('TICK', 'TEST_HOT_TICK', function()
+            ticks = ticks + 1
+        end)
+        mob:addListener('TEST_OTHER', 'TEST_HOT_OTHER', function()
+        end)
+
+        mob:triggerListener('TICK', mob, 400)
+        assert(ticks == 1, 'TICK listener should fire, got ' .. ticks)
+
+        mob:removeListener('TEST_HOT_TICK')
+        mob:triggerListener('TICK', mob, 400)
+        assert(ticks == 1, 'removed TICK listener should not fire, got ' .. ticks)
+
+        -- Erasing another event's entry must not disturb a re-added hot listener.
+        mob:addListener('TICK', 'TEST_HOT_TICK', function()
+            ticks = ticks + 1
+        end)
+        mob:removeListener('TEST_HOT_OTHER')
+        mob:triggerListener('TICK', mob, 400)
+        assert(ticks == 2, 're-added TICK listener should fire, got ' .. ticks)
+
+        mob:removeListener('TEST_HOT_TICK')
+    end)
+end)

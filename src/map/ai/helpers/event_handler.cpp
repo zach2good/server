@@ -32,6 +32,7 @@ void CAIEventHandler::addListener(const std::string& eventName, const sol::funct
 
     // Add the new listener
     eventListeners_[eventName].emplace_back(identifier, luaFunc);
+    refreshHotListeners();
 }
 
 void CAIEventHandler::removeListener(const std::string& identifier)
@@ -51,7 +52,7 @@ void CAIEventHandler::removeListener(const std::string& identifier)
     removeFromAllListeners(identifier);
 }
 
-auto CAIEventHandler::hasListener(const std::string& eventName) const -> bool
+auto CAIEventHandler::hasListener(const std::string_view eventName) const -> bool
 {
     const auto& listeners = eventListeners_.find(eventName);
     return listeners != eventListeners_.end() && !listeners->second.empty();
@@ -70,5 +71,26 @@ void CAIEventHandler::removeFromAllListeners(const std::string& identifier)
     for (auto& [_, listeners] : eventListeners_)
     {
         std::erase_if(listeners, isSameIdentifier);
+    }
+
+    // Drop names with no listeners left, so an entity whose listeners were all removed goes back to the
+    // empty-map fast path in triggerListener. Only safe when no trigger is iterating a listener list.
+    if (triggerDepth_ == 0)
+    {
+        std::erase_if(eventListeners_,
+                      [](const auto& entry)
+                      {
+                          return entry.second.empty();
+                      });
+        refreshHotListeners();
+    }
+}
+
+void CAIEventHandler::refreshHotListeners()
+{
+    for (std::size_t i = 0; i < kHotEvents.size(); ++i)
+    {
+        const auto it     = eventListeners_.find(kHotEvents[i]);
+        hotListeners_[i] = it != eventListeners_.end() ? &it->second : nullptr;
     }
 }
