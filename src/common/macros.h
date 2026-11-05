@@ -80,6 +80,13 @@ static_assert(sizeof(void*) == 8, "Only 64-bit builds are supported");
 #define XI_NOINLINE __attribute__((noinline))
 #endif
 
+// A rarely-run function: never inlined (even under LTO), and laid out away from hot code.
+#if defined(_MSC_VER)
+#define XI_COLD __declspec(noinline)
+#else
+#define XI_COLD __attribute__((cold, noinline))
+#endif
+
 //
 // This `FOR_EACH_PAIR_CAST_SECOND` macro replaces a common pattern we had in the hot path:
 //

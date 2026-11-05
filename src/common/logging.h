@@ -21,6 +21,7 @@
 
 #pragma once
 
+#include <common/macros.h>
 #include <common/tracy.h>
 
 #include <cstdint>
@@ -118,6 +119,15 @@ struct LogRecord
 
 void renderJsonLine(fmt::memory_buffer& buf, const LogRecord& rec);
 
+// The sink end of every Show*/Debug* macro, kept out of line. Inlined, its buffers (the JSON path's
+// fmt::memory_buffer alone is 500 bytes) and spdlog's machinery land in the stack frame of whatever
+// function contains the log call, so a small hot function with a never-taken error branch pays a large
+// frame, ten saved registers and a stack-protector check on every call.
+XI_COLD void emit(spdlog::level::level_enum level, std::string_view loggerName, const char* file, int line, const char* function, std::string_view message);
+
+// END_CATCH_HANDLER's reporting, out of line for the same reason. `what` is null for a non-std exception.
+XI_COLD void reportLoggingException(const char* file, int line, const char* what);
+
 } // namespace detail
 
 } // namespace logging
@@ -158,31 +168,26 @@ inline auto format_as(type v) \
     try                     \
     {
 
-#define END_CATCH_HANDLER(File, Line)                                                                             \
-    }                                                                                                             \
-    catch (std::exception const& ex)                                                                              \
-    {                                                                                                             \
-        SPDLOG_LOGGER_ERROR(spdlog::get("error"), fmt::sprintf("Encountered logging exception!: %s", ex.what())); \
-        SPDLOG_LOGGER_ERROR(spdlog::get("error"), fmt::sprintf("%s:%i", File, Line));                             \
-    }                                                                                                             \
-    catch (...)                                                                                                   \
-    {                                                                                                             \
-        SPDLOG_LOGGER_ERROR(spdlog::get("error"), fmt::sprintf("Encountered unhandled logging exception!"));      \
-        SPDLOG_LOGGER_ERROR(spdlog::get("error"), fmt::sprintf("%s:%i", File, Line));                             \
+#define END_CATCH_HANDLER(File, Line)                                   \
+    }                                                                   \
+    catch (std::exception const& ex)                                    \
+    {                                                                   \
+        ::logging::detail::reportLoggingException(File, Line, ex.what()); \
+    }                                                                   \
+    catch (...)                                                         \
+    {                                                                   \
+        ::logging::detail::reportLoggingException(File, Line, nullptr); \
     } STATEMENT_CLOSE
 
-#define LOGGER_EMIT(LOG_TYPE_MACRO, LogStringName, File, Line, MsgVar)                                  \
-    if (!::logging::detail::gJsonMode)                                                                  \
-    {                                                                                                   \
-        LOG_TYPE_MACRO(::logging::loggerFor(LogStringName), MsgVar);                                    \
-    }                                                                                                   \
-    else                                                                                                \
-    {                                                                                                   \
-        fmt::memory_buffer _jbuf;                                                                       \
-        ::logging::detail::renderJsonLine(_jbuf, { LogStringName, File, Line, __FUNCTION__, MsgVar }); \
-        LOG_TYPE_MACRO(::logging::loggerFor(LogStringName), std::string_view{ _jbuf.data(), _jbuf.size() }); \
-    }                                                                                                   \
-    STATEMENT_CLOSE
+// LOG_TYPE_MACRO names the spdlog macro for the level; these map it to the level itself.
+#define XI_LOG_LEVEL_SPDLOG_LOGGER_DEBUG    ::spdlog::level::debug
+#define XI_LOG_LEVEL_SPDLOG_LOGGER_INFO     ::spdlog::level::info
+#define XI_LOG_LEVEL_SPDLOG_LOGGER_WARN     ::spdlog::level::warn
+#define XI_LOG_LEVEL_SPDLOG_LOGGER_ERROR    ::spdlog::level::err
+#define XI_LOG_LEVEL_SPDLOG_LOGGER_CRITICAL ::spdlog::level::critical
+
+#define LOGGER_EMIT(LOG_TYPE_MACRO, LogStringName, File, Line, MsgVar) \
+    ::logging::detail::emit(XI_LOG_LEVEL_##LOG_TYPE_MACRO, LogStringName, File, Line, static_cast<const char*>(__FUNCTION__), MsgVar)
 
 #define LOGGER_BODY(LOG_TYPE_MACRO, LogStringName, File, Line, ...) \
     BEGIN_CATCH_HANDLER const auto _msgStr = fmt::sprintf(__VA_ARGS__); TracyZoneScoped; TracyMessageStr(_msgStr); logging::AddBacktrace(File, Line, _msgStr); LOGGER_EMIT(LOG_TYPE_MACRO, LogStringName, File, Line, _msgStr); END_CATCH_HANDLER(File, Line)

@@ -298,3 +298,34 @@ void logging::tapWarningOrError()
 {
     gSeenWarningOrError = true;
 }
+
+void logging::detail::emit(const spdlog::level::level_enum level, const std::string_view loggerName, const char* file, const int line, const char* function, const std::string_view message)
+{
+    auto* const              logger = ::logging::loggerFor(loggerName);
+    const spdlog::source_loc location{ file, line, function };
+
+    if (!gJsonMode)
+    {
+        logger->log(location, level, message);
+        return;
+    }
+
+    fmt::memory_buffer jsonLine;
+    renderJsonLine(jsonLine, { loggerName, file, line, function, message });
+    logger->log(location, level, std::string_view{ jsonLine.data(), jsonLine.size() });
+}
+
+void logging::detail::reportLoggingException(const char* file, const int line, const char* what)
+{
+    const auto               errorLogger = spdlog::get("error");
+    const spdlog::source_loc location{ file, line, SPDLOG_FUNCTION };
+    if (what != nullptr)
+    {
+        errorLogger->log(location, spdlog::level::err, fmt::sprintf("Encountered logging exception!: %s", what));
+    }
+    else
+    {
+        errorLogger->log(location, spdlog::level::err, fmt::sprintf("Encountered unhandled logging exception!"));
+    }
+    errorLogger->log(location, spdlog::level::err, fmt::sprintf("%s:%i", file, line));
+}
