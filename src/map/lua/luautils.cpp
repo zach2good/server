@@ -193,26 +193,51 @@ namespace detail
 // NOTE: Intentionally NOT cached - would break Mocking/Spy etc.
 auto findGlobalLuaFunction(const std::string& funcName) -> sol::function
 {
-    const auto keys = split(funcName, ".");
+    // Walks the same path sol did (_G, then each dot-separated key, metatable-aware), on the raw stack.
+    const auto L   = lua.lua_state();
+    const auto top = lua_gettop(L);
 
-    sol::table table = lua["_G"];
-    for (size_t i = 0; i < keys.size(); ++i)
+    lua_getfield(L, LUA_GLOBALSINDEX, "_G");
+
+    const std::string_view name{ funcName };
+    std::size_t            start = 0;
+    while (true)
     {
-        const auto& part = keys[i];
-
-        if (i == keys.size() - 1)
+        // As sol::table did: anything but a table or a userdata ends the walk with nil.
+        if (const auto type = lua_type(L, -1); type != LUA_TTABLE && type != LUA_TUSERDATA)
         {
-            return table[part];
-        }
-
-        table = table[part].get_or<sol::table>(sol::lua_nil);
-        if (table == sol::lua_nil)
-        {
+            lua_settop(L, top);
             return sol::lua_nil;
         }
+
+        const auto dot  = name.find('.', start);
+        const auto part = [&]() -> std::string_view
+        {
+            if (dot == std::string_view::npos)
+            {
+                return name.substr(start);
+            }
+
+            return name.substr(start, dot - start);
+        }();
+
+        lua_pushlstring(L, part.data(), part.size());
+        lua_gettable(L, -2);
+        lua_remove(L, -2);
+
+        if (dot == std::string_view::npos)
+        {
+            break;
+        }
+
+        start = dot + 1;
     }
 
-    return sol::lua_nil;
+    // A stub or spy is callable userdata, not a function.
+    const auto result = sol::stack::get<sol::function>(L, -1);
+    lua_settop(L, top);
+
+    return result;
 }
 
 auto getEntityDataTable(CBaseEntity* PEntity, CreateEntityData create) -> sol::table
