@@ -93,4 +93,8 @@ void MockManager::setAtPath(const std::string& path, const sol::object& value) c
     }
 
     current[parts.back()] = value;
+
+    // The global function cache keeps a resolved function per path. Writing the leaf here is
+    // exactly what it cannot see, so drop it; the cached parent table is still good.
+    luautils::detail::invalidateGlobalLuaFunction(path);
 }

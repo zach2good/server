@@ -102,6 +102,12 @@ auto applyOverride(sol::state& lua, sol::table table, Override& override, bool s
             }
 
             override.applied = true;
+
+            // An override replaces a function a global path may already resolve to. Overrides are
+            // applied once (and re-applied only on reload), so dropping the cache here is rare and
+            // cheaper than clearing it on every zone load.
+            luautils::detail::clearGlobalLuaFunctionCache();
+
             return true;
         }
 

@@ -150,17 +150,27 @@ struct WorldPassReply
 namespace detail
 {
 
-// TODO:
-// Instead of always taking a string of the form "xi.server.onTimeServerTick"
-// and splitting it into parts, then using those parts to walk up the Lua
-// global table, we can build a map of that string to the underlying sol::reference.
+// Resolve a dotted global path such as "xi.server.onTimeServerTick" to the function it names.
 //
-// This however comes with the cost of maintaining this map, and those sol::references
-// keep the underlying objects alive, so we need to be careful about what we cache.
+// The lookup is cached by path. The cache stores the parent table and the final key separately
+// from the resolved function, so a stub or spy -- which overwrites the final key -- is still seen:
+// installing or restoring one calls invalidateGlobalLuaFunction, and the next lookup re-reads the
+// key through the cached parent. A script reload or a module override replaces whole tables, and
+// clears the cache outright.
+//
+// The ...Ref form returns a pointer into the cache and makes no sol::function copy, which costs
+// two Lua registry references. It is for callers that use the function immediately and let it go,
+// as callGlobal does. The pointer is valid until the cache is cleared; anything that keeps the
+// function beyond its own call should take a copy through findGlobalLuaFunction.
+auto findGlobalLuaFunctionRef(std::string_view funcName) -> const sol::function*;
+auto findGlobalLuaFunction(std::string_view funcName) -> sol::function;
 
-// auto findCachedObject(const std::string& objName) -> sol::reference;
-// void cacheObject(const std::string& objName, sol::reference obj);
-auto findGlobalLuaFunction(const std::string& funcName) -> sol::function;
+// Drop the resolved function for one path, keeping the path to its parent table. Called when a
+// test double is installed at, or restored to, that path.
+void invalidateGlobalLuaFunction(std::string_view funcName);
+
+// Drop everything. Called when Lua is reloaded or a module override is applied.
+void clearGlobalLuaFunctionCache();
 
 // Whether a data lookup should create the entity's table, or report its absence.
 using CreateEntityData = xi::Flag<struct CreateEntityDataTag>;
@@ -200,7 +210,7 @@ void cleanup();
 // NOTE: This is slower (but safet) than looking up something manually like this:
 //     : lua["xi"]["server"]["onTimeServerTick"]();
 template <typename T, typename... Targs>
-auto callGlobal(const std::string& funcName, Targs&&... args);
+auto callGlobal(std::string_view funcName, Targs&&... args);
 
 void TryReloadFilewatchList();
 
@@ -634,10 +644,10 @@ auto luautils::getEntityData(CBaseEntity* PEntity, const Keys&... keys) -> Maybe
 }
 
 template <typename T, typename... Targs>
-auto luautils::callGlobal(const std::string& funcName, Targs&&... args)
+auto luautils::callGlobal(std::string_view funcName, Targs&&... args)
 {
-    auto func = detail::findGlobalLuaFunction(funcName);
-    if (!func.valid())
+    const auto* func = detail::findGlobalLuaFunctionRef(funcName);
+    if (func == nullptr)
     {
         ShowError("luautils::callGlobalFunction: %s: Function not found", funcName);
         if constexpr (std::is_void_v<T>)
@@ -650,7 +660,7 @@ auto luautils::callGlobal(const std::string& funcName, Targs&&... args)
         }
     }
 
-    const auto result = func(std::forward<Targs>(args)...);
+    const auto result = (*func)(std::forward<Targs>(args)...);
     if (!result.valid())
     {
         sol::error err = result;

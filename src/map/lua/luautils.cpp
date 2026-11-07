@@ -164,6 +164,119 @@ HashMap<uint32, sol::table>  customMenuContext;
 
 LuaCache luaCache;
 
+// Transparent hashing, so a std::string_view path can probe the cache without building a
+// std::string for the key.
+struct GlobalFunctionPathHash
+{
+    using is_transparent = void;
+    using is_avalanching = void;
+
+    [[nodiscard]] auto operator()(std::string_view path) const noexcept -> uint64_t
+    {
+        return ankerl::unordered_dense::hash<std::string_view>{}(path);
+    }
+};
+
+struct GlobalFunctionPathEqual
+{
+    using is_transparent = void;
+
+    [[nodiscard]] auto operator()(std::string_view lhs, std::string_view rhs) const noexcept -> bool
+    {
+        return lhs == rhs;
+    }
+};
+
+// One cached global function path, in two layers.
+//
+// `parent` and `leaf` are the table the function lives in and its final key. A table is only
+// replaced by a script reload or a module override, both of which clear the whole cache, so
+// these survive everything a test does.
+//
+// `func` is the resolved function. Stubs and spies overwrite the leaf key in `parent`, so
+// installing or restoring one clears `func` alone (see invalidateGlobalLuaFunction) and the next
+// lookup re-reads the leaf through `parent` instead of walking from _G. That split is what lets
+// this be cached at all without breaking test doubles.
+struct CachedGlobalFunction
+{
+    sol::table    parent;
+    std::string   leaf;
+    sol::function func;
+};
+
+// Behind a unique_ptr because FlatHashMap moves its entries when it grows, while callGlobal holds
+// a pointer to `func` across the Lua call it makes.
+FlatHashMap<std::string, std::unique_ptr<CachedGlobalFunction>, GlobalFunctionPathHash, GlobalFunctionPathEqual>
+    globalFunctionCache;
+
+// Walk the dotted path as far as the table holding the final key. Returns nullptr when a step is
+// missing or is not something that can be indexed.
+auto resolveGlobalFunctionPath(std::string_view funcName) -> std::unique_ptr<CachedGlobalFunction>
+{
+    const auto L   = lua.lua_state();
+    const auto top = lua_gettop(L);
+
+    lua_getfield(L, LUA_GLOBALSINDEX, "_G");
+
+    std::size_t start = 0;
+    while (true)
+    {
+        // As sol::table did: anything but a table or a userdata ends the walk with nil.
+        if (const auto type = lua_type(L, -1); type != LUA_TTABLE && type != LUA_TUSERDATA)
+        {
+            lua_settop(L, top);
+            return nullptr;
+        }
+
+        const auto dot = funcName.find('.', start);
+        if (dot == std::string_view::npos)
+        {
+            break;
+        }
+
+        const auto part = funcName.substr(start, dot - start);
+        lua_pushlstring(L, part.data(), part.size());
+        lua_gettable(L, -2);
+        lua_remove(L, -2);
+
+        start = dot + 1;
+    }
+
+    auto entry = std::make_unique<CachedGlobalFunction>();
+
+    entry->parent = sol::stack::get<sol::table>(L, -1);
+    entry->leaf   = funcName.substr(start);
+
+    lua_settop(L, top);
+
+    return entry;
+}
+
+// Read the final key out of the cached parent table. Metatable aware, as the sol proxy read was:
+// a stub or spy is callable userdata, reached through __index.
+auto readCachedLeafFunction(const CachedGlobalFunction& entry) -> sol::function
+{
+    const auto L   = lua.lua_state();
+    const auto top = lua_gettop(L);
+
+    entry.parent.push(L);
+
+    if (const auto type = lua_type(L, -1); type != LUA_TTABLE && type != LUA_TUSERDATA)
+    {
+        lua_settop(L, top);
+        return sol::lua_nil;
+    }
+
+    lua_pushlstring(L, entry.leaf.data(), entry.leaf.size());
+    lua_gettable(L, -2);
+
+    const auto result = sol::stack::get<sol::function>(L, -1);
+
+    lua_settop(L, top);
+
+    return result;
+}
+
 // The xi.entityData root, or nil when nothing has been stored yet. Every step is type checked:
 // a script is free to leave a non-table at either name, and raising out of ~CBaseEntity() would
 // take the process with it.
@@ -190,54 +303,70 @@ namespace detail
 {
 
 // NOTE: Is safe to call on invalid tables, will ultimately return nil
-// NOTE: Intentionally NOT cached - would break Mocking/Spy etc.
-auto findGlobalLuaFunction(const std::string& funcName) -> sol::function
+//
+// Cached, but only as far as mocking allows: the parent table is kept, the leaf key is re-read
+// whenever a stub or spy has touched it. See CachedGlobalFunction.
+//
+// The returned pointer is owned by the cache and stays valid until the cache is cleared, which
+// only happens on a script reload. Callers that outlive a call should take a copy through
+// findGlobalLuaFunction instead.
+auto findGlobalLuaFunctionRef(std::string_view funcName) -> const sol::function*
 {
-    // Walks the same path sol did (_G, then each dot-separated key, metatable-aware), on the raw stack.
-    const auto L   = lua.lua_state();
-    const auto top = lua_gettop(L);
-
-    lua_getfield(L, LUA_GLOBALSINDEX, "_G");
-
-    const std::string_view name{ funcName };
-    std::size_t            start = 0;
-    while (true)
+    auto entry = globalFunctionCache.find(funcName);
+    if (entry == globalFunctionCache.end())
     {
-        // As sol::table did: anything but a table or a userdata ends the walk with nil.
-        if (const auto type = lua_type(L, -1); type != LUA_TTABLE && type != LUA_TUSERDATA)
+        auto resolved = resolveGlobalFunctionPath(funcName);
+        if (!resolved)
         {
-            lua_settop(L, top);
-            return sol::lua_nil;
+            return nullptr;
         }
 
-        const auto dot  = name.find('.', start);
-        const auto part = [&]() -> std::string_view
-        {
-            if (dot == std::string_view::npos)
-            {
-                return name.substr(start);
-            }
-
-            return name.substr(start, dot - start);
-        }();
-
-        lua_pushlstring(L, part.data(), part.size());
-        lua_gettable(L, -2);
-        lua_remove(L, -2);
-
-        if (dot == std::string_view::npos)
-        {
-            break;
-        }
-
-        start = dot + 1;
+        entry = globalFunctionCache.emplace(std::string(funcName), std::move(resolved)).first;
     }
 
-    // A stub or spy is callable userdata, not a function.
-    const auto result = sol::stack::get<sol::function>(L, -1);
-    lua_settop(L, top);
+    auto& cached = *entry->second;
+    if (!cached.func.valid())
+    {
+        cached.func = readCachedLeafFunction(cached);
+        if (!cached.func.valid())
+        {
+            return nullptr;
+        }
+    }
 
-    return result;
+    return &cached.func;
+}
+
+auto findGlobalLuaFunction(std::string_view funcName) -> sol::function
+{
+    const auto* func = findGlobalLuaFunctionRef(funcName);
+    if (func == nullptr)
+    {
+        return sol::lua_nil;
+    }
+
+    return *func;
+}
+
+// Called when a stub or spy is installed at, or restored to, this path. Only the resolved function
+// is dropped: the path to its parent table has not changed, so the next lookup re-reads the leaf
+// rather than walking from _G.
+void invalidateGlobalLuaFunction(std::string_view funcName)
+{
+    const auto entry = globalFunctionCache.find(funcName);
+    if (entry == globalFunctionCache.end())
+    {
+        return;
+    }
+
+    entry->second->func = sol::lua_nil;
+}
+
+// Called when Lua is reloaded or a module override is applied: any table along a cached path may
+// have been replaced, so nothing cached can be trusted.
+void clearGlobalLuaFunctionCache()
+{
+    globalFunctionCache.clear();
 }
 
 auto getEntityDataTable(CBaseEntity* PEntity, CreateEntityData create) -> sol::table
@@ -613,6 +742,7 @@ void init(IPP mapIPP, bool isRunningInCI)
 void cleanup()
 {
     luaCache.clear();
+    detail::clearGlobalLuaFunctionCache();
 
     moduleutils::CleanupLuaModules();
 }
@@ -661,6 +791,7 @@ void TryReloadFilewatchList()
     // The cache holds Lua functions resolved before the reload; drop them all so the edited
     // scripts' new functions take effect.
     luaCache.clear();
+    detail::clearGlobalLuaFunctionCache();
 
     for (const auto& [filename, action] : changedFiles)
     {
