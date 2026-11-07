@@ -24,6 +24,8 @@
 #include <ankerl/unordered_dense.h>
 
 #include <functional>
+#include <string>
+#include <string_view>
 
 //
 // FlatHashMap
@@ -50,5 +52,39 @@ template <typename Key,
           typename Hash     = ankerl::unordered_dense::hash<Key>,
           typename KeyEqual = std::equal_to<Key>>
 using FlatHashMap = ankerl::unordered_dense::map<Key, Value, Hash, KeyEqual>;
+
+//
+// StringKeyedFlatHashMap
+//
+//   A FlatHashMap owning std::string keys that can also be looked up by
+//   std::string_view or const char*, without building a std::string to do it.
+//   A plain FlatHashMap<std::string, V> cannot: find() would take the key by
+//   const std::string&, so every probe with a view or a literal allocates.
+//
+//   Use it wherever a hot path looks up by a name it already holds as a view.
+//
+struct TransparentStringHash
+{
+    using is_transparent = void;
+    using is_avalanching = void;
+
+    [[nodiscard]] auto operator()(std::string_view key) const noexcept -> uint64_t
+    {
+        return ankerl::unordered_dense::hash<std::string_view>{}(key);
+    }
+};
+
+struct TransparentStringEqual
+{
+    using is_transparent = void;
+
+    [[nodiscard]] auto operator()(std::string_view lhs, std::string_view rhs) const noexcept -> bool
+    {
+        return lhs == rhs;
+    }
+};
+
+template <typename Value>
+using StringKeyedFlatHashMap = FlatHashMap<std::string, Value, TransparentStringHash, TransparentStringEqual>;
 
 // } // namespace xi

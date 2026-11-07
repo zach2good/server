@@ -11,6 +11,8 @@ target_sources(xi_map_lua PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/lua_battlefield.h
     ${CMAKE_CURRENT_SOURCE_DIR}/lua_cache.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/lua_cache.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/lua_global_function_cache.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/lua_global_function_cache.h
     ${CMAKE_CURRENT_SOURCE_DIR}/lua_instance.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/lua_instance.h
     ${CMAKE_CURRENT_SOURCE_DIR}/lua_item.cpp
